@@ -1,0 +1,15 @@
+{
+  "name": "timekeeper",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [],
+  "author": "Bradly Carpenter",
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "^11.6.0",
+      "onFail": "download"
+    }
+  }
+}
