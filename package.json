@@ -5,11 +5,17 @@
   "description": "",
   "keywords": [],
   "author": "Bradly Carpenter",
+  "scripts": {
+    "dev": "pnpm run -r --parallel --aggregate-output dev"
+  },
   "devEngines": {
     "packageManager": {
       "name": "pnpm",
       "version": "^11.6.0",
       "onFail": "download"
     }
+  },
+  "dependencies": {
+    "zod": "^4.4.3"
   }
 }
