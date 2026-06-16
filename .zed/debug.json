@@ -1,0 +1,14 @@
+// Project-local debug tasks
+//
+// For more documentation on how to configure debug tasks,
+// see: https://zed.dev/docs/debugger
+[
+  {
+    "request": "launch",
+    "label": "Debug API",
+    "adapter": "JavaScript",
+    "type": "node-terminal",
+    "command": "doppler run -- pnpm --filter api dev",
+    "cwd": "$ZED_WORKTREE_ROOT"
+  }
+]

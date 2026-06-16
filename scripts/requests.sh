@@ -31,6 +31,17 @@ case $1 in
         ;;
     esac
     ;;
+  api)
+    case $2 in
+      commit)
+        curl --get \
+          --url "http://localhost:3000/work/commit" | jq '.'
+      ;;
+      *)
+        echo "Unknown argument: $2"
+      ;;
+    esac
+    ;;
   *)
     echo "Unknown argument: $1"
     ;;
