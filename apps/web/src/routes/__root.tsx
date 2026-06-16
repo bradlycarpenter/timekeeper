@@ -1,5 +1,6 @@
 import {
   HeadContent,
+  Outlet,
   Scripts,
   createRootRouteWithContext,
 } from '@tanstack/react-router'
@@ -38,6 +39,12 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     ],
   }),
   shellComponent: RootDocument,
+  component: () => <Outlet />,
+  notFoundComponent: () => (
+    <div className="flex flex-1 h-screen flex-col items-center justify-center">
+      <h2>404 Not Found</h2>
+    </div>
+  ),
 })
 
 function RootDocument({ children }: { children: React.ReactNode }) {
