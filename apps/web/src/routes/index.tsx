@@ -1,14 +1,20 @@
+import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/')({ component: Home })
 
 function Home() {
+  const { data, isPending } = useQuery({
+    queryKey: ['data'],
+    queryFn: async () =>
+      await fetch('/api/').then(async (result) => await result.text()),
+    staleTime: 1_000 * 5,
+  })
+
   return (
-    <div className="p-8">
-      <h1 className="text-4xl font-bold">Welcome to TanStack Start</h1>
-      <p className="mt-4 text-lg">
-        Edit <code>src/routes/index.tsx</code> to get started.
-      </p>
+    <div className="flex flex-1 h-screen flex-col items-center justify-center">
+      <h2>Fetch Result</h2>
+      {isPending ? <p>Fetching results..</p> : <p>{data}</p>}
     </div>
   )
 }
