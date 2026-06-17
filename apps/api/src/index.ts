@@ -12,73 +12,47 @@ app.get('/', (c) => {
 
 app.get('/work/commit', async (c) => {
   try {
-    // const beganTickets = await fetch(
-    //   `https://${process.env.TEST_JIRA_DOMAIN}/rest/api/3/search/jql?` +
-    //     `jql=${encodeURI('assignee = currentUser() AND status changed TO "In Progress" AFTER startOfDay() AND status = "In Progress"')}` +
-    //     '&fields=summary',
-    //   {
-    //     method: 'GET',
-    //     headers: {
-    //       Authorization: `Basic ${btoa(`${process.env.TEST_JIRA_EMAIL}:${process.env.TEST_JIRA_API_KEY}`)}`,
-    //     },
-    //   },
-    // ).then(async (res) => {
-    //   if (!res.ok) {
-    //     const body = await res.text()
-    //     throw new Error(
-    //       `Error fetching tickets with began status, response: ${body}`,
-    //     )
-    //   }
-    //   const json = await res.json()
-    //   try {
-    //     return z
-    //       .object({
-    //         issues: z
-    //           .object({
-    //             expand: z.string(),
-    //             id: z.string(),
-    //             self: z.string(),
-    //             key: z.string(),
-    //             fields: z.object({
-    //               summary: z.string(),
-    //             }),
-    //           })
-    //           .array(),
-    //         isLast: z.boolean(),
-    //       })
-    //       .parse(json)
-    //   } catch (e) {
-    //     throw new Error(
-    //       `Error parsing tickets with began status query, res: ${JSON.stringify(json)}, e: ${e}`,
-    //     )
-    //   }
-    // })
-    const beganTickets = {
-      issues: [
-        {
-          expand: '',
-          id: '1',
-          self: '',
-          key: 'TK-1',
-          fields: { summary: 'Fix login bug' },
+    const beganTickets = await fetch(
+      `https://${process.env.TEST_JIRA_DOMAIN}/rest/api/3/search/jql?` +
+        `jql=${encodeURI('assignee = currentUser() AND status changed TO "In Progress" AFTER startOfDay() AND status = "In Progress"')}` +
+        '&fields=summary',
+      {
+        method: 'GET',
+        headers: {
+          Authorization: `Basic ${btoa(`${process.env.TEST_JIRA_EMAIL}:${process.env.TEST_JIRA_API_KEY}`)}`,
         },
-        {
-          expand: '',
-          id: '2',
-          self: '',
-          key: 'TK-2',
-          fields: { summary: 'Add dashboard charts' },
-        },
-        {
-          expand: '',
-          id: '3',
-          self: '',
-          key: 'TK-3',
-          fields: { summary: 'Refactor auth middleware' },
-        },
-      ],
-      isLast: true,
-    }
+      },
+    ).then(async (res) => {
+      if (!res.ok) {
+        const body = await res.text()
+        throw new Error(
+          `Error fetching tickets with began status, response: ${body}`,
+        )
+      }
+      const json = await res.json()
+      try {
+        return z
+          .object({
+            issues: z
+              .object({
+                expand: z.string(),
+                id: z.string(),
+                self: z.string(),
+                key: z.string(),
+                fields: z.object({
+                  summary: z.string(),
+                }),
+              })
+              .array(),
+            isLast: z.boolean(),
+          })
+          .parse(json)
+      } catch (e) {
+        throw new Error(
+          `Error parsing tickets with began status query, res: ${JSON.stringify(json)}, e: ${e}`,
+        )
+      }
+    })
 
     if (beganTickets.issues.length < 1) {
       return c.json({ message: 'No issues to submit' })
