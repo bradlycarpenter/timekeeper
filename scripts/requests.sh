@@ -6,9 +6,9 @@ get_issues() {
     --url "https://$TEST_JIRA_DOMAIN/rest/api/3/search/jql" \
     --data-urlencode "jql=$jql" \
     --data-urlencode 'fields=summary' \
-    --user "$TEST_JIRA_EMAIL:$TEST_JIRA_API_KEY" \
-    --header "Accept: application/json" \
-    --silent | jq '.'
+    -u "$TEST_JIRA_EMAIL:$TEST_JIRA_API_KEY" \
+    -H "Accept: application/json" \
+    -s | jq '.'
 }
 
 case $1 in
@@ -31,16 +31,52 @@ case $1 in
         ;;
     esac
     ;;
-  api)
+  sheet)
     case $2 in
-      commit)
+      auth)
+        curl -X POST "https://$WARP_TEST_DOMAIN/api/account/authorise" \
+          -H "Content-Type: application/json" \
+          -d "{\"Email\": \"$WARP_TEST_USERNAME\", \"Password\": \"$WARP_TEST_PASSWORD\"}" \
+          -s | jq '.'
+        ;;
+      projects)
         curl --get \
-          --url "http://localhost:3000/work/commit" | jq '.'
-      ;;
+          --url "https://$WARP_TEST_DOMAIN/api/Project?per_page=500&page=$4" \
+          -H "Authorization: Bearer $3" \
+          -s | jq '.'
+        ;;
+      person)
+        curl --get \
+          --url "https://$WARP_TEST_DOMAIN/api/users/me" \
+          -H "Authorization: Bearer $3" \
+          -s | jq '.'
+        ;;
+      post)
+        curl -X POST "https://$WARP_TEST_DOMAIN/api/entry/create" \
+          -H "Content-Type: application/json" \
+          -H "Authorization: Bearer $3" \
+          -d @- <<-EOF
+					{
+					  "TaskId": "$3",
+					  "PersonId": "$4",
+					  "CostCodeId": "$5",
+					  "DepartmentId": "1",
+					  "Overtime": "$6",
+					  "Time": "$7",
+					  "EntryDate": "$8",
+					  "Comments": "$9",
+					  "WorkLogId": "0",
+					  "Audited": "0"
+					}
+					EOF
+        ;;
       *)
-        echo "Unknown argument: $2"
-      ;;
+        ;;
     esac
+    ;;
+  api)
+    curl --get \
+      --url "http://localhost:3000/work/commit" | jq '.'
     ;;
   *)
     echo "Unknown argument: $1"
