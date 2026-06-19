@@ -14,11 +14,11 @@ get_issues() {
 case $1 in
   work)
     case $2 in
-      progress)
-        get_issues 'assignee = currentUser() AND status = "In Progress" AND sprint in openSprints()'
-        ;;
       began)
         get_issues 'assignee = currentUser() AND status changed TO "In Progress" AFTER startOfDay() AND status = "In Progress"'
+        ;;
+      progress)
+        get_issues 'assignee = currentUser() AND status = "In Progress" AND sprint in openSprints()'
         ;;
       pr)
         get_issues 'assignee = currentUser() AND status changed TO "pr" AFTER startOfDay() AND status = "pr"'

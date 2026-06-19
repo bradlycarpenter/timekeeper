@@ -3,6 +3,90 @@ import { Hono } from 'hono'
 import { logger } from 'hono/logger'
 import { serve } from '@hono/node-server'
 
+const fetchJiraTickets = async (jql: string) =>
+  await fetch(
+    `https://${process.env.TEST_JIRA_DOMAIN}/rest/api/3/search/jql?` +
+      `jql=${encodeURI(jql)}` +
+      '&fields=summary',
+    {
+      method: 'GET',
+      headers: {
+        Authorization: `Basic ${btoa(`${process.env.TEST_JIRA_EMAIL}:${process.env.TEST_JIRA_API_KEY}`)}`,
+      },
+    },
+  ).then(async (res) => {
+    if (!res.ok) {
+      const body = await res.text()
+      throw new Error(
+        `Error fetching tickets with began status, response: ${body}`,
+      )
+    }
+    const json = await res.json()
+    try {
+      return z
+        .object({
+          issues: z
+            .object({
+              expand: z.string(),
+              id: z.string(),
+              self: z.string(),
+              key: z.string(),
+              fields: z.object({
+                summary: z.string(),
+              }),
+            })
+            .array(),
+          isLast: z.boolean(),
+        })
+        .parse(json)
+    } catch (e) {
+      throw new Error(
+        `Error parsing tickets with began status query, res: ${JSON.stringify(json)}, e: ${e}`,
+      )
+    }
+  })
+
+const createMessage = (
+  issueDescriptors: {
+    issues: {
+      expand: string
+      id: string
+      self: string
+      key: string
+      fields: {
+        summary: string
+      }
+    }[]
+    prefix: string
+  }[],
+) => {
+  let message = ''
+  for (const issueDescriptor of issueDescriptors) {
+    if (message.length !== 0) {
+      message += ' '
+    }
+    for (let i = 0; i < issueDescriptor.issues.length; i++) {
+      if (i === 0) {
+        message +=
+          issueDescriptor.prefix +
+          ' ' +
+          issueDescriptor.issues[0].key +
+          ' (' +
+          issueDescriptor.issues[0].fields.summary +
+          ')'
+        continue
+      }
+      if (i === issueDescriptor.issues.length - 1) {
+        message += ` and ${issueDescriptor.issues[i].key} (${issueDescriptor.issues[i].fields.summary})`
+        continue
+      }
+      message += `, ${issueDescriptor.issues[i].key} (${issueDescriptor.issues[i].fields.summary})`
+    }
+    message += '.'
+  }
+  return message
+}
+
 const app = new Hono()
 
 app.use(logger())
@@ -12,71 +96,37 @@ app.get('/', (c) => {
 
 app.get('/work/commit', async (c) => {
   try {
-    const beganTickets = await fetch(
-      `https://${process.env.TEST_JIRA_DOMAIN}/rest/api/3/search/jql?` +
-        `jql=${encodeURI('assignee = currentUser() AND status changed TO "In Progress" AFTER startOfDay() AND status = "In Progress"')}` +
-        '&fields=summary',
-      {
-        method: 'GET',
-        headers: {
-          Authorization: `Basic ${btoa(`${process.env.TEST_JIRA_EMAIL}:${process.env.TEST_JIRA_API_KEY}`)}`,
-        },
-      },
-    ).then(async (res) => {
-      if (!res.ok) {
-        const body = await res.text()
-        throw new Error(
-          `Error fetching tickets with began status, response: ${body}`,
-        )
-      }
-      const json = await res.json()
-      try {
-        return z
-          .object({
-            issues: z
-              .object({
-                expand: z.string(),
-                id: z.string(),
-                self: z.string(),
-                key: z.string(),
-                fields: z.object({
-                  summary: z.string(),
-                }),
-              })
-              .array(),
-            isLast: z.boolean(),
-          })
-          .parse(json)
-      } catch (e) {
-        throw new Error(
-          `Error parsing tickets with began status query, res: ${JSON.stringify(json)}, e: ${e}`,
-        )
-      }
-    })
+    const beganTickets = await fetchJiraTickets(
+      'assignee = currentUser() AND status changed TO "In Progress" AFTER startOfDay() AND status = "In Progress"',
+    )
 
-    if (beganTickets.issues.length < 1) {
+    const progressTickets = await fetchJiraTickets(
+      'assignee = currentUser() AND status = "In Progress" AND sprint in openSprints()',
+    )
+
+    const pullRequestTickets = await fetchJiraTickets(
+      'assignee = currentUser() AND status changed TO "pr" AFTER startOfDay() AND status = "pr"',
+    )
+
+    const doneTickets = await fetchJiraTickets(
+      'assignee = currentUser() AND status changed TO "Done" AFTER startOfDay() AND status = "Done"',
+    )
+
+    if (
+      beganTickets.issues.length < 1 &&
+      progressTickets.issues.length < 1 &&
+      pullRequestTickets.issues.length < 1 &&
+      doneTickets.issues.length < 1
+    ) {
       return c.json({ message: 'No issues to submit' })
     }
 
-    let message: string = 'Today I began working on '
-
-    message +=
-      beganTickets.issues[0].key +
-      ' (' +
-      beganTickets.issues[0].fields.summary +
-      ')'
-
-    if (beganTickets.issues.length > 1) {
-      for (let i = 1; i < beganTickets.issues.length; i++) {
-        if (i === beganTickets.issues.length - 1) {
-          message += ` and ${beganTickets.issues[i].key} (${beganTickets.issues[i].fields.summary})`
-          break
-        }
-        message += `, ${beganTickets.issues[i].key} (${beganTickets.issues[i].fields.summary})`
-      }
-    }
-
-    message += '.'
+    const message = createMessage([
+      { issues: beganTickets.issues, prefix: 'I began working on' },
+      { issues: progressTickets.issues, prefix: 'I continued work on' },
+      { issues: pullRequestTickets.issues, prefix: 'I created a PR for' },
+      { issues: doneTickets.issues, prefix: 'I completed work on' },
+    ])
 
     const authToken = await fetch(
       `https://${process.env.WARP_TEST_DOMAIN}/api/account/authorise`,
@@ -123,7 +173,7 @@ app.get('/work/commit', async (c) => {
           Overtime: '0',
           Time: '8',
           EntryDate: '2026-06-17T15:00:00',
-          Comments: 'Test Description',
+          Comments: message,
           WorkLogId: '0',
           Audited: '0',
         }),
@@ -146,7 +196,8 @@ app.get('/work/commit', async (c) => {
         )
       }
     })
-    return c.json({ entry_id: entryId })
+
+    return c.json({ message })
   } catch (e) {
     console.error(e)
     return c.json({ error: 'Error' }, 500)
