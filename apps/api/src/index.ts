@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { Hono } from 'hono'
+import { warpProjectSchema } from '@tk/types'
 import { logger } from 'hono/logger'
 import { serve } from '@hono/node-server'
 
@@ -91,7 +92,7 @@ const app = new Hono()
 
 app.use(logger())
 app.get('/', (c) => {
-  return c.text('Hello Hono!')
+  return c.text('Healthy')
 })
 
 app.get('/work/commit', async (c) => {
@@ -128,6 +129,67 @@ app.get('/work/commit', async (c) => {
       { issues: doneTickets.issues, prefix: 'I completed work on' },
     ])
 
+    // const entryId = await fetch(
+    //   `https://${process.env.WARP_TEST_DOMAIN}/api/entry/create`,
+    //   {
+    //     method: 'POST',
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //       Authorization: `Bearer ${authToken}`,
+    //     },
+    //     body: JSON.stringify({
+    //       TaskId: '4769',
+    //       PersonId: '1322',
+    //       CostCodeId: '2',
+    //       DepartmentId: '1',
+    //       Overtime: '0',
+    //       Time: '8',
+    //       EntryDate: '2026-06-17T15:00:00',
+    //       Comments: message,
+    //       WorkLogId: '0',
+    //       Audited: '0',
+    //     }),
+    //   },
+    // ).then(async (res) => {
+    //   if (!res.ok) {
+    //     const body = await res.text()
+    //     throw new Error(`Error creating entry, res: ${body}`)
+    //   }
+    //   const json = await res.json()
+    //   try {
+    //     return z
+    //       .object({
+    //         EntryId: z.number(),
+    //       })
+    //       .parse(json).EntryId
+    //   } catch (e) {
+    //     throw new Error(
+    //       `Error parsing entry response, res: ${JSON.stringify(json)}`,
+    //     )
+    //   }
+    // })
+
+    return c.json({ message })
+  } catch (e) {
+    console.error(e)
+    return c.json({ error: 'Error' }, 500)
+  }
+})
+
+app.post('sheets/auth', async (c) => {
+  const queryParseResult = z
+    .object({
+      email: z.email(),
+      password: z.string(),
+    })
+    .safeParse(await c.req.json())
+
+  if (!queryParseResult.success) {
+    console.error(queryParseResult.error)
+    return c.json({ reason: 'Invalid query' }, 400)
+  }
+
+  try {
     const authToken = await fetch(
       `https://${process.env.WARP_TEST_DOMAIN}/api/account/authorise`,
       {
@@ -136,8 +198,8 @@ app.get('/work/commit', async (c) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          Email: process.env.WARP_TEST_USERNAME,
-          Password: process.env.WARP_TEST_PASSWORD,
+          Email: queryParseResult.data.email,
+          Password: queryParseResult.data.password,
         }),
       },
     ).then(async (res) => {
@@ -151,56 +213,59 @@ app.get('/work/commit', async (c) => {
           .object({
             token: z.string(),
           })
-          .parse(json).token
+          .parse(json)
       } catch (e) {
+        console.error(e)
         throw new Error(`Error parsing auth token, e: ${e}`)
       }
     })
 
-    const entryId = await fetch(
-      `https://${process.env.WARP_TEST_DOMAIN}/api/entry/create`,
+    return c.json(authToken)
+  } catch (e) {
+    console.error(e)
+    return c.json({ reason: 'We had trouble processing your request' }, 500)
+  }
+})
+
+app.get('sheets/:page/', async (c) => {
+  const queryParseResult = z
+    .object({
+      token: z.string(),
+    })
+    .safeParse(c.req.query())
+
+  if (!queryParseResult.success) {
+    console.error(queryParseResult.error)
+    return c.json({ reason: 'Invalid query' }, 400)
+  }
+
+  try {
+    const projects = await fetch(
+      `https://${process.env.WARP_TEST_DOMAIN}/api/Project?per_page=500&page=${c.req.param().page}`,
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${authToken}`,
+          Authorization: `Bearer ${c.req.query('token')}`,
         },
-        body: JSON.stringify({
-          TaskId: '4769',
-          PersonId: '1322',
-          CostCodeId: '2',
-          DepartmentId: '1',
-          Overtime: '0',
-          Time: '8',
-          EntryDate: '2026-06-17T15:00:00',
-          Comments: message,
-          WorkLogId: '0',
-          Audited: '0',
-        }),
       },
     ).then(async (res) => {
       if (!res.ok) {
         const body = await res.text()
-        throw new Error(`Error creating entry, res: ${body}`)
+        throw new Error(`Error getting auth token, response: ${body}`)
       }
       const json = await res.json()
       try {
-        return z
-          .object({
-            EntryId: z.number(),
-          })
-          .parse(json).EntryId
+        return warpProjectSchema.array().parse(json)
       } catch (e) {
-        throw new Error(
-          `Error parsing entry response, res: ${JSON.stringify(json)}`,
-        )
+        console.error(e)
+        throw new Error(`Error parsing auth token, e: ${e}`)
       }
     })
-
-    return c.json({ message })
+    return c.json(projects)
   } catch (e) {
     console.error(e)
-    return c.json({ error: 'Error' }, 500)
+    return c.json({ Reason: 'We had trouble fetching projects' }, 502)
   }
 })
 
