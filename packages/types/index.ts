@@ -12,3 +12,5 @@ export const warpProjectSchema = z.object({
     Currency: z.string(),
   }),
 })
+
+export type WarpProject = typeof warpProjectSchema

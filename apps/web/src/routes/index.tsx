@@ -1,12 +1,16 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useEffect, useState } from 'react'
 import z from 'zod'
+import { Check } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import type { WarpProject } from '@tk/types'
+import { createFileRoute } from '@tanstack/react-router'
+import { Spinner } from '#/components/ui/spinner'
 
 export const Route = createFileRoute('/')({ component: Home })
 
 function Home() {
   const [token, setToken] = useState('')
   const [error, setError] = useState('')
+  const [projects, setProjects] = useState<WarpProject[]>([])
   const [storageIsReady, setStorageIsReady] = useState(false)
 
   useEffect(() => {
@@ -25,7 +29,9 @@ function Home() {
   if (!storageIsReady) {
     return (
       <div className="flex flex-1 h-screen flex-col items-center justify-center space-y-2">
-        <p>Local Storage Loading...</p>
+        <div className="flex gap-2 justify-center items-center">
+          <p>Local Storage Loading..</p>
+        </div>
       </div>
     )
   }
@@ -33,7 +39,9 @@ function Home() {
   return (
     <div className="flex flex-1 h-screen flex-col items-center justify-center space-y-2">
       {token !== '' ? (
-        <p>Token Set</p>
+        <div className="flex gap-2 px-4 p-1 justify-center items-center ">
+          <p>Token Set</p>
+        </div>
       ) : (
         <form
           onSubmit={async (e) => {
