@@ -1,8 +1,9 @@
 {
   "name": "@tk/types",
   "version": "1.0.0",
-  "description": "",
-  "keywords": [],
   "author": "Bradly Carpenter",
-  "type": "module"
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  }
 }

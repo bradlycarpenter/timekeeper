@@ -5,12 +5,13 @@
     "strict": true,
     "verbatimModuleSyntax": true,
     "skipLibCheck": true,
-    "types": [
-      "node"
-    ],
+    "types": ["node"],
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx",
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "paths": {
+      "@tk/types": ["../../packages/types/index.ts"],
+    },
   },
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules"],
 }
