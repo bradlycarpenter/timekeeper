@@ -15,6 +15,9 @@ function Home() {
   const [storageIsReady, setStorageIsReady] = useState(false)
   const [page, setPage] = useState(1)
   const [filter, setFilter] = useState('')
+  const [selectedProject, setSelectedProject] = useState<
+    WarpProject | undefined
+  >()
 
   useEffect(() => {
     if (token) localStorage.setItem('token', JSON.stringify({ token }))
@@ -117,16 +120,10 @@ function Home() {
           className="flex flex-col space-y-2 items-center justify-center"
         >
           <label>Email</label>
-          <input
-            name="email"
-            className="border rounded-md p-1 text-muted-foreground"
-          />
+          <input name="email" className="border p-1 text-muted-foreground" />
           <label>Password</label>
-          <input
-            name="password"
-            className="border rounded-md p-1 text-muted-foreground"
-          />
-          <button className="border bg bg-accent text-accent-foreground w-full rounded-md p-1">
+          <input name="password" className="border p-1 text-muted-foreground" />
+          <button className="border bg bg-accent text-accent-foreground w-full p-1">
             Accept
           </button>
         </form>
@@ -134,7 +131,7 @@ function Home() {
       <p>Page: {page}</p>
       <label>Table Filter on Client Name</label>
       <input
-        className="border p-1 rounded-2xl"
+        className="border p-1 "
         onChange={(e) => {
           e.preventDefault()
           setFilter(e.target.value)
@@ -149,6 +146,7 @@ function Home() {
                 <th>Name</th>
                 <th>Client Group ID</th>
                 <th>Client Name</th>
+                <th>Select</th>
               </tr>
             </thead>
             <tbody>
@@ -170,6 +168,14 @@ function Home() {
                     <td>{project.Name}</td>
                     <td>{project.Client.GroupId}</td>
                     <td>{project.Client.Name}</td>
+                    <td>
+                      <input
+                        type="radio"
+                        name="project"
+                        checked={selectedProject?.TaskId === project.TaskId}
+                        onChange={() => setSelectedProject(project)}
+                      />
+                    </td>
                   </tr>
                 ))}
             </tbody>
@@ -178,7 +184,7 @@ function Home() {
       )}
       <div className="flex gap-2">
         <button
-          className="border rounded-2xl px-2 p-1"
+          className="border px-2 p-1"
           onClick={() => {
             if (page < 1) return
             setPage(page - 1)
@@ -187,7 +193,7 @@ function Home() {
           Previous Page
         </button>
         <button
-          className="border rounded-2xl px-2 p-1"
+          className="border px-2 p-1"
           onClick={() => {
             setPage(page + 1)
           }}

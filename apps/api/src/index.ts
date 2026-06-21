@@ -1,8 +1,8 @@
-import { z } from 'zod'
-import { Hono } from 'hono'
-import { warpProjectSchema } from '@tk/types'
-import { logger } from 'hono/logger'
 import { serve } from '@hono/node-server'
+import { warpProjectSchema } from '@tk/types'
+import { Hono } from 'hono'
+import { logger } from 'hono/logger'
+import { z } from 'zod'
 
 const fetchJiraTickets = async (jql: string) =>
   await fetch(
@@ -176,7 +176,7 @@ app.get('/work/commit', async (c) => {
   }
 })
 
-app.post('sheets/auth', async (c) => {
+app.post('/sheets/auth', async (c) => {
   const queryParseResult = z
     .object({
       email: z.email(),
@@ -227,39 +227,39 @@ app.post('sheets/auth', async (c) => {
   }
 })
 
-app.get('sheets/:page/', async (c) => {
-  const queryParseResult = z
-    .object({
-      token: z.string(),
-    })
-    .safeParse(c.req.query())
+app.get('/sheets/projects/:page', async (c) => {
+  const authHeader = c.req.header('Authorization')
 
-  if (!queryParseResult.success) {
-    console.error(queryParseResult.error)
-    return c.json({ reason: 'Invalid query' }, 400)
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    console.error('Issue validating token')
+    return c.json({ error: 'Missing or invalid Authorization header' }, 401)
   }
+
+  const token = authHeader.slice(7)
 
   try {
     const projects = await fetch(
       `https://${process.env.WARP_TEST_DOMAIN}/api/Project?per_page=500&page=${c.req.param().page}`,
       {
-        method: 'POST',
+        method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${c.req.query('token')}`,
+          Authorization: `Bearer ${token}`,
         },
       },
     ).then(async (res) => {
       if (!res.ok) {
         const body = await res.text()
-        throw new Error(`Error getting auth token, response: ${body}`)
+        throw new Error(
+          `Error getting projects: ${res.status} ${res.statusText} for ${res.url}, body: ${body || '<empty>'}`,
+        )
       }
       const json = await res.json()
       try {
         return warpProjectSchema.array().parse(json)
       } catch (e) {
         console.error(e)
-        throw new Error(`Error parsing auth token, e: ${e}`)
+        throw new Error(`Error parsing projects, e: ${e}`)
       }
     })
     return c.json(projects)

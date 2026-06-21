@@ -13,4 +13,4 @@ export const warpProjectSchema = z.object({
   }),
 })
 
-export type WarpProject = typeof warpProjectSchema
+export type WarpProject = z.infer<typeof warpProjectSchema>
