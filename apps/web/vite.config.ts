@@ -11,13 +11,17 @@ const config = defineConfig({
   plugins: [devtools(), tailwindcss(), tanstackStart(), viteReact()],
   server: {
     proxy: {
+      '/api/auth': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
       '/api': {
         target: 'http://localhost:3000',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, '')
-      }
-    }
-  }
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+    },
+  },
 })
 
 export default config

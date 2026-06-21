@@ -3,9 +3,16 @@ packages:
   - 'apps/*'
 
 allowBuilds:
+  better-sqlite3: true
   esbuild: true
   unrs-resolver: true
 
 catalog:
   'better-auth': '^1.6.20'
   'zod': '^4.4.3'
+
+allowedDeprecatedVersions:
+  '@esbuild-kit/core-utils': '*'
+  '@esbuild-kit/esm-loader': '*'
+  prebuild-install: '*'
+  node-domexception: '*'

@@ -10,8 +10,8 @@
     "jsxImportSource": "hono/jsx",
     "outDir": "./dist",
     "paths": {
-      "@tk/types": ["../../packages/types/index.ts"],
-    },
+      "@tk/types": ["../../packages/types/index.ts"]
+    }
   },
-  "exclude": ["node_modules"],
+  "exclude": ["node_modules"]
 }
