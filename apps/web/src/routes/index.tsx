@@ -75,6 +75,7 @@ function Home() {
   return (
     <div className="flex flex-1 h-screen flex-col items-center justify-center space-y-2">
       {loading && <p>Loading...</p>}
+      {error && <p className="text-red-500 font-semibold">{error}</p>}
       {token !== '' ? (
         <div className="flex gap-2 px-4 p-1 justify-center items-center ">
           <p>Token Set</p>
@@ -201,7 +202,14 @@ function Home() {
           Next Page
         </button>
       </div>
-      {error && <p className="text-red-500 font-semibold">{error}</p>}
+      {selectedProject && (
+        <>
+          <p>Selected Project</p>
+          <p>{selectedProject.TaskId}</p>
+          <p>{selectedProject.Name}</p>
+          <p>{selectedProject.Client.Name}</p>
+        </>
+      )}
     </div>
   )
 }
