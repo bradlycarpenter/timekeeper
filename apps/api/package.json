@@ -8,8 +8,10 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.19.14",
+    "@tk/types": "workspace:*",
+    "better-auth": "catalog:",
     "hono": "^4.12.25",
-    "@tk/types": "workspace:*"
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@types/node": "^20.11.17",

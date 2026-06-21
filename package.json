@@ -15,8 +15,5 @@
       "version": "^11.6.0",
       "onFail": "download"
     }
-  },
-  "dependencies": {
-    "zod": "^4.4.3"
   }
 }

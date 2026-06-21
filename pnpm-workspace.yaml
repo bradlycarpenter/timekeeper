@@ -1,6 +1,11 @@
 packages:
-  - "packages/*"
-  - "apps/*"
+  - 'packages/*'
+  - 'apps/*'
+
 allowBuilds:
   esbuild: true
   unrs-resolver: true
+
+catalog:
+  'better-auth': '^1.6.20'
+  'zod': '^4.4.3'
