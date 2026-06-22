@@ -1,0 +1,12 @@
+{
+  "name": "@tk/utils",
+  "version": "1.0.0",
+  "author": "Bradly Carpenter",
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "dependencies": {
+    "zod": "catalog:"
+  }
+}
