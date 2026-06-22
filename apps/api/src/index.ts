@@ -5,6 +5,8 @@ import { logger } from 'hono/logger'
 import { z } from 'zod'
 import { auth } from './auth.js'
 import { responseParseOrThrow } from '@tk/utils'
+import { db } from './db.init.js'
+import { boardSheet } from './db.schema.js'
 
 const app = new Hono<{
   Variables: {
@@ -38,15 +40,15 @@ app.on(['POST', 'GET'], '/api/auth/*', (c) => {
 })
 
 app.post('/sheets/auth', async (c) => {
-  const queryParseResult = z
+  const bodyParseResult = z
     .object({
       email: z.email(),
       password: z.string(),
     })
     .safeParse(await c.req.json())
 
-  if (!queryParseResult.success) {
-    console.error(queryParseResult.error)
+  if (!bodyParseResult.success) {
+    console.error(bodyParseResult.error)
     return c.json({ reason: 'Invalid query' }, 400)
   }
 
@@ -59,8 +61,8 @@ app.post('/sheets/auth', async (c) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          Email: queryParseResult.data.email,
-          Password: queryParseResult.data.password,
+          Email: bodyParseResult.data.email,
+          Password: bodyParseResult.data.password,
         }),
       },
     ).then(async (res) =>
@@ -220,6 +222,44 @@ app.get('/work/atlassian/projects', async (c) => {
   } catch (e) {
     console.error(e)
     return c.json({ error: 'We had trouble fetching projects' }, 502)
+  }
+})
+
+app.post('/boardsheet', async (c) => {
+  const user = c.get('user')
+
+  if (!user) {
+    return c.json({ error: 'Unauthorized' }, 401)
+  }
+
+  const bodyParseResult = z
+    .object({
+      warpProject: warpProjectSchema,
+      jiraProject: jiraProjectSchema,
+    })
+    .safeParse(await c.req.json())
+
+  if (!bodyParseResult.success) {
+    console.error(bodyParseResult.error)
+    return c.json({ reason: 'Invalid post body' }, 400)
+  }
+
+  const { warpProject, jiraProject } = bodyParseResult.data
+
+  try {
+    await db.insert(boardSheet).values({
+      userId: user.id,
+      sheetTaskId: warpProject.TaskId,
+      sheetName: warpProject.Name,
+      sheetClientName: warpProject.Client.Name,
+      boardId: jiraProject.id,
+      boardName: jiraProject.name,
+      boardKey: jiraProject.key,
+    })
+    return c.json({ success: true }, 201)
+  } catch (e) {
+    console.error(e)
+    return c.json({ reason: 'Failed to save project link' }, 500)
   }
 })
 
