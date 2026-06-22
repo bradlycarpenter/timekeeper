@@ -14,3 +14,11 @@ export const warpProjectSchema = z.object({
 })
 
 export type WarpProject = z.infer<typeof warpProjectSchema>
+
+export const jiraProjectSchema = z.object({
+  id: z.string(),
+  key: z.string(),
+  name: z.string(),
+})
+
+export type JiraProject = z.infer<typeof jiraProjectSchema>

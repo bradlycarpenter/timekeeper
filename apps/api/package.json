@@ -9,6 +9,7 @@
   "dependencies": {
     "@hono/node-server": "^1.19.14",
     "@tk/types": "workspace:*",
+    "@tk/utils": "workspace:*",
     "better-auth": "catalog:",
     "better-sqlite3": "^12.11.1",
     "drizzle-orm": "^0.45.2",

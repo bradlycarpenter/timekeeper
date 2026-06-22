@@ -15,7 +15,7 @@ export const auth = betterAuth({
     atlassian: {
       clientId: process.env.ATLASSIAN_CLIENT_ID!,
       clientSecret: process.env.ATLASSIAN_CLIENT_SECRET,
-      scope: ['read:jira-user', 'read:me', 'read:account'],
+      scope: ['read:jira-user', 'read:jira-work', 'read:me', 'read:account'],
     },
   },
   account: {

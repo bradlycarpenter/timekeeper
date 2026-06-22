@@ -1,22 +1,27 @@
 import { ScrollArea } from '#/components/ui/scroll-area'
 import { createFileRoute } from '@tanstack/react-router'
-import type { WarpProject } from '@tk/types'
-import { warpProjectSchema } from '@tk/types'
+import type { WarpProject, JiraProject } from '@tk/types'
+import { jiraProjectSchema, warpProjectSchema } from '@tk/types'
+import { responseParseOrThrow } from '@tk/utils'
 import { useEffect, useState } from 'react'
 import z from 'zod'
 
 export const Route = createFileRoute('/')({ component: Home })
 
 function Home() {
-  const [token, setToken] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [projects, setProjects] = useState<WarpProject[]>([])
-  const [storageIsReady, setStorageIsReady] = useState(false)
-  const [page, setPage] = useState(1)
-  const [filter, setFilter] = useState('')
-  const [selectedProject, setSelectedProject] = useState<
+  const [token, tokenSet] = useState('')
+  const [error, errorSet] = useState('')
+  const [loading, loadingSet] = useState(false)
+  const [warpProjects, warpProjectsSet] = useState<WarpProject[]>([])
+  const [jiraProjects, jiraProjectsSet] = useState<JiraProject[]>([])
+  const [storageIsReady, storageSetIsReady] = useState(false)
+  const [page, pageSet] = useState(1)
+  const [filter, filterSet] = useState('')
+  const [selectedWarpProject, selectedWarpProjectSet] = useState<
     WarpProject | undefined
+  >()
+  const [selectedJiraProject, selectedJiraProjectSet] = useState<
+    JiraProject | undefined
   >()
 
   useEffect(() => {
@@ -27,15 +32,15 @@ function Home() {
     const storageToken = localStorage.getItem('token')
     if (storageToken != null) {
       const parsed = JSON.parse(storageToken)
-      if (parsed?.token) setToken(parsed.token)
+      if (parsed?.token) tokenSet(parsed.token)
     }
-    setStorageIsReady(true)
-  }, [setToken])
+    storageSetIsReady(true)
+  }, [tokenSet])
 
   useEffect(() => {
     if (!token) return
     ;(async () => {
-      setLoading(true)
+      loadingSet(true)
       try {
         const newProjects = await fetch(`/api/sheets/projects/${page}`, {
           method: 'GET',
@@ -53,14 +58,14 @@ function Home() {
           }
           return parseResult.data
         })
-        setProjects(newProjects)
+        warpProjectsSet(newProjects)
       } catch (e) {
         console.log(e)
-        setError('Error fetching projects')
+        errorSet('Error fetching projects')
       }
-      setLoading(false)
+      loadingSet(false)
     })()
-  }, [token, setProjects, setError, page, setLoading])
+  }, [token, warpProjectsSet, errorSet, page, loadingSet])
 
   if (!storageIsReady) {
     return (
@@ -97,25 +102,19 @@ function Home() {
                   email,
                   password,
                 }),
-              }).then(async (r) => {
-                if (!r.ok) {
-                  throw new Error('Failed to fetch token')
-                }
-                const parseResult = z
-                  .object({
+              }).then(async (res) =>
+                responseParseOrThrow({
+                  res,
+                  schema: z.object({
                     token: z.string(),
-                  })
-                  .safeParse(await r.json())
-                if (!parseResult.success) {
-                  throw new Error('Failed to parse fetch result')
-                }
-                return parseResult.data.token
-              })
-
-              setToken(newToken)
+                  }),
+                  name: 'Auth Token',
+                }),
+              )
+              tokenSet(newToken.token)
             } catch (newError) {
               console.error(newError)
-              setError('Error Fetching Auth Token')
+              errorSet('Error Fetching Auth Token')
             }
           }}
           className="flex flex-col space-y-2 items-center justify-center"
@@ -135,10 +134,10 @@ function Home() {
         className="border p-1 "
         onChange={(e) => {
           e.preventDefault()
-          setFilter(e.target.value)
+          filterSet(e.target.value)
         }}
       />
-      {projects.length > 0 && (
+      {warpProjects.length > 0 && (
         <ScrollArea className="h-72 w-2xl">
           <table className="w-full text-left">
             <thead>
@@ -151,7 +150,7 @@ function Home() {
               </tr>
             </thead>
             <tbody>
-              {projects
+              {warpProjects
                 .filter((project) => {
                   if (filter === '') {
                     return project
@@ -173,8 +172,8 @@ function Home() {
                       <input
                         type="radio"
                         name="project"
-                        checked={selectedProject?.TaskId === project.TaskId}
-                        onChange={() => setSelectedProject(project)}
+                        checked={selectedWarpProject?.TaskId === project.TaskId}
+                        onChange={() => selectedWarpProjectSet(project)}
                       />
                     </td>
                   </tr>
@@ -188,7 +187,7 @@ function Home() {
           className="border px-2 p-1"
           onClick={() => {
             if (page < 1) return
-            setPage(page - 1)
+            pageSet(page - 1)
           }}
         >
           Previous Page
@@ -196,19 +195,72 @@ function Home() {
         <button
           className="border px-2 p-1"
           onClick={() => {
-            setPage(page + 1)
+            pageSet(page + 1)
           }}
         >
           Next Page
         </button>
       </div>
-      {selectedProject && (
+      {selectedWarpProject && (
         <>
           <p>Selected Project</p>
-          <p>{selectedProject.TaskId}</p>
-          <p>{selectedProject.Name}</p>
-          <p>{selectedProject.Client.Name}</p>
+          <p>{selectedWarpProject.TaskId}</p>
+          <p>{selectedWarpProject.Name}</p>
+          <p>{selectedWarpProject.Client.Name}</p>
         </>
+      )}
+      <button
+        type="button"
+        onClick={async () => {
+          try {
+            const newJiraProjects = await fetch(
+              '/api/work/atlassian/projects',
+            ).then((res) =>
+              responseParseOrThrow({
+                res,
+                schema: jiraProjectSchema.array(),
+                name: 'Atlassian Projects',
+              }),
+            )
+            jiraProjectsSet(newJiraProjects)
+          } catch (e) {
+            console.error(e)
+            errorSet('Error fetching Atlassian Projects')
+          }
+        }}
+      >
+        Fetch Atlassian Projects
+      </button>
+      {jiraProjects.length > 0 && (
+        <ScrollArea className="h-72 w-2xl">
+          <table className="w-full text-left">
+            <thead>
+              <tr>
+                <th>Task ID</th>
+                <th>Name</th>
+                <th>Client Group ID</th>
+                <th>Select</th>
+              </tr>
+            </thead>
+            <tbody>
+              {jiraProjects.map((project) => (
+                <tr key={project.id}>
+                  <td>{project.id}</td>
+                  <td>{project.key}</td>
+                  <td>{project.name}</td>
+                  <td>
+                    <input
+                      type="radio"
+                      name="project"
+                      checked={selectedJiraProject?.id === project.id}
+                      onChange={() => selectedJiraProjectSet(project)}
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </ScrollArea>
       )}
     </div>
   )
