@@ -4,7 +4,7 @@ import type { WarpProject, JiraProject } from '@tk/types'
 import { jiraProjectSchema, warpProjectSchema } from '@tk/types'
 import { responseParseOrThrow } from '@tk/utils'
 import { useEffect, useState } from 'react'
-import z, { setErrorMap } from 'zod'
+import { z } from 'zod'
 
 export const Route = createFileRoute('/boardsheet/')({ component: BoardSheet })
 
