@@ -253,7 +253,7 @@ app.get('/work/status/:projectKey', async (c) => {
       return c.json({ reason: 'User has no access to resources' }, 400)
     }
 
-    const statuses = await fetch(
+    const ticketTypes = await fetch(
       `https://api.atlassian.com/ex/jira/${cloudId}/rest/api/3/project/${key}/statuses`,
       {
         headers: {
@@ -293,7 +293,51 @@ app.get('/work/status/:projectKey', async (c) => {
       }),
     )
 
-    return c.json(statuses)
+    const statusCategories = new Map<
+      string,
+      {
+        self: string
+        id: number
+        key: string
+        colorName: string
+        name: string
+        statuses: { self: string; name: string; id: string }[]
+      }
+    >()
+
+    // Brad: Reformat the list as the map above.
+    // Loop over each ticket type, then each status inside the ticket type
+    // status array. Then separate the status category from the fields.
+    // Make a category variable, check if the map already has that category.
+    // If it doesn't, assign the category variable with the category from
+    // the current status in the iteration and an empty array of statuses,
+    // then store that category back into the map.
+    // Then, we'll have a category with fields and a status array so we check
+    // if the statuses array inside the category already has the status we're
+    // currently on (matched by id) and if it doesn't, we push it into that
+    // array or move on.
+
+    for (const ticketType of ticketTypes) {
+      for (const status of ticketType.statuses) {
+        const { statusCategory, ...statusFields } = status
+
+        let category = statusCategories.get(statusCategory.name)
+        if (!category) {
+          category = { ...statusCategory, statuses: [] }
+          statusCategories.set(statusCategory.name, category)
+        }
+
+        if (!category.statuses.some((s) => s.id === statusFields.id)) {
+          category.statuses.push({
+            self: statusFields.self,
+            name: statusFields.name,
+            id: statusFields.id,
+          })
+        }
+      }
+    }
+
+    return c.json([...statusCategories.values()])
   } catch (e) {
     console.error(e)
     return c.json({ reason: 'We had trouble fetching statuses' }, 500)

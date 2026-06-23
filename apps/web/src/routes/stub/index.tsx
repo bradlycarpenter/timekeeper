@@ -17,6 +17,23 @@ const boardSheetSchema = z.object({
 
 type BoardSheet = z.infer<typeof boardSheetSchema>
 
+const jiraStatusCategorySchema = z.object({
+  self: z.string(),
+  id: z.number(),
+  key: z.string(),
+  colorName: z.string(),
+  name: z.string(),
+  statuses: z
+    .object({
+      self: z.string(),
+      name: z.string(),
+      id: z.string(),
+    })
+    .array(),
+})
+
+type JiraStatusCategory = z.infer<typeof jiraStatusCategorySchema>
+
 export const Route = createFileRoute('/stub/')({
   component: RouteComponent,
 })
@@ -24,6 +41,9 @@ export const Route = createFileRoute('/stub/')({
 function RouteComponent() {
   const [boardSheets, boardSheetsSet] = useState<BoardSheet[]>([])
   const [boardSheetSelected, boardSheetSelectedSet] = useState<BoardSheet>()
+  const [jiraStatusCategories, jiraStatusCategoriesSet] = useState<
+    JiraStatusCategory[]
+  >([])
   const [loading, loadingSet] = useState(false)
   const [error, errorSet] = useState('')
 
@@ -46,7 +66,14 @@ function RouteComponent() {
     if (!boardSheetSelected) return
     loadingSet(true)
     fetch(`/api/work/status/${boardSheetSelected.boardKey}`)
-      .then()
+      .then((res) =>
+        responseParseOrThrow({
+          res,
+          schema: jiraStatusCategorySchema.array(),
+          name: 'Jira Project Category',
+        }),
+      )
+      .then(jiraStatusCategoriesSet)
       .catch(() => errorSet('Error fetching statuses'))
       .finally(() => loadingSet(false))
   }, [boardSheetSelected])
@@ -90,6 +117,15 @@ function RouteComponent() {
           </tbody>
         </table>
       )}
+      {jiraStatusCategories.length > 0 &&
+        jiraStatusCategories.map((jsc) => (
+          <div className="w-2xl text-center">
+            <p className="text-xl font-semibold">{jsc.name}</p>
+            {jsc.statuses.map((s) => (
+              <p>{s.name}</p>
+            ))}
+          </div>
+        ))}
     </div>
   )
 }
