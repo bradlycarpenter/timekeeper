@@ -1,4 +1,3 @@
-import { serve } from '@hono/node-server'
 import { jiraProjectSchema, warpProjectSchema } from '@tk/types'
 import { Hono } from 'hono'
 import { logger } from 'hono/logger'
@@ -135,6 +134,7 @@ app.get('/work/atlassian/projects', async (c) => {
   try {
     // Brad: We have to first get the stupid cloud ID because when using OAuth
     // we need to hit the EX endpoint for whatever reason.
+
     const resources = await fetch(
       'https://api.atlassian.com/oauth/token/accessible-resources',
       {
@@ -225,6 +225,28 @@ app.get('/work/atlassian/projects', async (c) => {
   }
 })
 
+app.get('/work/status', async (c) => {
+
+})
+
+app.get('/boardsheet', async (c) => {
+  const user = c.get('user')
+
+  if (!user) {
+    return c.json({ error: 'Unauthorized' }, 401)
+  }
+
+  try {
+    const boardsheets = await db.query.boardSheet.findMany({
+      where: (bs, { eq }) => eq(bs.userId, user.id),
+    })
+    return c.json(boardsheets)
+  } catch (e) {
+    console.error(e)
+    return c.json({ reason: 'Error loading boardsheets' }, 500)
+  }
+})
+
 app.post('/boardsheet', async (c) => {
   const user = c.get('user')
 
@@ -263,15 +285,7 @@ app.post('/boardsheet', async (c) => {
   }
 })
 
-serve(
-  {
-    fetch: app.fetch,
-    port: 3000,
-  },
-  (info) => {
-    console.log(`Server is running on http://localhost:${info.port}`)
-  },
-)
+export default app
 
 // app.get('/work/commit', async (c) => {
 //   try {

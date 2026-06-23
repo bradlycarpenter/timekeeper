@@ -10,12 +10,18 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as StubIndexRouteImport } from './routes/stub/index'
 import { Route as LoginIndexRouteImport } from './routes/login/index'
 import { Route as BoardsheetIndexRouteImport } from './routes/boardsheet/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StubIndexRoute = StubIndexRouteImport.update({
+  id: '/stub/',
+  path: '/stub/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginIndexRoute = LoginIndexRouteImport.update({
@@ -33,30 +39,34 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/boardsheet/': typeof BoardsheetIndexRoute
   '/login/': typeof LoginIndexRoute
+  '/stub/': typeof StubIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/boardsheet': typeof BoardsheetIndexRoute
   '/login': typeof LoginIndexRoute
+  '/stub': typeof StubIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/boardsheet/': typeof BoardsheetIndexRoute
   '/login/': typeof LoginIndexRoute
+  '/stub/': typeof StubIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/boardsheet/' | '/login/'
+  fullPaths: '/' | '/boardsheet/' | '/login/' | '/stub/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/boardsheet' | '/login'
-  id: '__root__' | '/' | '/boardsheet/' | '/login/'
+  to: '/' | '/boardsheet' | '/login' | '/stub'
+  id: '__root__' | '/' | '/boardsheet/' | '/login/' | '/stub/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BoardsheetIndexRoute: typeof BoardsheetIndexRoute
   LoginIndexRoute: typeof LoginIndexRoute
+  StubIndexRoute: typeof StubIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -66,6 +76,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/stub/': {
+      id: '/stub/'
+      path: '/stub'
+      fullPath: '/stub/'
+      preLoaderRoute: typeof StubIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login/': {
@@ -89,6 +106,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BoardsheetIndexRoute: BoardsheetIndexRoute,
   LoginIndexRoute: LoginIndexRoute,
+  StubIndexRoute: StubIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

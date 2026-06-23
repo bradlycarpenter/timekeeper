@@ -24,7 +24,14 @@ case $1 in
         get_issues 'assignee = currentUser() AND status changed TO "pr" AFTER startOfDay() AND status = "pr"'
         ;;
       done)
-        get_issues 'assignee = currentUser() AND status changed TO "Done" AFTER startOfDay() AND status = "Done"'
+        get_issues 'assignee = currentUser() AND status changed TO ("Done", "Quick Complete") AFTER startOfDay() AND statusCategory = Done'
+        ;;
+      status)
+        curl --get \
+          --url "https://$TEST_JIRA_DOMAIN/rest/api/3/project/LUM/statuses" \
+          -u "$TEST_JIRA_EMAIL:$TEST_JIRA_API_KEY" \
+          -H "Accept: application/json" \
+          -s | jq '.'
         ;;
       *)
         echo "Uknown argument: $2"

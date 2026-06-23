@@ -39,32 +39,23 @@ function BoardSheet() {
 
   useEffect(() => {
     if (!token) return
-    ;(async () => {
-      loadingSet(true)
-      try {
-        const newProjects = await fetch(`/api/sheets/projects/${page}`, {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }).then(async (res) => {
-          if (!res.ok) {
-            throw new Error('Error fetching projects.')
-          }
-          const json = await res.json()
-          const parseResult = warpProjectSchema.array().safeParse(json)
-          if (!parseResult.success) {
-            throw new Error('Error parsing projects')
-          }
-          return parseResult.data
-        })
-        warpProjectsSet(newProjects)
-      } catch (e) {
-        console.log(e)
-        errorSet('Error fetching projects')
-      }
-      loadingSet(false)
-    })()
+    loadingSet(true)
+    fetch(`/api/sheets/projects/${page}`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) =>
+        responseParseOrThrow({
+          res,
+          schema: warpProjectSchema.array(),
+          name: 'Projects',
+        }),
+      )
+      .then(warpProjectsSet)
+      .catch(() => errorSet('Error fetching projects'))
+      .finally(() => loadingSet(false))
   }, [token, warpProjectsSet, errorSet, page, loadingSet])
 
   if (!storageIsReady) {
