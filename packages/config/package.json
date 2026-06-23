@@ -1,0 +1,9 @@
+{
+  "name": "@tk/config",
+  "version": "1.0.0",
+  "author": "Bradly Carpenter",
+  "type": "module",
+  "exports": {
+    "./tsconfig.base.json": "./tsconfig.base.json"
+  }
+}
