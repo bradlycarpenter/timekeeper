@@ -7,6 +7,32 @@ import { responseParseOrThrow } from '@tk/utils'
 import { db } from './db.init.js'
 import { boardSheet } from './db.schema.js'
 
+/** Can throw
+ * Fetches all resources and returns the cloud ID from the first one
+ * Can they have multiple resources?
+ * What happens if they do?*/
+const cloudIdGet = async (accessToken: string) =>
+  await fetch('https://api.atlassian.com/oauth/token/accessible-resources', {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      Accept: 'application/json',
+    },
+  })
+    .then(async (res) =>
+      responseParseOrThrow({
+        res,
+        schema: z
+          .object({
+            id: z.string(),
+            url: z.string(),
+            name: z.string(),
+          })
+          .array(),
+        name: 'Accessible Resources',
+      }),
+    )
+    .then((res) => res[0]?.id)
+
 const app = new Hono<{
   Variables: {
     user: typeof auth.$Infer.Session.user | null
@@ -135,33 +161,11 @@ app.get('/work/atlassian/projects', async (c) => {
     // Brad: We have to first get the stupid cloud ID because when using OAuth
     // we need to hit the EX endpoint for whatever reason.
 
-    const resources = await fetch(
-      'https://api.atlassian.com/oauth/token/accessible-resources',
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          Accept: 'application/json',
-        },
-      },
-    ).then(async (res) =>
-      responseParseOrThrow({
-        res,
-        schema: z
-          .object({
-            id: z.string(),
-            url: z.string(),
-            name: z.string(),
-          })
-          .array(),
-        name: 'Accessible Resources',
-      }),
-    )
+    const cloudId = await cloudIdGet(accessToken)
 
-    if (resources.length === 0) {
-      return c.json({ error: 'No accessible Atlassian sites' }, 404)
+    if (!cloudId) {
+      return c.json({ reason: 'No accessible reasources' }, 400)
     }
-
-    const cloudId = resources[0].id
 
     // Brad: We can't just look up what projects the user has access to because
     // at Warp the user has access to every project under the sun so one way we
@@ -225,8 +229,75 @@ app.get('/work/atlassian/projects', async (c) => {
   }
 })
 
-app.get('/work/status', async (c) => {
+app.get('/work/status/:projectKey', async (c) => {
+  const user = c.get('user')
 
+  if (!user) {
+    return c.json({ error: 'Unauthorized' }, 401)
+  }
+
+  const key = c.req.param('projectKey')
+
+  const { accessToken } = await auth.api.getAccessToken({
+    body: {
+      providerId: 'atlassian',
+      userId: user.id,
+    },
+    headers: c.req.raw.headers,
+  })
+
+  try {
+    const cloudId = await cloudIdGet(accessToken)
+
+    if (!cloudId) {
+      return c.json({ reason: 'User has no access to resources' }, 400)
+    }
+
+    const statuses = await fetch(
+      `https://api.atlassian.com/ex/jira/${cloudId}/rest/api/3/project/${key}/statuses`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          Accept: 'application/json',
+        },
+      },
+    ).then(async (res) =>
+      responseParseOrThrow({
+        res,
+        schema: z
+          .object({
+            self: z.url(),
+            id: z.string(),
+            name: z.string(),
+            subtask: z.boolean(),
+            statuses: z
+              .object({
+                self: z.url(),
+                description: z.string(),
+                iconUrl: z.url(),
+                name: z.string(),
+                untranslatedName: z.string(),
+                id: z.string(),
+                statusCategory: z.object({
+                  self: z.url(),
+                  id: z.number(),
+                  key: z.string(),
+                  colorName: z.string(),
+                  name: z.string(),
+                }),
+              })
+              .array(),
+          })
+          .array(),
+        name: 'Statuses',
+      }),
+    )
+
+    return c.json(statuses)
+  } catch (e) {
+    console.error(e)
+    return c.json({ reason: 'We had trouble fetching statuses' }, 500)
+  }
 })
 
 app.get('/boardsheet', async (c) => {

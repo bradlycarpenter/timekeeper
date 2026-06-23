@@ -42,6 +42,15 @@ function RouteComponent() {
       .finally(() => loadingSet(false))
   }, [loadingSet, boardSheetsSet, errorSet])
 
+  useEffect(() => {
+    if (!boardSheetSelected) return
+    loadingSet(true)
+    fetch(`/api/work/status/${boardSheetSelected.boardKey}`)
+      .then()
+      .catch(() => errorSet('Error fetching statuses'))
+      .finally(() => loadingSet(false))
+  }, [boardSheetSelected])
+
   if (loading) return <Spinner />
 
   return (
