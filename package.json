@@ -7,6 +7,8 @@
   "author": "Bradly Carpenter",
   "scripts": {
     "dev": "doppler run -- pnpm run -r --parallel --aggregate-output dev",
+    "dev:web": "doppler run -- pnpm run --filter web dev",
+    "dev:api": "doppler run -- pnpm run --filter api dev",
     "request": "doppler run -- bash scripts/requests.sh"
   },
   "devEngines": {
