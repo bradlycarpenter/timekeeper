@@ -22,3 +22,36 @@ export const jiraProjectSchema = z.object({
 })
 
 export type JiraProject = z.infer<typeof jiraProjectSchema>
+
+export const StatusCondition = {
+  Entered: 0,
+  Stationary: 1,
+  Left: 2,
+} as const
+
+export type StatusCondition =
+  (typeof StatusCondition)[keyof typeof StatusCondition]
+
+export const StubMessage = {
+  Began: {
+    id: 0,
+    text: 'Today I began working on',
+  },
+  Continue: {
+    id: 1,
+    text: 'Today I continue work on',
+  },
+  Review: {
+    id: 2,
+    text: 'Today I opened a pull request for',
+  },
+  Completed: {
+    id: 3,
+    text: 'Today I completed',
+  },
+} as const
+
+export type StubMessageID =
+  (typeof StubMessage)[keyof typeof StubMessage]['id']
+export type StubMessageText =
+  (typeof StubMessage)[keyof typeof StubMessage]['text']
