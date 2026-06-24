@@ -78,7 +78,12 @@ function RouteComponent() {
       .finally(() => loadingSet(false))
   }, [boardSheetSelected])
 
-  if (loading) return <Spinner />
+  if (loading)
+    return (
+      <div className="flex flex-1 h-screen items-center justify-center">
+        <Spinner className="size-max w-md h-md" />
+      </div>
+    )
 
   return (
     <div className="flex flex-1 h-screen flex-col items-center justify-center gap-2 p-2">

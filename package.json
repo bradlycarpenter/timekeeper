@@ -9,6 +9,7 @@
     "dev": "doppler run -- pnpm run -r --parallel --aggregate-output dev",
     "dev:web": "doppler run -- pnpm run --filter web dev",
     "dev:api": "doppler run -- pnpm run --filter api dev",
+    "format": "prettier --write apps/ packages/",
     "request": "doppler run -- bash scripts/requests.sh"
   },
   "devEngines": {
@@ -17,5 +18,8 @@
       "version": "^11.6.0",
       "onFail": "download"
     }
+  },
+  "devDependencies": {
+    "prettier": "^3.8.4"
   }
 }
