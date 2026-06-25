@@ -1,5 +1,6 @@
-import { isNotNull, relations, sql } from 'drizzle-orm'
-import { sqliteTable, text, integer, index } from 'drizzle-orm/sqlite-core'
+import type { StubMessageID, StatusCondition } from '@tk/types'
+import { relations, sql } from 'drizzle-orm'
+import { index, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 import { uuidv7 } from 'uuidv7'
 
 export const user = sqliteTable('user', {
@@ -101,6 +102,20 @@ export const boardSheet = sqliteTable('board_sheet', {
   boardId: text('board_id').notNull(),
   boardName: text('board_name').notNull(),
   boardKey: text('board_key').notNull(),
+})
+
+export const stub = sqliteTable('stub', {
+  id: text('id')
+    .primaryKey()
+    .$defaultFn(() => uuidv7()),
+  boardSheetId: text('board_sheet_id')
+    .notNull()
+    .references(() => boardSheet.id, { onDelete: 'cascade' }),
+  ticketId: integer('ticket_id').notNull(),
+  statusCondition: integer('status_condition')
+    .notNull()
+    .$type<StatusCondition>(),
+  messageId: integer('message_id').notNull().$type<StubMessageID>(),
 })
 
 export const userRelations = relations(user, ({ many }) => ({
