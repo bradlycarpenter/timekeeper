@@ -32,26 +32,23 @@ export const StatusCondition = {
 export type StatusCondition =
   (typeof StatusCondition)[keyof typeof StatusCondition]
 
-export const StubMessage = {
-  Began: {
+export const stubMessages = [
+  {
     id: 0,
     text: 'Today I began working on',
   },
-  Continue: {
+  {
     id: 1,
     text: 'Today I continue work on',
   },
-  Review: {
+  {
     id: 2,
     text: 'Today I opened a pull request for',
   },
-  Completed: {
+  {
     id: 3,
     text: 'Today I completed',
   },
-} as const
+] as const
 
-export type StubMessageID =
-  (typeof StubMessage)[keyof typeof StubMessage]['id']
-export type StubMessageText =
-  (typeof StubMessage)[keyof typeof StubMessage]['text']
+export type StubMessageID = (typeof stubMessages)[number]['id']

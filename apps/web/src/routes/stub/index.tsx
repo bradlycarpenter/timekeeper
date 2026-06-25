@@ -1,7 +1,8 @@
 import { Spinner } from '#/components/ui/spinner'
 import { createFileRoute } from '@tanstack/react-router'
+import { StatusCondition, stubMessages } from '@tk/types'
 import { responseParseOrThrow } from '@tk/utils'
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { z } from 'zod'
 
 const boardSheetSchema = z.object({
@@ -17,19 +18,21 @@ const boardSheetSchema = z.object({
 
 type BoardSheet = z.infer<typeof boardSheetSchema>
 
+const jiraStatus = z.object({
+  self: z.string(),
+  name: z.string(),
+  id: z.string(),
+})
+
+type JiraStatus = z.infer<typeof jiraStatus>
+
 const jiraStatusCategorySchema = z.object({
   self: z.string(),
   id: z.number(),
   key: z.string(),
   colorName: z.string(),
   name: z.string(),
-  statuses: z
-    .object({
-      self: z.string(),
-      name: z.string(),
-      id: z.string(),
-    })
-    .array(),
+  statuses: jiraStatus.array(),
 })
 
 type JiraStatusCategory = z.infer<typeof jiraStatusCategorySchema>
@@ -41,6 +44,7 @@ export const Route = createFileRoute('/stub/')({
 function RouteComponent() {
   const [boardSheets, boardSheetsSet] = useState<BoardSheet[]>([])
   const [boardSheetSelected, boardSheetSelectedSet] = useState<BoardSheet>()
+  const [jiraStatusSelected, jiraStatusSelectedSet] = useState<JiraStatus>()
   const [jiraStatusCategories, jiraStatusCategoriesSet] = useState<
     JiraStatusCategory[]
   >([])
@@ -122,15 +126,97 @@ function RouteComponent() {
           </tbody>
         </table>
       )}
-      {jiraStatusCategories.length > 0 &&
-        jiraStatusCategories.map((jsc) => (
-          <div className="w-2xl text-center">
-            <p className="text-xl font-semibold">{jsc.name}</p>
-            {jsc.statuses.map((s) => (
-              <p>{s.name}</p>
-            ))}
-          </div>
-        ))}
+      {jiraStatusCategories.length > 0 && (
+        <div>
+          <table className="w-2xl text-left">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Select</th>
+              </tr>
+            </thead>
+            <tbody>
+              {jiraStatusCategories.map((jsc) => (
+                <Fragment key={jsc.id}>
+                  <tr>
+                    <td></td>
+                    <td className="font-semibold">{jsc.name}</td>
+                    <td></td>
+                  </tr>
+
+                  {jsc.statuses.map((s) => (
+                    <tr key={s.id}>
+                      <td>{s.id}</td>
+                      <td>{s.name}</td>
+                      <td>
+                        <input
+                          type="radio"
+                          name="jiraStatus"
+                          onChange={() => jiraStatusSelectedSet(s)}
+                          checked={jiraStatusSelected?.id === s.id}
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </Fragment>
+              ))}
+            </tbody>
+          </table>
+          <table className='w-2xl text-left'>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Type</th>
+                <th>Select</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>{StatusCondition.Entered}</td>
+                <td>Entered</td>
+                <td>
+                  <input type="radio" name="statusCondition" />
+                </td>
+              </tr>
+              <tr>
+                <td>{StatusCondition.Stationary}</td>
+                <td>Stationary</td>
+                <td>
+                  <input type="radio" name="statusCondition" />
+                </td>
+              </tr>
+              <tr>
+                <td>{StatusCondition.Left}</td>
+                <td>Left</td>
+                <td>
+                  <input type="radio" name="statusCondition" />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <table className="w-2xl text-left">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Text</th>
+                <th>Select</th>
+              </tr>
+            </thead>
+            <tbody>
+              {stubMessages.map((sm) => (
+                <tr key={sm.id}>
+                  <td>{sm.id}</td>
+                  <td>{sm.text}</td>
+                  <td>
+                    <input type="radio" name="stubMessage" />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   )
 }
