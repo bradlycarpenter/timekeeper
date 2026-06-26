@@ -52,3 +52,16 @@ export const stubMessages = [
 ] as const
 
 export type StubMessageID = (typeof stubMessages)[number]['id']
+
+export const boardSheetSchema = z.object({
+  id: z.string(),
+  userId: z.string(),
+  sheetTaskId: z.number(),
+  sheetName: z.string(),
+  sheetClientName: z.string(),
+  boardId: z.string(),
+  boardName: z.string(),
+  boardKey: z.string(),
+})
+
+export type BoardSheet = z.infer<typeof boardSheetSchema>

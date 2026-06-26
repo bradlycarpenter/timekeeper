@@ -1,22 +1,10 @@
 import { Spinner } from '#/components/ui/spinner'
 import { createFileRoute } from '@tanstack/react-router'
-import { StatusCondition, stubMessages } from '@tk/types'
+import type { BoardSheet } from '@tk/types'
+import { StatusCondition, stubMessages, boardSheetSchema } from '@tk/types'
 import { responseParseOrThrow } from '@tk/utils'
 import { Fragment, useEffect, useState } from 'react'
 import { z } from 'zod'
-
-const boardSheetSchema = z.object({
-  id: z.string(),
-  userId: z.string(),
-  sheetTaskId: z.number(),
-  sheetName: z.string(),
-  sheetClientName: z.string(),
-  boardId: z.string(),
-  boardName: z.string(),
-  boardKey: z.string(),
-})
-
-type BoardSheet = z.infer<typeof boardSheetSchema>
 
 const jiraStatus = z.object({
   self: z.string(),
@@ -283,7 +271,9 @@ function RouteComponent() {
               })
                 .then(async (res) => await res.json())
                 .then(console.log)
+                .catch(() => errorSet('Error posting stub'))
                 .finally(() => loadingSet(false))
+                .finally(() => errorSet(''))
             }}
           >
             Submit

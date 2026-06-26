@@ -145,6 +145,79 @@ app.get('/sheets/projects/:page', async (c) => {
   }
 })
 
+app.get('/work/atlassian/issues/:stubId', async (c) => {
+  const user = c.get('user')
+
+  if (!user) {
+    return c.json({ error: 'Unauthorized' }, 401)
+  }
+
+  const { stubId } = c.req.param()
+
+  try {
+    const stub = await db.query.stub.findFirst({
+      where: (stub, { eq }) => eq(stub.id, stubId),
+      with: {
+        boardSheet: true,
+      },
+    })
+
+    if (!stub) {
+      return c.json({ reason: 'No stub sotred at that ID' }, 404)
+    }
+
+    const { accessToken } = await auth.api.getAccessToken({
+      body: {
+        providerId: 'atlassian',
+        userId: user.id,
+      },
+      headers: c.req.raw.headers,
+    })
+
+    const cloudId = await cloudIdGet(accessToken)
+
+    if (!cloudId) {
+      return c.json({ reason: 'No accessible reasources' }, 400)
+    }
+
+    const issues = await fetch(
+      `https://${process.env.TEST_JIRA_DOMAIN}/rest/api/3/search/jql?` +
+        `jql=${encodeURI('JQL HERE')}` +
+        '&fields=summary',
+      {
+        method: 'GET',
+        headers: {
+          Authorization: `Basic ${btoa(`${process.env.TEST_JIRA_EMAIL}:${process.env.TEST_JIRA_API_KEY}`)}`,
+        },
+      },
+    ).then((res) =>
+      responseParseOrThrow({
+        res,
+        schema: z.object({
+          issues: z
+            .object({
+              expand: z.string(),
+              id: z.string(),
+              self: z.string(),
+              key: z.string(),
+              fields: z.object({
+                summary: z.string(),
+              }),
+            })
+            .array(),
+          isLast: z.boolean(),
+        }),
+        name: 'Issues',
+      }),
+    )
+
+    return c.json(issues)
+  } catch (e) {
+    console.error(e)
+    return c.json({ reason: 'We failed to fetch issues' }, 500)
+  }
+})
+
 app.get('/work/atlassian/projects', async (c) => {
   const user = c.get('user')
 
@@ -152,16 +225,16 @@ app.get('/work/atlassian/projects', async (c) => {
     return c.json({ error: 'Unauthorized' }, 401)
   }
 
-  // TODO: Test what happens if atlassian not linked
-  const { accessToken } = await auth.api.getAccessToken({
-    body: {
-      providerId: 'atlassian',
-      userId: user.id,
-    },
-    headers: c.req.raw.headers,
-  })
-
   try {
+    // TODO: Test what happens if atlassian not linked
+    const { accessToken } = await auth.api.getAccessToken({
+      body: {
+        providerId: 'atlassian',
+        userId: user.id,
+      },
+      headers: c.req.raw.headers,
+    })
+
     // Brad: We have to first get the stupid cloud ID because when using OAuth
     // we need to hit the EX endpoint for whatever reason.
 
@@ -242,15 +315,15 @@ app.get('/work/status/:projectKey', async (c) => {
 
   const key = c.req.param('projectKey')
 
-  const { accessToken } = await auth.api.getAccessToken({
-    body: {
-      providerId: 'atlassian',
-      userId: user.id,
-    },
-    headers: c.req.raw.headers,
-  })
-
   try {
+    const { accessToken } = await auth.api.getAccessToken({
+      body: {
+        providerId: 'atlassian',
+        userId: user.id,
+      },
+      headers: c.req.raw.headers,
+    })
+
     const cloudId = await cloudIdGet(accessToken)
 
     if (!cloudId) {
@@ -401,6 +474,27 @@ app.post('/boardsheet', async (c) => {
   } catch (e) {
     console.error(e)
     return c.json({ reason: 'Failed to save project link' }, 500)
+  }
+})
+
+app.get('/stub', async (c) => {
+  const user = c.get('user')
+
+  if (!user) {
+    return c.json({ error: 'Unauthorized' }, 401)
+  }
+
+  try {
+    const boardSheetStubs = await db.query.boardSheet.findMany({
+      with: {
+        stubs: true,
+      },
+      where: (boardSheet, { eq }) => eq(boardSheet.userId, user.id),
+    })
+    return c.json(boardSheetStubs)
+  } catch (e) {
+    console.error()
+    return c.json({ reason: 'We had trouble fetching your stubs' }, 500)
   }
 })
 

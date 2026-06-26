@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as StubIndexRouteImport } from './routes/stub/index'
 import { Route as LoginIndexRouteImport } from './routes/login/index'
+import { Route as CreateIndexRouteImport } from './routes/create/index'
 import { Route as BoardsheetIndexRouteImport } from './routes/boardsheet/index'
 
 const IndexRoute = IndexRouteImport.update({
@@ -29,6 +30,11 @@ const LoginIndexRoute = LoginIndexRouteImport.update({
   path: '/login/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CreateIndexRoute = CreateIndexRouteImport.update({
+  id: '/create/',
+  path: '/create/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BoardsheetIndexRoute = BoardsheetIndexRouteImport.update({
   id: '/boardsheet/',
   path: '/boardsheet/',
@@ -38,12 +44,14 @@ const BoardsheetIndexRoute = BoardsheetIndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/boardsheet/': typeof BoardsheetIndexRoute
+  '/create/': typeof CreateIndexRoute
   '/login/': typeof LoginIndexRoute
   '/stub/': typeof StubIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/boardsheet': typeof BoardsheetIndexRoute
+  '/create': typeof CreateIndexRoute
   '/login': typeof LoginIndexRoute
   '/stub': typeof StubIndexRoute
 }
@@ -51,20 +59,22 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/boardsheet/': typeof BoardsheetIndexRoute
+  '/create/': typeof CreateIndexRoute
   '/login/': typeof LoginIndexRoute
   '/stub/': typeof StubIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/boardsheet/' | '/login/' | '/stub/'
+  fullPaths: '/' | '/boardsheet/' | '/create/' | '/login/' | '/stub/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/boardsheet' | '/login' | '/stub'
-  id: '__root__' | '/' | '/boardsheet/' | '/login/' | '/stub/'
+  to: '/' | '/boardsheet' | '/create' | '/login' | '/stub'
+  id: '__root__' | '/' | '/boardsheet/' | '/create/' | '/login/' | '/stub/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BoardsheetIndexRoute: typeof BoardsheetIndexRoute
+  CreateIndexRoute: typeof CreateIndexRoute
   LoginIndexRoute: typeof LoginIndexRoute
   StubIndexRoute: typeof StubIndexRoute
 }
@@ -92,6 +102,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/create/': {
+      id: '/create/'
+      path: '/create'
+      fullPath: '/create/'
+      preLoaderRoute: typeof CreateIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/boardsheet/': {
       id: '/boardsheet/'
       path: '/boardsheet'
@@ -105,6 +122,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BoardsheetIndexRoute: BoardsheetIndexRoute,
+  CreateIndexRoute: CreateIndexRoute,
   LoginIndexRoute: LoginIndexRoute,
   StubIndexRoute: StubIndexRoute,
 }
