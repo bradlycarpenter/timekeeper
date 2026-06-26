@@ -111,7 +111,7 @@ export const stub = sqliteTable('stub', {
   boardSheetId: text('board_sheet_id')
     .notNull()
     .references(() => boardSheet.id, { onDelete: 'cascade' }),
-  ticketId: integer('ticket_id').notNull(),
+  statusId: text('status_id').notNull(),
   statusCondition: integer('status_condition')
     .notNull()
     .$type<StatusCondition>(),
@@ -138,9 +138,17 @@ export const accountRelations = relations(account, ({ one }) => ({
   }),
 }))
 
-export const boardSheetRelations = relations(boardSheet, ({ one }) => ({
+export const boardSheetRelations = relations(boardSheet, ({ one, many }) => ({
   user: one(user, {
     fields: [boardSheet.userId],
     references: [user.id],
+  }),
+  stubs: many(stub),
+}))
+
+export const stubRelations = relations(stub, ({ one }) => ({
+  boardSheet: one(boardSheet, {
+    fields: [stub.boardSheetId],
+    references: [boardSheet.id],
   }),
 }))

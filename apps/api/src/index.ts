@@ -1,11 +1,15 @@
-import { jiraProjectSchema, warpProjectSchema } from '@tk/types'
+import {
+  jiraProjectSchema,
+  StatusCondition,
+  warpProjectSchema,
+} from '@tk/types'
 import { Hono } from 'hono'
 import { logger } from 'hono/logger'
 import { z } from 'zod'
 import { auth } from './auth.js'
 import { responseParseOrThrow } from '@tk/utils'
 import { db } from './db.init.js'
-import { boardSheet } from './db.schema.js'
+import { boardSheet, stub } from './db.schema.js'
 
 /** Can throw
  * Fetches all resources and returns the cloud ID from the first one
@@ -397,6 +401,50 @@ app.post('/boardsheet', async (c) => {
   } catch (e) {
     console.error(e)
     return c.json({ reason: 'Failed to save project link' }, 500)
+  }
+})
+
+app.post('/stub', async (c) => {
+  const user = c.get('user')
+
+  if (!user) {
+    return c.json({ error: 'Unauthorized' }, 401)
+  }
+
+  const bodyParseResult = z
+    .object({
+      boardSheetId: z.string(),
+      jiraStatusId: z.string(),
+      statusConditionId: z.enum(StatusCondition),
+      // TODO: Figure this shit out
+      stubMessageId: z.union([
+        z.literal(0),
+        z.literal(1),
+        z.literal(2),
+        z.literal(3),
+      ]),
+    })
+    .safeParse(await c.req.json())
+
+  if (!bodyParseResult.success) {
+    console.error(bodyParseResult.error)
+    return c.json({ reason: 'Invalid post body' }, 400)
+  }
+
+  const { boardSheetId, jiraStatusId, statusConditionId, stubMessageId } =
+    bodyParseResult.data
+
+  try {
+    await db.insert(stub).values({
+      boardSheetId: boardSheetId,
+      messageId: stubMessageId,
+      statusCondition: statusConditionId,
+      statusId: jiraStatusId,
+    })
+    return c.json({ success: true })
+  } catch (e) {
+    console.error(e)
+    return c.json({ reason: 'Failed to save stub' }, 500)
   }
 })
 

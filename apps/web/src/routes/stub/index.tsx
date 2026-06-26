@@ -48,6 +48,9 @@ function RouteComponent() {
   const [jiraStatusCategories, jiraStatusCategoriesSet] = useState<
     JiraStatusCategory[]
   >([])
+  const [statusConditionSelected, statusConditionSelectedSet] =
+    useState<number>()
+  const [stubMessage, stubMessagesSet] = useState<number>()
   const [loading, loadingSet] = useState(false)
   const [error, errorSet] = useState('')
 
@@ -90,7 +93,7 @@ function RouteComponent() {
     )
 
   return (
-    <div className="flex flex-1 h-screen flex-col items-center justify-center gap-2 p-2">
+    <div className="flex flex-1 min-h-screen flex-col items-center justify-start gap-2 p-2">
       {error && <p>{error}</p>}
       <p>Board Sheets</p>
       {boardSheets.length < 1 ? (
@@ -127,7 +130,7 @@ function RouteComponent() {
         </table>
       )}
       {jiraStatusCategories.length > 0 && (
-        <div>
+        <div className="flex flex-col gap-2">
           <table className="w-2xl text-left">
             <thead>
               <tr>
@@ -163,7 +166,7 @@ function RouteComponent() {
               ))}
             </tbody>
           </table>
-          <table className='w-2xl text-left'>
+          <table className="w-2xl text-left">
             <thead>
               <tr>
                 <th>ID</th>
@@ -176,21 +179,46 @@ function RouteComponent() {
                 <td>{StatusCondition.Entered}</td>
                 <td>Entered</td>
                 <td>
-                  <input type="radio" name="statusCondition" />
+                  <input
+                    type="radio"
+                    name="statusCondition"
+                    checked={
+                      statusConditionSelected === StatusCondition.Entered
+                    }
+                    onChange={() =>
+                      statusConditionSelectedSet(StatusCondition.Entered)
+                    }
+                  />
                 </td>
               </tr>
               <tr>
                 <td>{StatusCondition.Stationary}</td>
                 <td>Stationary</td>
                 <td>
-                  <input type="radio" name="statusCondition" />
+                  <input
+                    type="radio"
+                    name="statusCondition"
+                    checked={
+                      statusConditionSelected === StatusCondition.Stationary
+                    }
+                    onChange={() =>
+                      statusConditionSelectedSet(StatusCondition.Stationary)
+                    }
+                  />
                 </td>
               </tr>
               <tr>
                 <td>{StatusCondition.Left}</td>
                 <td>Left</td>
                 <td>
-                  <input type="radio" name="statusCondition" />
+                  <input
+                    type="radio"
+                    name="statusCondition"
+                    checked={statusConditionSelected === StatusCondition.Left}
+                    onChange={() =>
+                      statusConditionSelectedSet(StatusCondition.Left)
+                    }
+                  />
                 </td>
               </tr>
             </tbody>
@@ -209,12 +237,57 @@ function RouteComponent() {
                   <td>{sm.id}</td>
                   <td>{sm.text}</td>
                   <td>
-                    <input type="radio" name="stubMessage" />
+                    <input
+                      type="radio"
+                      name="stubMessage"
+                      checked={stubMessage === sm.id}
+                      onChange={() => stubMessagesSet(sm.id)}
+                    />
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+          <button
+            className="w-full px-2 p-1 border"
+            onClick={async () => {
+              if (boardSheetSelected == null) {
+                errorSet('You must select a boardsheet')
+                return
+              }
+              if (jiraStatusSelected == null) {
+                errorSet('You must select a jira status')
+                return
+              }
+              if (statusConditionSelected == null) {
+                errorSet('You must select a status condition')
+                return
+              }
+              if (stubMessage == null) {
+                errorSet('You must select stub message')
+                return
+              }
+
+              loadingSet(true)
+              await fetch('/api/stub', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  boardSheetId: boardSheetSelected.id,
+                  jiraStatusId: jiraStatusSelected.id,
+                  statusConditionId: statusConditionSelected,
+                  stubMessageId: stubMessage,
+                }),
+              })
+                .then(async (res) => await res.json())
+                .then(console.log)
+                .finally(() => loadingSet(false))
+            }}
+          >
+            Submit
+          </button>
         </div>
       )}
     </div>
