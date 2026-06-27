@@ -23,6 +23,24 @@ export const jiraProjectSchema = z.object({
 
 export type JiraProject = z.infer<typeof jiraProjectSchema>
 
+export const jiraIssueSchema = z.object({
+  expand: z.string(),
+  id: z.string(),
+  self: z.string(),
+  key: z.string(),
+  fields: z.object({
+    summary: z.string(),
+  }),
+})
+
+export type JiraIssue = z.infer<typeof jiraIssueSchema>
+
+export const jiraIssuesResponseSchema = z.object({
+  issues: jiraIssueSchema.array(),
+  isLast: z.boolean(),
+  nextPageToken: z.string().optional(),
+})
+
 export const StatusCondition = {
   Entered: 0,
   Stationary: 1,

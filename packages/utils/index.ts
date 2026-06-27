@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
-export const responseParseOrThrow = async <T extends z.ZodType>({
+/**Can throw*/
+export const responseParse = async <T extends z.ZodType>({
   res,
   schema,
   name,

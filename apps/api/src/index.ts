@@ -1,13 +1,16 @@
+import type { JiraIssue } from '@tk/types'
 import {
+  jiraIssuesResponseSchema,
   jiraProjectSchema,
   StatusCondition,
+  stubMessages,
   warpProjectSchema,
 } from '@tk/types'
 import { Hono } from 'hono'
 import { logger } from 'hono/logger'
 import { z } from 'zod'
 import { auth } from './auth.js'
-import { responseParseOrThrow } from '@tk/utils'
+import { responseParse } from '@tk/utils'
 import { db } from './db.init.js'
 import { boardSheet, stub } from './db.schema.js'
 
@@ -23,7 +26,7 @@ const cloudIdGet = async (accessToken: string) =>
     },
   })
     .then(async (res) =>
-      responseParseOrThrow({
+      responseParse({
         res,
         schema: z
           .object({
@@ -36,6 +39,79 @@ const cloudIdGet = async (accessToken: string) =>
       }),
     )
     .then((res) => res[0]?.id)
+
+/**Can throw*/
+const issuesGet = async (jql: string) => {
+  let issues: JiraIssue[] = []
+  let isLast = true
+  let nextPageToken: string | undefined
+  do {
+    const params = new URLSearchParams({
+      jql,
+      fields: 'summary',
+      ...(nextPageToken ? { nextPageToken } : {}),
+    })
+
+    const issueResponse = await fetch(
+      `https://${process.env.TEST_JIRA_DOMAIN}/rest/api/3/search/jql?${params}`,
+      {
+        method: 'GET',
+        headers: {
+          Authorization: `Basic ${btoa(`${process.env.TEST_JIRA_EMAIL}:${process.env.TEST_JIRA_API_KEY}`)}`,
+        },
+      },
+    ).then((res) =>
+      responseParse({
+        res,
+        schema: jiraIssuesResponseSchema,
+        name: 'Issues',
+      }),
+    )
+    issues.push(...issueResponse.issues)
+    isLast = issueResponse.isLast
+    nextPageToken = issueResponse.nextPageToken
+    // Brad: Unlikey but will hit infinite loop if we hit this case
+    if (!isLast && !nextPageToken) {
+      throw new Error(
+        'Jira issue search response was not last page but did not include nextPageToken',
+      )
+    }
+  } while (!isLast)
+  return issues
+}
+
+type IssueDescriptor = {
+  issues: JiraIssue[]
+  prefix: string
+}
+
+const createMessage = (issueDescriptors: IssueDescriptor[]) => {
+  let message = ''
+  for (const issueDescriptor of issueDescriptors) {
+    if (message.length !== 0) {
+      message += ' '
+    }
+    for (const [i, issue] of issueDescriptor.issues.entries()) {
+      if (i === 0) {
+        message +=
+          issueDescriptor.prefix +
+          ' ' +
+          issue.key +
+          ' (' +
+          issue.fields.summary +
+          ')'
+        continue
+      }
+      if (i === issueDescriptor.issues.length - 1) {
+        message += ` and ${issue.key} (${issue.fields.summary})`
+        continue
+      }
+      message += `, ${issue.key} (${issue.fields.summary})`
+    }
+    message += '.'
+  }
+  return message
+}
 
 const app = new Hono<{
   Variables: {
@@ -95,7 +171,7 @@ app.post('/sheets/auth', async (c) => {
         }),
       },
     ).then(async (res) =>
-      responseParseOrThrow({
+      responseParse({
         res,
         schema: z.object({
           token: z.string(),
@@ -132,7 +208,7 @@ app.get('/sheets/projects/:page', async (c) => {
         },
       },
     ).then(async (res) =>
-      responseParseOrThrow({
+      responseParse({
         res,
         schema: warpProjectSchema.array(),
         name: 'Projects',
@@ -142,6 +218,97 @@ app.get('/sheets/projects/:page', async (c) => {
   } catch (e) {
     console.error(e)
     return c.json({ Reason: 'We had trouble fetching projects' }, 502)
+  }
+})
+
+app.get('/messages/:boardSheetId', async (c) => {
+  const user = c.get('user')
+
+  if (!user) {
+    return c.json({ error: 'Unauthorized' }, 401)
+  }
+
+  const { boardSheetId } = c.req.param()
+
+  try {
+    const boardSheetStubs = await db.query.boardSheet.findFirst({
+      where: (boardSheet, { eq, and }) =>
+        and(eq(boardSheet.userId, user.id), eq(boardSheet.id, boardSheetId)),
+      with: {
+        stubs: true,
+      },
+    })
+
+    if (!boardSheetStubs) {
+      return c.json({ reason: 'No boardsheet for user at id.' }, 404)
+    }
+
+    const issueDescriptors: IssueDescriptor[] = []
+
+    for (const stub of boardSheetStubs.stubs) {
+      const stubMessage = stubMessages.find(
+        (stubMessage) => stubMessage.id === stub.messageId,
+      )
+
+      if (!stubMessage) {
+        throw new Error(`Unknown stub message id: ${stub.messageId}`)
+      }
+
+      switch (stub.statusCondition) {
+        case StatusCondition.Entered: {
+          const issues = await issuesGet(
+            `project = ${boardSheetStubs.boardKey}
+             AND assignee = currentUser()
+             AND status CHANGED TO ${stub.statusId} AFTER startOfDay() AND status = ${stub.statusId}`,
+          )
+          if (issues.length > 0) {
+            issueDescriptors.push({
+              issues,
+              prefix: stubMessage.text,
+            })
+          }
+          break
+        }
+        case StatusCondition.Stationary: {
+          const issues = await issuesGet(
+            `project = ${boardSheetStubs.boardKey}
+             AND assignee = currentUser()
+             AND status = ${stub.statusId}
+             AND status WAS ${stub.statusId} DURING (startOfDay(-1d), endOfDay(-1d))
+             AND NOT status CHANGED TO ${stub.statusId} AFTER startOfDay()`,
+          )
+          if (issues.length > 0) {
+            issueDescriptors.push({
+              issues,
+              prefix: stubMessage.text,
+            })
+          }
+          break
+        }
+        case StatusCondition.Left:
+          const issues = await issuesGet(
+            `project = ${boardSheetStubs.boardKey}
+             AND assignee = currentUser()
+             AND status CHANGED FROM ${stub.statusId} AFTER startOfDay()
+             AND status != ${stub.statusId}`,
+          )
+          if (issues.length > 0) {
+            issueDescriptors.push({
+              issues,
+              prefix: stubMessage.text,
+            })
+          }
+          break
+        default:
+          break
+      }
+    }
+
+    const message = createMessage(issueDescriptors)
+    return c.json({ message })
+  } catch (e) {
+    console.error(e)
+    return c.json({ reason: 'We failed to fetch issues' }, 500)
   }
 })
 
@@ -180,38 +347,36 @@ app.get('/work/atlassian/issues/:stubId', async (c) => {
       return c.json({ reason: 'No accessible reasources' }, 400)
     }
 
-    const issues = await fetch(
-      `https://${process.env.TEST_JIRA_DOMAIN}/rest/api/3/search/jql?` +
-        `jql=${encodeURI('JQL HERE')}` +
-        '&fields=summary',
-      {
-        method: 'GET',
-        headers: {
-          Authorization: `Basic ${btoa(`${process.env.TEST_JIRA_EMAIL}:${process.env.TEST_JIRA_API_KEY}`)}`,
-        },
-      },
-    ).then((res) =>
-      responseParseOrThrow({
-        res,
-        schema: z.object({
-          issues: z
-            .object({
-              expand: z.string(),
-              id: z.string(),
-              self: z.string(),
-              key: z.string(),
-              fields: z.object({
-                summary: z.string(),
-              }),
-            })
-            .array(),
-          isLast: z.boolean(),
-        }),
-        name: 'Issues',
-      }),
-    )
-
-    return c.json(issues)
+    switch (stub.statusCondition) {
+      case StatusCondition.Entered: {
+        const issuesResponse = await issuesGet(
+          `project = ${stub.boardSheet.boardKey}
+           AND assignee = currentUser()
+           AND status CHANGED TO ${stub.statusId} AFTER startOfDay() AND status = ${stub.statusId}`,
+        )
+        return c.json(issuesResponse)
+      }
+      case StatusCondition.Stationary: {
+        const issuesResponse = await issuesGet(
+          `project = ${stub.boardSheet.boardKey}
+           AND assignee = currentUser()
+           AND status = ${stub.statusId}
+           AND status WAS ${stub.statusId} DURING (startOfDay(-1d), endOfDay(-1d))
+           AND NOT status CHANGED TO ${stub.statusId} AFTER startOfDay()`,
+        )
+        return c.json(issuesResponse)
+      }
+      case StatusCondition.Left:
+        const issuesResponse = await issuesGet(
+          `project = ${stub.boardSheet.boardKey}
+           AND assignee = currentUser()
+           AND status CHANGED FROM ${stub.statusId} AFTER startOfDay()
+           AND status != ${stub.statusId}`,
+        )
+        return c.json(issuesResponse)
+      default:
+        return c.json({ reason: 'Operation not implemented yet' }, 501)
+    }
   } catch (e) {
     console.error(e)
     return c.json({ reason: 'We failed to fetch issues' }, 500)
@@ -276,7 +441,7 @@ app.get('/work/atlassian/projects', async (c) => {
           },
         },
       ).then(async (res) =>
-        responseParseOrThrow({
+        responseParse({
           res,
           schema: z.object({
             issues: z
@@ -339,7 +504,7 @@ app.get('/work/status/:projectKey', async (c) => {
         },
       },
     ).then(async (res) =>
-      responseParseOrThrow({
+      responseParse({
         res,
         schema: z
           .object({
@@ -624,87 +789,3 @@ export default app
 //     return c.json({ error: 'Error' }, 500)
 //   }
 // })
-
-// const fetchJiraTickets = async (jql: string) =>
-//   await fetch(
-//     `https://${process.env.TEST_JIRA_DOMAIN}/rest/api/3/search/jql?` +
-//       `jql=${encodeURI(jql)}` +
-//       '&fields=summary',
-//     {
-//       method: 'GET',
-//       headers: {
-//         Authorization: `Basic ${btoa(`${process.env.TEST_JIRA_EMAIL}:${process.env.TEST_JIRA_API_KEY}`)}`,
-//       },
-//     },
-//   ).then(async (res) => {
-//     if (!res.ok) {
-//       const body = await res.text()
-//       throw new Error(
-//         `Error fetching tickets with began status, response: ${body}`,
-//       )
-//     }
-//     const json = await res.json()
-//     try {
-//       return z
-//         .object({
-//           issues: z
-//             .object({
-//               expand: z.string(),
-//               id: z.string(),
-//               self: z.string(),
-//               key: z.string(),
-//               fields: z.object({
-//                 summary: z.string(),
-//               }),
-//             })
-//             .array(),
-//           isLast: z.boolean(),
-//         })
-//         .parse(json)
-//     } catch (e) {
-//       throw new Error(
-//         `Error parsing tickets with began status query, res: ${JSON.stringify(json)}, e: ${e}`,
-//       )
-//     }
-//   })
-
-// const createMessage = (
-//   issueDescriptors: {
-//     issues: {
-//       expand: string
-//       id: string
-//       self: string
-//       key: string
-//       fields: {
-//         summary: string
-//       }
-//     }[]
-//     prefix: string
-//   }[],
-// ) => {
-//   let message = ''
-//   for (const issueDescriptor of issueDescriptors) {
-//     if (message.length !== 0) {
-//       message += ' '
-//     }
-//     for (let i = 0; i < issueDescriptor.issues.length; i++) {
-//       if (i === 0) {
-//         message +=
-//           issueDescriptor.prefix +
-//           ' ' +
-//           issueDescriptor.issues[0].key +
-//           ' (' +
-//           issueDescriptor.issues[0].fields.summary +
-//           ')'
-//         continue
-//       }
-//       if (i === issueDescriptor.issues.length - 1) {
-//         message += ` and ${issueDescriptor.issues[i].key} (${issueDescriptor.issues[i].fields.summary})`
-//         continue
-//       }
-//       message += `, ${issueDescriptor.issues[i].key} (${issueDescriptor.issues[i].fields.summary})`
-//     }
-//     message += '.'
-//   }
-//   return message
-// }

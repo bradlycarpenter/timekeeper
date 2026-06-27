@@ -1,15 +1,20 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { boardSheetSchema, StatusCondition } from '@tk/types'
-import { responseParseOrThrow } from '@tk/utils'
+import type { JiraIssue } from '@tk/types'
+import {
+  boardSheetSchema,
+  jiraIssueSchema,
+  StatusCondition
+} from '@tk/types'
+import { responseParse } from '@tk/utils'
 import { useState } from 'react'
 import { Fragment } from 'react/jsx-runtime'
 import { z } from 'zod'
 
-export const Route = createFileRoute('/create/')({
+export const Route = createFileRoute('/dev/create/')({
   component: RouteComponent,
   loader: async () =>
     await fetch('/api/stub').then((res) =>
-      responseParseOrThrow({
+      responseParse({
         res,
         schema: boardSheetSchema
           .extend({
@@ -37,6 +42,7 @@ export const Route = createFileRoute('/create/')({
 function RouteComponent() {
   const boardSheetsStubs = Route.useLoaderData()
   const [stubSelected, stubSelectedSet] = useState<string>()
+  const [jiraIssues, jiraIssuesSet] = useState<JiraIssue[]>()
   const [error, errorSet] = useState('')
 
   return (
@@ -54,7 +60,7 @@ function RouteComponent() {
             {bss.stubs.length > 0 &&
               bss.stubs.map((s) => (
                 <Fragment key={s.id}>
-                  <table className="w-full text-left">
+                  <table className="w-2xl text-left">
                     <thead>
                       <tr>
                         <th>Sheet ID</th>
@@ -95,8 +101,14 @@ function RouteComponent() {
                     await fetch(
                       `/api/work/atlassian/issues/${encodeURIComponent(stubSelected)}`,
                     )
-                      .then(async (r) => await r.json())
-                      .then(console.log)
+                      .then((res) =>
+                        responseParse({
+                          res,
+                          schema: jiraIssueSchema.array(),
+                          name: 'Issues',
+                        }),
+                      )
+                      .then(jiraIssuesSet)
                   } catch (e) {
                     console.error(e)
                     errorSet('Fetching issues failed')
@@ -106,6 +118,21 @@ function RouteComponent() {
                 Fetch Issues
               </button>
             )}
+            {jiraIssues &&
+              jiraIssues.map((i) => (
+                <table className="w-2xl text-left" key={i.id}>
+                  <thead>
+                    <tr>
+                      <th>Summary</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>{i.fields.summary}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              ))}
           </Fragment>
         ))}
     </div>

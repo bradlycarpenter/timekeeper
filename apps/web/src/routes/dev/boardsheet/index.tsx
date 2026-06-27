@@ -2,11 +2,11 @@ import { ScrollArea } from '#/components/ui/scroll-area'
 import { createFileRoute } from '@tanstack/react-router'
 import type { WarpProject, JiraProject } from '@tk/types'
 import { jiraProjectSchema, warpProjectSchema } from '@tk/types'
-import { responseParseOrThrow } from '@tk/utils'
+import { responseParse } from '@tk/utils'
 import { useEffect, useState } from 'react'
 import { z } from 'zod'
 
-export const Route = createFileRoute('/boardsheet/')({ component: BoardSheet })
+export const Route = createFileRoute('/dev/boardsheet/')({ component: BoardSheet })
 
 function BoardSheet() {
   const [token, tokenSet] = useState('')
@@ -47,7 +47,7 @@ function BoardSheet() {
       },
     })
       .then((res) =>
-        responseParseOrThrow({
+        responseParse({
           res,
           schema: warpProjectSchema.array(),
           name: 'Projects',
@@ -94,7 +94,7 @@ function BoardSheet() {
                   password,
                 }),
               }).then(async (res) =>
-                responseParseOrThrow({
+                responseParse({
                   res,
                   schema: z.object({
                     token: z.string(),
@@ -199,7 +199,7 @@ function BoardSheet() {
             const newJiraProjects = await fetch(
               '/api/work/atlassian/projects',
             ).then((res) =>
-              responseParseOrThrow({
+              responseParse({
                 res,
                 schema: jiraProjectSchema.array(),
                 name: 'Atlassian Projects',

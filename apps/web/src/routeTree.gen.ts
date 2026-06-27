@@ -10,73 +10,102 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as StubIndexRouteImport } from './routes/stub/index'
-import { Route as LoginIndexRouteImport } from './routes/login/index'
-import { Route as CreateIndexRouteImport } from './routes/create/index'
-import { Route as BoardsheetIndexRouteImport } from './routes/boardsheet/index'
+import { Route as DevStubIndexRouteImport } from './routes/dev/stub/index'
+import { Route as DevMessageIndexRouteImport } from './routes/dev/message/index'
+import { Route as DevLoginIndexRouteImport } from './routes/dev/login/index'
+import { Route as DevCreateIndexRouteImport } from './routes/dev/create/index'
+import { Route as DevBoardsheetIndexRouteImport } from './routes/dev/boardsheet/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const StubIndexRoute = StubIndexRouteImport.update({
-  id: '/stub/',
-  path: '/stub/',
+const DevStubIndexRoute = DevStubIndexRouteImport.update({
+  id: '/dev/stub/',
+  path: '/dev/stub/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LoginIndexRoute = LoginIndexRouteImport.update({
-  id: '/login/',
-  path: '/login/',
+const DevMessageIndexRoute = DevMessageIndexRouteImport.update({
+  id: '/dev/message/',
+  path: '/dev/message/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CreateIndexRoute = CreateIndexRouteImport.update({
-  id: '/create/',
-  path: '/create/',
+const DevLoginIndexRoute = DevLoginIndexRouteImport.update({
+  id: '/dev/login/',
+  path: '/dev/login/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const BoardsheetIndexRoute = BoardsheetIndexRouteImport.update({
-  id: '/boardsheet/',
-  path: '/boardsheet/',
+const DevCreateIndexRoute = DevCreateIndexRouteImport.update({
+  id: '/dev/create/',
+  path: '/dev/create/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DevBoardsheetIndexRoute = DevBoardsheetIndexRouteImport.update({
+  id: '/dev/boardsheet/',
+  path: '/dev/boardsheet/',
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/boardsheet/': typeof BoardsheetIndexRoute
-  '/create/': typeof CreateIndexRoute
-  '/login/': typeof LoginIndexRoute
-  '/stub/': typeof StubIndexRoute
+  '/dev/boardsheet/': typeof DevBoardsheetIndexRoute
+  '/dev/create/': typeof DevCreateIndexRoute
+  '/dev/login/': typeof DevLoginIndexRoute
+  '/dev/message/': typeof DevMessageIndexRoute
+  '/dev/stub/': typeof DevStubIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/boardsheet': typeof BoardsheetIndexRoute
-  '/create': typeof CreateIndexRoute
-  '/login': typeof LoginIndexRoute
-  '/stub': typeof StubIndexRoute
+  '/dev/boardsheet': typeof DevBoardsheetIndexRoute
+  '/dev/create': typeof DevCreateIndexRoute
+  '/dev/login': typeof DevLoginIndexRoute
+  '/dev/message': typeof DevMessageIndexRoute
+  '/dev/stub': typeof DevStubIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/boardsheet/': typeof BoardsheetIndexRoute
-  '/create/': typeof CreateIndexRoute
-  '/login/': typeof LoginIndexRoute
-  '/stub/': typeof StubIndexRoute
+  '/dev/boardsheet/': typeof DevBoardsheetIndexRoute
+  '/dev/create/': typeof DevCreateIndexRoute
+  '/dev/login/': typeof DevLoginIndexRoute
+  '/dev/message/': typeof DevMessageIndexRoute
+  '/dev/stub/': typeof DevStubIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/boardsheet/' | '/create/' | '/login/' | '/stub/'
+  fullPaths:
+    | '/'
+    | '/dev/boardsheet/'
+    | '/dev/create/'
+    | '/dev/login/'
+    | '/dev/message/'
+    | '/dev/stub/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/boardsheet' | '/create' | '/login' | '/stub'
-  id: '__root__' | '/' | '/boardsheet/' | '/create/' | '/login/' | '/stub/'
+  to:
+    | '/'
+    | '/dev/boardsheet'
+    | '/dev/create'
+    | '/dev/login'
+    | '/dev/message'
+    | '/dev/stub'
+  id:
+    | '__root__'
+    | '/'
+    | '/dev/boardsheet/'
+    | '/dev/create/'
+    | '/dev/login/'
+    | '/dev/message/'
+    | '/dev/stub/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  BoardsheetIndexRoute: typeof BoardsheetIndexRoute
-  CreateIndexRoute: typeof CreateIndexRoute
-  LoginIndexRoute: typeof LoginIndexRoute
-  StubIndexRoute: typeof StubIndexRoute
+  DevBoardsheetIndexRoute: typeof DevBoardsheetIndexRoute
+  DevCreateIndexRoute: typeof DevCreateIndexRoute
+  DevLoginIndexRoute: typeof DevLoginIndexRoute
+  DevMessageIndexRoute: typeof DevMessageIndexRoute
+  DevStubIndexRoute: typeof DevStubIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -88,32 +117,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/stub/': {
-      id: '/stub/'
-      path: '/stub'
-      fullPath: '/stub/'
-      preLoaderRoute: typeof StubIndexRouteImport
+    '/dev/stub/': {
+      id: '/dev/stub/'
+      path: '/dev/stub'
+      fullPath: '/dev/stub/'
+      preLoaderRoute: typeof DevStubIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/login/': {
-      id: '/login/'
-      path: '/login'
-      fullPath: '/login/'
-      preLoaderRoute: typeof LoginIndexRouteImport
+    '/dev/message/': {
+      id: '/dev/message/'
+      path: '/dev/message'
+      fullPath: '/dev/message/'
+      preLoaderRoute: typeof DevMessageIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/create/': {
-      id: '/create/'
-      path: '/create'
-      fullPath: '/create/'
-      preLoaderRoute: typeof CreateIndexRouteImport
+    '/dev/login/': {
+      id: '/dev/login/'
+      path: '/dev/login'
+      fullPath: '/dev/login/'
+      preLoaderRoute: typeof DevLoginIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/boardsheet/': {
-      id: '/boardsheet/'
-      path: '/boardsheet'
-      fullPath: '/boardsheet/'
-      preLoaderRoute: typeof BoardsheetIndexRouteImport
+    '/dev/create/': {
+      id: '/dev/create/'
+      path: '/dev/create'
+      fullPath: '/dev/create/'
+      preLoaderRoute: typeof DevCreateIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dev/boardsheet/': {
+      id: '/dev/boardsheet/'
+      path: '/dev/boardsheet'
+      fullPath: '/dev/boardsheet/'
+      preLoaderRoute: typeof DevBoardsheetIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -121,10 +157,11 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  BoardsheetIndexRoute: BoardsheetIndexRoute,
-  CreateIndexRoute: CreateIndexRoute,
-  LoginIndexRoute: LoginIndexRoute,
-  StubIndexRoute: StubIndexRoute,
+  DevBoardsheetIndexRoute: DevBoardsheetIndexRoute,
+  DevCreateIndexRoute: DevCreateIndexRoute,
+  DevLoginIndexRoute: DevLoginIndexRoute,
+  DevMessageIndexRoute: DevMessageIndexRoute,
+  DevStubIndexRoute: DevStubIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

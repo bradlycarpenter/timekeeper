@@ -2,7 +2,7 @@ import { Spinner } from '#/components/ui/spinner'
 import { createFileRoute } from '@tanstack/react-router'
 import type { BoardSheet } from '@tk/types'
 import { StatusCondition, stubMessages, boardSheetSchema } from '@tk/types'
-import { responseParseOrThrow } from '@tk/utils'
+import { responseParse } from '@tk/utils'
 import { Fragment, useEffect, useState } from 'react'
 import { z } from 'zod'
 
@@ -25,7 +25,7 @@ const jiraStatusCategorySchema = z.object({
 
 type JiraStatusCategory = z.infer<typeof jiraStatusCategorySchema>
 
-export const Route = createFileRoute('/stub/')({
+export const Route = createFileRoute('/dev/stub/')({
   component: RouteComponent,
 })
 
@@ -46,7 +46,7 @@ function RouteComponent() {
     loadingSet(true)
     fetch('/api/boardsheet')
       .then((res) =>
-        responseParseOrThrow({
+        responseParse({
           res,
           schema: boardSheetSchema.array(),
           name: 'Boardsheets',
@@ -60,9 +60,9 @@ function RouteComponent() {
   useEffect(() => {
     if (!boardSheetSelected) return
     loadingSet(true)
-    fetch(`/api/work/status/${boardSheetSelected.boardKey}`)
+    fetch(`/api/work/status/${encodeURIComponent(boardSheetSelected.boardKey)}`)
       .then((res) =>
-        responseParseOrThrow({
+        responseParse({
           res,
           schema: jiraStatusCategorySchema.array(),
           name: 'Jira Project Category',
