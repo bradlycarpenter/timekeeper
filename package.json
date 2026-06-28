@@ -10,7 +10,9 @@
     "dev:web": "doppler run -- pnpm run --filter web dev",
     "dev:api": "doppler run -- pnpm run --filter api dev",
     "format": "prettier --write apps/ packages/",
-    "request": "doppler run -- bash scripts/requests.sh"
+    "request": "doppler run -- bash scripts/requests.sh",
+    "slumber": "doppler run -- slumber",
+    "todo": "tuxedo todo.txt"
   },
   "devEngines": {
     "packageManager": {

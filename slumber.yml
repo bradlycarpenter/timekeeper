@@ -1,0 +1,126 @@
+name: Timekeeper
+
+profiles:
+  default:
+    name: Default
+    default: true
+    data:
+      jira_domain: "{{ env('TEST_JIRA_DOMAIN') }}"
+      jira_email: "{{ env('TEST_JIRA_EMAIL') }}"
+      jira_api_key: "{{ env('TEST_JIRA_API_KEY') | sensitive() }}"
+      warp_domain: "{{ env('WARP_TEST_DOMAIN') }}"
+      warp_username: "{{ env('WARP_TEST_USERNAME') }}"
+      warp_password: "{{ env('WARP_TEST_PASSWORD') | sensitive() }}"
+      local_api: "http://localhost:3000"
+
+.jira_request:
+  method: GET
+  headers:
+    Accept: application/json
+  authentication:
+    type: basic
+    username: "{{ jira_email }}"
+    password: "{{ jira_api_key }}"
+
+.sheet_bearer_request:
+  headers:
+    Accept: application/json
+  authentication:
+    type: bearer
+    token: "{{ prompt(message='Bearer token', sensitive=true) }}"
+
+requests:
+  work:
+    name: Work
+    requests:
+      work_began:
+        $ref: "#/.jira_request"
+        name: Began Today
+        url: "https://{{ jira_domain }}/rest/api/3/search/jql"
+        query:
+          jql: "assignee = currentUser() AND status changed TO \"In Progress\" AFTER startOfDay() AND status = \"In Progress\""
+          fields: summary
+
+      work_progress:
+        $ref: "#/.jira_request"
+        name: In Progress Sprint
+        url: "https://{{ jira_domain }}/rest/api/3/search/jql"
+        query:
+          jql: "assignee = currentUser() AND status = \"In Progress\" AND sprint in openSprints()"
+          fields: summary
+
+      work_pr:
+        $ref: "#/.jira_request"
+        name: PR Today
+        url: "https://{{ jira_domain }}/rest/api/3/search/jql"
+        query:
+          jql: "assignee = currentUser() AND status changed TO \"pr\" AFTER startOfDay() AND status = \"pr\""
+          fields: summary
+
+      work_done:
+        $ref: "#/.jira_request"
+        name: Done Today
+        url: "https://{{ jira_domain }}/rest/api/3/search/jql"
+        query:
+          jql: "assignee = currentUser() AND status changed TO (\"Done\", \"Quick Complete\") AFTER startOfDay() AND statusCategory = Done"
+          fields: summary
+
+      work_status:
+        $ref: "#/.jira_request"
+        name: Project Statuses
+        url: "https://{{ jira_domain }}/rest/api/3/project/LUM/statuses"
+
+  sheet:
+    name: Sheet
+    requests:
+      sheet_auth:
+        name: Authorise
+        method: POST
+        url: "https://{{ warp_domain }}/api/account/authorise"
+        body:
+          type: json
+          data:
+            Email: "{{ warp_username }}"
+            Password: "{{ warp_password }}"
+
+      sheet_projects:
+        $ref: "#/.sheet_bearer_request"
+        name: Projects
+        method: GET
+        url: "https://{{ warp_domain }}/api/Project"
+        query:
+          per_page: 500
+          page: "{{ prompt(message='Page', default='1') }}"
+
+      sheet_person:
+        $ref: "#/.sheet_bearer_request"
+        name: Current Person
+        method: GET
+        url: "https://{{ warp_domain }}/api/users/me"
+
+      sheet_post:
+        $ref: "#/.sheet_bearer_request"
+        name: Create Entry
+        method: POST
+        url: "https://{{ warp_domain }}/api/entry/create"
+        body:
+          type: json
+          data:
+            TaskId: "{{ prompt(message='Task ID') }}"
+            PersonId: "{{ prompt(message='Person ID') }}"
+            CostCodeId: "{{ prompt(message='Cost Code ID') }}"
+            DepartmentId: "1"
+            Overtime: "{{ prompt(message='Overtime', default='0') }}"
+            Time: "{{ prompt(message='Time') }}"
+            EntryDate: "{{ prompt(message='Entry Date') }}"
+            Comments: "{{ prompt(message='Comments', default='') }}"
+            WorkLogId: "0"
+            Audited: "0"
+
+  api:
+    name: Local API
+    requests:
+      work_commit:
+        name: Work Commit
+        method: GET
+        url: "{{ local_api }}/work/commit"
