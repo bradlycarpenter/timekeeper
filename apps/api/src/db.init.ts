@@ -1,6 +1,7 @@
-import { drizzle } from 'drizzle-orm/better-sqlite3'
+import { drizzle } from 'drizzle-orm/d1'
 import * as schema from './db.schema.js'
 
-export const db = drizzle(process.env.DB_FILE_NAME ?? 'sqlite.db', {
-  schema,
-})
+export const createDb = (d1: D1Database) =>
+  drizzle(d1, {
+    schema,
+  })

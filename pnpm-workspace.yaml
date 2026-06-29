@@ -3,9 +3,10 @@ packages:
   - 'apps/*'
 
 allowBuilds:
-  better-sqlite3: true
   esbuild: true
+  sharp: true
   unrs-resolver: true
+  workerd: true
 
 catalog:
   'better-auth': '^1.6.20'

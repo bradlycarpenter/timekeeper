@@ -82,8 +82,17 @@ case $1 in
     esac
     ;;
   api)
-    curl --get \
-      --url "http://localhost:3000/work/commit" | jq '.'
+    case $2 in
+      scheduled)
+        curl --get \
+          --url "http://localhost:8787/cdn-cgi/handler/scheduled" \
+          ${3:+--data-urlencode "time=$3"}
+        ;;
+      *)
+        curl --get \
+          --url "http://localhost:3000/work/commit" | jq '.'
+        ;;
+    esac
     ;;
   *)
     echo "Unknown argument: $1"

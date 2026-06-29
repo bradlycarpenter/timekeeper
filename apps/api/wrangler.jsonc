@@ -1,0 +1,38 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "timekeeper-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-06-28",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": {
+    "enabled": true,
+  },
+  "assets": {
+    "directory": "../web/dist",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"],
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "timekeeper",
+      "database_id": "6511ced7-55e7-416a-a566-cefb6e98b139",
+    },
+  ],
+  "triggers": {
+    "crons": ["0 17 * * mon-fri"]
+  },
+  "queues": {
+    "producers": [
+      {
+        "binding": "DAILY_POST_QUEUE",
+        "queue": "daily-posts"
+      }
+    ],
+    "consumers": [
+      {
+        "queue": "daily-posts"
+      }
+    ]
+  }
+}

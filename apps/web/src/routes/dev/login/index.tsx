@@ -13,7 +13,7 @@ function RouteComponent() {
         onClick={async () => {
           await authClient.signIn.social({
             provider: 'microsoft',
-            callbackURL: '/boardsheet',
+            callbackURL: '/dev/boardsheet/',
           })
         }}
       >
@@ -24,7 +24,7 @@ function RouteComponent() {
         onClick={async () =>
           await authClient.linkSocial({
             provider: 'atlassian',
-            callbackURL: '/boardsheet',
+            callbackURL: '/dev/boardsheet/',
           })
         }
       >

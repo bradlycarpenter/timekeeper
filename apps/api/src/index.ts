@@ -9,10 +9,16 @@ import {
 import { Hono } from 'hono'
 import { logger } from 'hono/logger'
 import { z } from 'zod'
-import { auth } from './auth.js'
+import { createAuth } from './auth.js'
 import { responseParse } from '@tk/utils'
-import { db } from './db.init.js'
-import { boardSheet, stub } from './db.schema.js'
+import { createDb } from './db.init.js'
+import {
+  boardSheet,
+  dailyBoardSheetPost,
+  sheetAuthToken,
+  stub,
+} from './db.schema.js'
+import { and, eq } from 'drizzle-orm'
 
 /** Can throw
  * Fetches all resources and returns the cloud ID from the first one
@@ -41,7 +47,7 @@ const cloudIdGet = async (accessToken: string) =>
     .then((res) => res[0]?.id)
 
 /**Can throw*/
-const issuesGet = async (jql: string) => {
+const issuesGet = async (env: Bindings, jql: string) => {
   let issues: JiraIssue[] = []
   let isLast = true
   let nextPageToken: string | undefined
@@ -53,11 +59,11 @@ const issuesGet = async (jql: string) => {
     })
 
     const issueResponse = await fetch(
-      `https://${process.env.TEST_JIRA_DOMAIN}/rest/api/3/search/jql?${params}`,
+      `https://${env.TEST_JIRA_DOMAIN}/rest/api/3/search/jql?${params}`,
       {
         method: 'GET',
         headers: {
-          Authorization: `Basic ${btoa(`${process.env.TEST_JIRA_EMAIL}:${process.env.TEST_JIRA_API_KEY}`)}`,
+          Authorization: `Basic ${btoa(`${env.TEST_JIRA_EMAIL}:${env.TEST_JIRA_API_KEY}`)}`,
         },
       },
     ).then((res) =>
@@ -113,15 +119,43 @@ const createMessage = (issueDescriptors: IssueDescriptor[]) => {
   return message
 }
 
+type DailyBoardSheetPostJob = {
+  boardSheetId: string
+  entryDate: string
+}
+
+type Bindings = {
+  DB: D1Database
+  DAILY_POST_QUEUE: Queue<DailyBoardSheetPostJob>
+  BETTER_AUTH_SECRET: string
+  BETTER_AUTH_URL: string
+  BETTER_AUTH_TRUSTED_ORIGINS?: string
+  MICROSOFT_CLIENT_ID: string
+  MICROSOFT_CLIENT_SECRET?: string
+  MICROSOFT_TENANT_ID?: string
+  ATLASSIAN_CLIENT_ID: string
+  ATLASSIAN_CLIENT_SECRET?: string
+  TEST_JIRA_DOMAIN: string
+  TEST_JIRA_EMAIL: string
+  TEST_JIRA_API_KEY: string
+  WARP_TEST_DOMAIN: string
+}
+
+type Auth = ReturnType<typeof createAuth>
+
 const app = new Hono<{
+  Bindings: Bindings
   Variables: {
-    user: typeof auth.$Infer.Session.user | null
-    session: typeof auth.$Infer.Session.session | null
+    user: Auth['$Infer']['Session']['user'] | null
+    session: Auth['$Infer']['Session']['session'] | null
   }
 }>()
 
 app.use('*', async (c, next) => {
-  const session = await auth.api.getSession({ headers: c.req.raw.headers })
+  const auth = createAuth(c.env)
+  const session = await auth.api.getSession({
+    headers: c.req.raw.headers,
+  })
 
   if (!session) {
     c.set('user', null)
@@ -141,10 +175,20 @@ app.get('/', (c) => {
 })
 
 app.on(['POST', 'GET'], '/api/auth/*', (c) => {
-  return auth.handler(c.req.raw)
+  const auth = createAuth(c.env)
+  return auth.handler(c.req.raw).then((res) => {
+    console.log('auth handler', c.req.method, c.req.path, res.status)
+    return res
+  })
 })
 
-app.post('/sheets/auth', async (c) => {
+app.post('/api/sheets/auth', async (c) => {
+  const user = c.get('user')
+
+  if (!user) {
+    return c.json({ error: 'Unauthorized' }, 401)
+  }
+
   const bodyParseResult = z
     .object({
       email: z.email(),
@@ -158,8 +202,8 @@ app.post('/sheets/auth', async (c) => {
   }
 
   try {
-    const authToken = await fetch(
-      `https://${process.env.WARP_TEST_DOMAIN}/api/account/authorise`,
+    const authTokenResponse = await fetch(
+      `https://${c.env.WARP_TEST_DOMAIN}/api/account/authorise`,
       {
         method: 'POST',
         headers: {
@@ -180,14 +224,20 @@ app.post('/sheets/auth', async (c) => {
       }),
     )
 
-    return c.json(authToken)
+    const db = createDb(c.env.DB)
+
+    await db
+      .insert(sheetAuthToken)
+      .values({ userId: user.id, authToken: authTokenResponse.token })
+
+    return c.json({ sucess: true })
   } catch (e) {
     console.error(e)
     return c.json({ reason: 'We had trouble processing your request' }, 500)
   }
 })
 
-app.get('/sheets/projects/:page', async (c) => {
+app.get('/api/sheets/projects/:page', async (c) => {
   const authHeader = c.req.header('Authorization')
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -199,7 +249,7 @@ app.get('/sheets/projects/:page', async (c) => {
 
   try {
     const projects = await fetch(
-      `https://${process.env.WARP_TEST_DOMAIN}/api/Project?per_page=500&page=${c.req.param().page}`,
+      `https://${c.env.WARP_TEST_DOMAIN}/api/Project?per_page=500&page=${c.req.param().page}`,
       {
         method: 'GET',
         headers: {
@@ -221,7 +271,7 @@ app.get('/sheets/projects/:page', async (c) => {
   }
 })
 
-app.get('/messages/:boardSheetId', async (c) => {
+app.get('/api/messages/:boardSheetId', async (c) => {
   const user = c.get('user')
 
   if (!user) {
@@ -231,6 +281,7 @@ app.get('/messages/:boardSheetId', async (c) => {
   const { boardSheetId } = c.req.param()
 
   try {
+    const db = createDb(c.env.DB)
     const boardSheetStubs = await db.query.boardSheet.findFirst({
       where: (boardSheet, { eq, and }) =>
         and(eq(boardSheet.userId, user.id), eq(boardSheet.id, boardSheetId)),
@@ -257,6 +308,7 @@ app.get('/messages/:boardSheetId', async (c) => {
       switch (stub.statusCondition) {
         case StatusCondition.Entered: {
           const issues = await issuesGet(
+            c.env,
             `project = ${boardSheetStubs.boardKey}
              AND assignee = currentUser()
              AND status CHANGED TO ${stub.statusId} AFTER startOfDay() AND status = ${stub.statusId}`,
@@ -271,6 +323,7 @@ app.get('/messages/:boardSheetId', async (c) => {
         }
         case StatusCondition.Stationary: {
           const issues = await issuesGet(
+            c.env,
             `project = ${boardSheetStubs.boardKey}
              AND assignee = currentUser()
              AND status = ${stub.statusId}
@@ -287,6 +340,7 @@ app.get('/messages/:boardSheetId', async (c) => {
         }
         case StatusCondition.Left:
           const issues = await issuesGet(
+            c.env,
             `project = ${boardSheetStubs.boardKey}
              AND assignee = currentUser()
              AND status CHANGED FROM ${stub.statusId} AFTER startOfDay()
@@ -312,7 +366,7 @@ app.get('/messages/:boardSheetId', async (c) => {
   }
 })
 
-app.get('/work/atlassian/issues/:stubId', async (c) => {
+app.get('/api/work/atlassian/issues/:stubId', async (c) => {
   const user = c.get('user')
 
   if (!user) {
@@ -322,6 +376,7 @@ app.get('/work/atlassian/issues/:stubId', async (c) => {
   const { stubId } = c.req.param()
 
   try {
+    const db = createDb(c.env.DB)
     const stub = await db.query.stub.findFirst({
       where: (stub, { eq }) => eq(stub.id, stubId),
       with: {
@@ -333,6 +388,7 @@ app.get('/work/atlassian/issues/:stubId', async (c) => {
       return c.json({ reason: 'No stub sotred at that ID' }, 404)
     }
 
+    const auth = createAuth(c.env)
     const { accessToken } = await auth.api.getAccessToken({
       body: {
         providerId: 'atlassian',
@@ -350,6 +406,7 @@ app.get('/work/atlassian/issues/:stubId', async (c) => {
     switch (stub.statusCondition) {
       case StatusCondition.Entered: {
         const issuesResponse = await issuesGet(
+          c.env,
           `project = ${stub.boardSheet.boardKey}
            AND assignee = currentUser()
            AND status CHANGED TO ${stub.statusId} AFTER startOfDay() AND status = ${stub.statusId}`,
@@ -358,6 +415,7 @@ app.get('/work/atlassian/issues/:stubId', async (c) => {
       }
       case StatusCondition.Stationary: {
         const issuesResponse = await issuesGet(
+          c.env,
           `project = ${stub.boardSheet.boardKey}
            AND assignee = currentUser()
            AND status = ${stub.statusId}
@@ -368,6 +426,7 @@ app.get('/work/atlassian/issues/:stubId', async (c) => {
       }
       case StatusCondition.Left:
         const issuesResponse = await issuesGet(
+          c.env,
           `project = ${stub.boardSheet.boardKey}
            AND assignee = currentUser()
            AND status CHANGED FROM ${stub.statusId} AFTER startOfDay()
@@ -383,7 +442,7 @@ app.get('/work/atlassian/issues/:stubId', async (c) => {
   }
 })
 
-app.get('/work/atlassian/projects', async (c) => {
+app.get('/api/work/atlassian/projects', async (c) => {
   const user = c.get('user')
 
   if (!user) {
@@ -392,6 +451,7 @@ app.get('/work/atlassian/projects', async (c) => {
 
   try {
     // TODO: Test what happens if atlassian not linked
+    const auth = createAuth(c.env)
     const { accessToken } = await auth.api.getAccessToken({
       body: {
         providerId: 'atlassian',
@@ -471,7 +531,7 @@ app.get('/work/atlassian/projects', async (c) => {
   }
 })
 
-app.get('/work/status/:projectKey', async (c) => {
+app.get('/api/work/status/:projectKey', async (c) => {
   const user = c.get('user')
 
   if (!user) {
@@ -481,6 +541,7 @@ app.get('/work/status/:projectKey', async (c) => {
   const key = c.req.param('projectKey')
 
   try {
+    const auth = createAuth(c.env)
     const { accessToken } = await auth.api.getAccessToken({
       body: {
         providerId: 'atlassian',
@@ -586,7 +647,7 @@ app.get('/work/status/:projectKey', async (c) => {
   }
 })
 
-app.get('/boardsheet', async (c) => {
+app.get('/api/boardsheet', async (c) => {
   const user = c.get('user')
 
   if (!user) {
@@ -594,6 +655,7 @@ app.get('/boardsheet', async (c) => {
   }
 
   try {
+    const db = createDb(c.env.DB)
     const boardsheets = await db.query.boardSheet.findMany({
       where: (bs, { eq }) => eq(bs.userId, user.id),
     })
@@ -604,7 +666,7 @@ app.get('/boardsheet', async (c) => {
   }
 })
 
-app.post('/boardsheet', async (c) => {
+app.post('/api/boardsheet', async (c) => {
   const user = c.get('user')
 
   if (!user) {
@@ -626,6 +688,7 @@ app.post('/boardsheet', async (c) => {
   const { warpProject, jiraProject } = bodyParseResult.data
 
   try {
+    const db = createDb(c.env.DB)
     await db.insert(boardSheet).values({
       userId: user.id,
       sheetTaskId: warpProject.TaskId,
@@ -642,7 +705,7 @@ app.post('/boardsheet', async (c) => {
   }
 })
 
-app.get('/stub', async (c) => {
+app.get('/api/stub', async (c) => {
   const user = c.get('user')
 
   if (!user) {
@@ -650,6 +713,7 @@ app.get('/stub', async (c) => {
   }
 
   try {
+    const db = createDb(c.env.DB)
     const boardSheetStubs = await db.query.boardSheet.findMany({
       with: {
         stubs: true,
@@ -663,7 +727,7 @@ app.get('/stub', async (c) => {
   }
 })
 
-app.post('/stub', async (c) => {
+app.post('/api/stub', async (c) => {
   const user = c.get('user')
 
   if (!user) {
@@ -694,6 +758,7 @@ app.post('/stub', async (c) => {
     bodyParseResult.data
 
   try {
+    const db = createDb(c.env.DB)
     await db.insert(stub).values({
       boardSheetId: boardSheetId,
       messageId: stubMessageId,
@@ -707,85 +772,255 @@ app.post('/stub', async (c) => {
   }
 })
 
-export default app
+export default {
+  fetch: app.fetch,
 
-// app.get('/work/commit', async (c) => {
-//   try {
-//     const beganTickets = await fetchJiraTickets(
-//       'assignee = currentUser() AND status changed TO "In Progress" AFTER startOfDay() AND status = "In Progress"',
-//     )
+  async scheduled(
+    controller: ScheduledController,
+    env: Bindings,
+    _ctx: ExecutionContext,
+  ) {
+    const db = createDb(env.DB)
 
-//     const progressTickets = await fetchJiraTickets(
-//       'assignee = currentUser() AND status = "In Progress" AND sprint in openSprints()',
-//     )
+    const boardSheets = await db.query.boardSheet.findMany({
+      with: {
+        stubs: true,
+      },
+    })
 
-//     const pullRequestTickets = await fetchJiraTickets(
-//       'assignee = currentUser() AND status changed TO "pr" AFTER startOfDay() AND status = "pr"',
-//     )
+    const entryDate = new Date(controller.scheduledTime)
+      .toISOString()
+      .slice(0, 10)
 
-//     const doneTickets = await fetchJiraTickets(
-//       'assignee = currentUser() AND status changed TO "Done" AFTER startOfDay() AND status = "Done"',
-//     )
+    const candidates = boardSheets
+      .filter((boardSheet) => boardSheet.stubs.length > 0)
+      .map((boardSheet) => ({
+        boardSheetId: boardSheet.id,
+        userId: boardSheet.userId,
+        entryDate,
+        status: 'queued' as const,
+      }))
 
-//     if (
-//       beganTickets.issues.length < 1 &&
-//       progressTickets.issues.length < 1 &&
-//       pullRequestTickets.issues.length < 1 &&
-//       doneTickets.issues.length < 1
-//     ) {
-//       return c.json({ message: 'No issues to submit' })
-//     }
+    const insertedPosts =
+      candidates.length === 0
+        ? []
+        : await db
+            .insert(dailyBoardSheetPost)
+            .values(candidates)
+            .onConflictDoNothing()
+            .returning()
 
-//     const message = createMessage([
-//       { issues: beganTickets.issues, prefix: 'I began working on' },
-//       { issues: progressTickets.issues, prefix: 'I continued work on' },
-//       { issues: pullRequestTickets.issues, prefix: 'I created a PR for' },
-//       { issues: doneTickets.issues, prefix: 'I completed work on' },
-//     ])
+    if (insertedPosts.length > 0) {
+      await env.DAILY_POST_QUEUE.sendBatch(
+        insertedPosts.map((post) => ({
+          body: {
+            boardSheetId: post.boardSheetId,
+            entryDate: post.entryDate,
+          },
+        })),
+      )
+    }
 
-//     const entryId = await fetch(
-//       `https://${process.env.WARP_TEST_DOMAIN}/api/entry/create`,
-//       {
-//         method: 'POST',
-//         headers: {
-//           'Content-Type': 'application/json',
-//           Authorization: `Bearer ${authToken}`,
-//         },
-//         body: JSON.stringify({
-//           TaskId: '4769',
-//           PersonId: '1322',
-//           CostCodeId: '2',
-//           DepartmentId: '1',
-//           Overtime: '0',
-//           Time: '8',
-//           EntryDate: '2026-06-17T15:00:00',
-//           Comments: message,
-//           WorkLogId: '0',
-//           Audited: '0',
-//         }),
-//       },
-//     ).then(async (res) => {
-//       if (!res.ok) {
-//         const body = await res.text()
-//         throw new Error(`Error creating entry, res: ${body}`)
-//       }
-//       const json = await res.json()
-//       try {
-//         return z
-//           .object({
-//             EntryId: z.number(),
-//           })
-//           .parse(json).EntryId
-//       } catch (e) {
-//         throw new Error(
-//           `Error parsing entry response, res: ${JSON.stringify(json)}`,
-//         )
-//       }
-//     })
+    console.log('scheduled daily board sheet posts', {
+      cron: controller.cron,
+      scheduledTime: controller.scheduledTime,
+      entryDate,
+      boardSheetCount: boardSheets.length,
+      candidateCount: candidates.length,
+      insertedCount: insertedPosts.length,
+      enqueuedCount: insertedPosts.length,
+    })
+  },
 
-//     return c.json({ message })
-//   } catch (e) {
-//     console.error(e)
-//     return c.json({ error: 'Error' }, 500)
-//   }
-// })
+  async queue(
+    batch: MessageBatch<DailyBoardSheetPostJob>,
+    env: Bindings,
+    _ctx: ExecutionContext,
+  ) {
+    console.log('daily post queue batch', {
+      queue: batch.queue,
+      messageCount: batch.messages.length,
+    })
+    const db = createDb(env.DB)
+
+    for (const message of batch.messages) {
+      const job = message.body
+
+      const boardSheet = await db.query.boardSheet.findFirst({
+        where: (boardSheet, { eq }) => eq(boardSheet.id, job.boardSheetId),
+        with: {
+          stubs: true,
+        },
+      })
+
+      if (!boardSheet) {
+        console.log('daily board sheet post skipped: board sheet not found', {
+          boardSheetId: job.boardSheetId,
+          entryDate: job.entryDate,
+        })
+
+        message.ack()
+        continue
+      }
+
+      const issueDescriptors: IssueDescriptor[] = []
+
+      for (const stub of boardSheet.stubs) {
+        const stubMessage = stubMessages.find(
+          (stubMessage) => stubMessage.id === stub.messageId,
+        )
+
+        if (!stubMessage) {
+          throw new Error(`Unknown stub message id: ${stub.messageId}`)
+        }
+
+        switch (stub.statusCondition) {
+          case StatusCondition.Entered: {
+            const issues = await issuesGet(
+              env,
+              `project = ${boardSheet.boardKey}
+               AND assignee = currentUser()
+               AND status CHANGED TO ${stub.statusId} AFTER startOfDay() AND status = ${stub.statusId}`,
+            )
+            if (issues.length > 0) {
+              issueDescriptors.push({
+                issues,
+                prefix: stubMessage.text,
+              })
+            }
+            break
+          }
+          case StatusCondition.Stationary: {
+            const issues = await issuesGet(
+              env,
+              `project = ${boardSheet.boardKey}
+               AND assignee = currentUser()
+               AND status = ${stub.statusId}
+               AND status WAS ${stub.statusId} DURING (startOfDay(-1d), endOfDay(-1d))
+               AND NOT status CHANGED TO ${stub.statusId} AFTER startOfDay()`,
+            )
+            if (issues.length > 0) {
+              issueDescriptors.push({
+                issues,
+                prefix: stubMessage.text,
+              })
+            }
+            break
+          }
+          case StatusCondition.Left:
+            const issues = await issuesGet(
+              env,
+              `project = ${boardSheet.boardKey}
+               AND assignee = currentUser()
+               AND status CHANGED FROM ${stub.statusId} AFTER startOfDay()
+               AND status != ${stub.statusId}`,
+            )
+            if (issues.length > 0) {
+              issueDescriptors.push({
+                issues,
+                prefix: stubMessage.text,
+              })
+            }
+            break
+          default:
+            break
+        }
+      }
+
+      const newMessage = createMessage(issueDescriptors)
+
+      const sheetAuthToken = await db.query.sheetAuthToken.findFirst({
+        where: (sheetAuthToken, { eq }) =>
+          eq(sheetAuthToken.userId, boardSheet.userId),
+        columns: {
+          authToken: true,
+        },
+      })
+
+      if (!sheetAuthToken) {
+        throw new Error(
+          `No sheet auth token stored for user: ${boardSheet.userId}`,
+        )
+      }
+
+      const personIdResponse = await fetch(
+        `https://${env.WARP_TEST_DOMAIN}/api/users/me`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${sheetAuthToken.authToken}`,
+          },
+        },
+      ).then((res) =>
+        responseParse({
+          res,
+          schema: z.object({
+            PersonId: z.number(),
+            FirstName: z.string(),
+            Surname: z.string(),
+            Email: z.email(),
+            TelephoneNumber: z.string(),
+            is_admin: z.boolean(),
+            PersonStatus: z.string(),
+            CreatedOnUtc: z.string(),
+            ModifiedOnUtc: z.string(),
+            ProfilePictureUrl: z.string(),
+          }),
+          name: 'Person',
+        }),
+      )
+
+      const entryIdResponse = await fetch(
+        `https://${env.WARP_TEST_DOMAIN}/api/entry/create`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${sheetAuthToken.authToken}`,
+          },
+          body: JSON.stringify({
+            TaskId: boardSheet.sheetTaskId,
+            PersonId: personIdResponse.PersonId,
+            CostCodeId: '2',
+            DepartmentId: '1',
+            Overtime: '0',
+            Time: '8',
+            EntryDate: `${job.entryDate}T17:00:00`,
+            Comments: newMessage,
+            WorkLogId: '0',
+            Audited: '0',
+          }),
+        },
+      ).then((res) =>
+        responseParse({
+          res,
+          schema: z.object({
+            EntryId: z.number(),
+          }),
+          name: 'Entry',
+        }),
+      )
+
+      await db
+        .update(dailyBoardSheetPost)
+        .set({ status: 'posted', entryId: entryIdResponse.EntryId })
+        .where(
+          and(
+            eq(dailyBoardSheetPost.boardSheetId, boardSheet.id),
+            eq(dailyBoardSheetPost.entryDate, job.entryDate),
+          ),
+        )
+
+      console.log('daily board sheet post loaded', {
+        boardSheetId: boardSheet.id,
+        boardKey: boardSheet.boardKey,
+        stubCount: boardSheet.stubs.length,
+        entryDate: job.entryDate,
+        newMessage,
+        entryId: entryIdResponse,
+      })
+
+      message.ack()
+    }
+  },
+}

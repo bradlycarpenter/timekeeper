@@ -1,6 +1,12 @@
 import type { StubMessageID, StatusCondition } from '@tk/types'
 import { relations, sql } from 'drizzle-orm'
-import { index, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
+import {
+  index,
+  integer,
+  sqliteTable,
+  text,
+  uniqueIndex,
+} from 'drizzle-orm/sqlite-core'
 import { uuidv7 } from 'uuidv7'
 
 export const user = sqliteTable('user', {
@@ -20,6 +26,17 @@ export const user = sqliteTable('user', {
     .notNull(),
 })
 
+export const sheetAuthToken = sqliteTable('sheet_auth_token', {
+  id: text('id')
+    .primaryKey()
+    .$defaultFn(() => uuidv7()),
+  userId: text('user_id')
+    .references(() => user.id, { onDelete: 'cascade' })
+    .unique()
+    .notNull(),
+  authToken: text('auth_token'),
+})
+
 export const session = sqliteTable(
   'session',
   {
@@ -30,6 +47,7 @@ export const session = sqliteTable(
       .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
       .notNull(),
     updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
+      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
       .$onUpdate(() => /* @__PURE__ */ new Date())
       .notNull(),
     ipAddress: text('ip_address'),
@@ -117,6 +135,41 @@ export const stub = sqliteTable('stub', {
     .$type<StatusCondition>(),
   messageId: integer('message_id').notNull().$type<StubMessageID>(),
 })
+
+export const dailyBoardSheetPost = sqliteTable(
+  'daily_board_sheet_post',
+  {
+    id: text('id')
+      .primaryKey()
+      .$defaultFn(() => uuidv7()),
+    boardSheetId: text('board_sheet_id')
+      .notNull()
+      .references(() => boardSheet.id, { onDelete: 'cascade' }),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    entryDate: text('entry_date').notNull(),
+    status: text('status', {
+      enum: ['queued', 'processing', 'posted', 'skipped', 'failed'],
+    }).notNull(),
+    entryId: integer('entry_id'),
+    error: text('error'),
+    createdAt: integer('created_at', { mode: 'timestamp_ms' })
+      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+      .notNull(),
+    updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+  },
+  (table) => [
+    index('daily_board_sheet_post_board_sheet_id_idx').on(table.boardSheetId),
+    index('daily_board_sheet_post_user_id_idx').on(table.userId),
+    uniqueIndex('daily_board_sheet_post_board_sheet_date_idx').on(
+      table.boardSheetId,
+      table.entryDate,
+    ),
+  ],
+)
 
 export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),

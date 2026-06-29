@@ -15,14 +15,9 @@ const config = defineConfig({
   ],
   server: {
     proxy: {
-      '/api/auth': {
-        target: 'http://localhost:3000',
-        changeOrigin: true,
-      },
       '/api': {
-        target: 'http://localhost:3000',
+        target: 'http://localhost:8787',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ''),
       },
     },
   },
