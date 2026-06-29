@@ -144,3 +144,7 @@ vite.config.ts.timestamp-*
 
 # DB
 *.db
+
+# Cloudflare local state
+.wrangler/
+**/.wrangler/
