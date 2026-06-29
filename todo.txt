@@ -1,4 +1,0 @@
-Plan minimum release requirements @release
-(A) 2026-06-28 Add queueing system
-2026-06-28 As a user, I want to configre boardsheets +UI
-(A) 2026-06-28 Release the application @release due:2026-07-28

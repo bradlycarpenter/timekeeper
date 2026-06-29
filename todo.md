@@ -1,0 +1,12 @@
+- [ ] Set up CI/CD for Cloudflare
+  - [ ] Deployments
+  - [ ] Database Migrations
+- [ ] Auth Token Saving
+  - [ ] Optional Email and Password Storing
+  - [ ] Hashing
+- [ ] Board Sheet Creation UI
+- [ ] Login UI
+- [ ] Recent Post History
+- [ ] Admin View to Display Queues
+  - [ ] Admin Account
+- [x] Configure Queueing System
