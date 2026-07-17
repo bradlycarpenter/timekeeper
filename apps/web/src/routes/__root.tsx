@@ -1,7 +1,4 @@
-import {
-  Outlet,
-  createRootRouteWithContext,
-} from '@tanstack/react-router'
+import { Outlet, createRootRouteWithContext } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { QueryClientProvider } from '@tanstack/react-query'
@@ -9,6 +6,7 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 
 import type { QueryClient } from '@tanstack/react-query'
+import { ThemeProvider } from '#/components/ui/theme-provider'
 
 interface MyRouterContext {
   queryClient: QueryClient
@@ -28,7 +26,9 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
+      <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+        <Outlet />
+      </ThemeProvider>
       <TanStackDevtools
         config={{
           position: 'bottom-right',
