@@ -9,17 +9,29 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as DashboardRouteRouteImport } from './routes/dashboard/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as DevStubIndexRouteImport } from './routes/dev/stub/index'
 import { Route as DevMessageIndexRouteImport } from './routes/dev/message/index'
 import { Route as DevLoginIndexRouteImport } from './routes/dev/login/index'
 import { Route as DevCreateIndexRouteImport } from './routes/dev/create/index'
 import { Route as DevBoardsheetIndexRouteImport } from './routes/dev/boardsheet/index'
 
+const DashboardRouteRoute = DashboardRouteRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardIndexRoute = DashboardIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardRouteRoute,
 } as any)
 const DevStubIndexRoute = DevStubIndexRouteImport.update({
   id: '/dev/stub/',
@@ -49,6 +61,8 @@ const DevBoardsheetIndexRoute = DevBoardsheetIndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRouteRouteWithChildren
+  '/dashboard/': typeof DashboardIndexRoute
   '/dev/boardsheet/': typeof DevBoardsheetIndexRoute
   '/dev/create/': typeof DevCreateIndexRoute
   '/dev/login/': typeof DevLoginIndexRoute
@@ -57,6 +71,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardIndexRoute
   '/dev/boardsheet': typeof DevBoardsheetIndexRoute
   '/dev/create': typeof DevCreateIndexRoute
   '/dev/login': typeof DevLoginIndexRoute
@@ -66,6 +81,8 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRouteRouteWithChildren
+  '/dashboard/': typeof DashboardIndexRoute
   '/dev/boardsheet/': typeof DevBoardsheetIndexRoute
   '/dev/create/': typeof DevCreateIndexRoute
   '/dev/login/': typeof DevLoginIndexRoute
@@ -76,6 +93,8 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/dashboard'
+    | '/dashboard/'
     | '/dev/boardsheet/'
     | '/dev/create/'
     | '/dev/login/'
@@ -84,6 +103,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/dashboard'
     | '/dev/boardsheet'
     | '/dev/create'
     | '/dev/login'
@@ -92,6 +112,8 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/dashboard'
+    | '/dashboard/'
     | '/dev/boardsheet/'
     | '/dev/create/'
     | '/dev/login/'
@@ -101,6 +123,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DashboardRouteRoute: typeof DashboardRouteRouteWithChildren
   DevBoardsheetIndexRoute: typeof DevBoardsheetIndexRoute
   DevCreateIndexRoute: typeof DevCreateIndexRoute
   DevLoginIndexRoute: typeof DevLoginIndexRoute
@@ -110,12 +133,26 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/': {
+      id: '/dashboard/'
+      path: '/'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
     }
     '/dev/stub/': {
       id: '/dev/stub/'
@@ -155,8 +192,21 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface DashboardRouteRouteChildren {
+  DashboardIndexRoute: typeof DashboardIndexRoute
+}
+
+const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
+  DashboardIndexRoute: DashboardIndexRoute,
+}
+
+const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(
+  DashboardRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DashboardRouteRoute: DashboardRouteRouteWithChildren,
   DevBoardsheetIndexRoute: DevBoardsheetIndexRoute,
   DevCreateIndexRoute: DevCreateIndexRoute,
   DevLoginIndexRoute: DevLoginIndexRoute,
