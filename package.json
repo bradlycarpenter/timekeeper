@@ -6,14 +6,14 @@
   "keywords": [],
   "author": "Bradly Carpenter",
   "scripts": {
-    "dev": "doppler run -- pnpm run -r --parallel --aggregate-output dev",
-    "dev:web": "doppler run -- pnpm run --filter web dev",
-    "dev:api": "doppler run -- pnpm run --filter api dev",
+    "dev": "doppler run -c=dev -p=timekeeper -- pnpm run -r --parallel --aggregate-output dev",
+    "dev:web": "doppler run -c=dev -p=timekeeper -- pnpm run --filter web dev",
+    "dev:api": "doppler run -c=dev -p=timekeeper -- pnpm run --filter api dev",
     "db:studio": "pnpm --filter api db:studio",
     "db:generate": "pnpm --filter api db:generate",
     "db:migrate:local": "pnpm --filter api db:migrate:local",
     "format": "prettier --write apps/ packages/",
-    "request": "doppler run -- bash scripts/requests.sh"
+    "request": "doppler run -c=dev -p=timekeeper -- bash scripts/requests.sh"
   },
   "devEngines": {
     "packageManager": {
