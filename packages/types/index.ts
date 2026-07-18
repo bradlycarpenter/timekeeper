@@ -15,11 +15,56 @@ export const warpProjectSchema = z.object({
 
 export type WarpProject = z.infer<typeof warpProjectSchema>
 
+export const warpPersonIdSchema = z.object({
+  PersonId: z.number(),
+  FirstName: z.string(),
+  Surname: z.string(),
+  Email: z.email(),
+  TelephoneNumber: z.string(),
+  is_admin: z.boolean(),
+  PersonStatus: z.string(),
+  CreatedOnUtc: z.string(),
+  ModifiedOnUtc: z.string(),
+  ProfilePictureUrl: z.string(),
+})
+
+export type WarpPersonIdSchema = z.infer<typeof warpPersonIdSchema>
+
 export const jiraProjectSchema = z.object({
   id: z.string(),
   key: z.string(),
   name: z.string(),
 })
+
+export enum WarpAuthStatus {
+  Authed,
+  NoToken,
+  Stale, // Has token but is not working on Warp
+}
+
+export function toAPIWarpAuthStatus(status: WarpAuthStatus): number {
+  switch (status) {
+    case WarpAuthStatus.Authed:
+      return 0
+    case WarpAuthStatus.NoToken:
+      return 1
+    case WarpAuthStatus.Stale:
+      return 2
+  }
+}
+
+export function toWarpAuthStatus(status: number): WarpAuthStatus {
+  switch (status) {
+    case 0:
+      return WarpAuthStatus.Authed
+    case 1:
+      return WarpAuthStatus.NoToken
+    case 2:
+      return WarpAuthStatus.Stale
+    default:
+      throw new Error(`Unknown Warp auth status: ${status}`)
+  }
+}
 
 export type JiraProject = z.infer<typeof jiraProjectSchema>
 
@@ -83,3 +128,16 @@ export const boardSheetSchema = z.object({
 })
 
 export type BoardSheet = z.infer<typeof boardSheetSchema>
+
+export const warpAuthStatusSchema = z.discriminatedUnion('status', [
+  z.object({
+    status: z.literal(toAPIWarpAuthStatus(WarpAuthStatus.Authed)),
+    personId: z.string(),
+  }),
+  z.object({
+    status: z.literal(toAPIWarpAuthStatus(WarpAuthStatus.NoToken)),
+  }),
+  z.object({
+    status: z.literal(toAPIWarpAuthStatus(WarpAuthStatus.Stale)),
+  }),
+])

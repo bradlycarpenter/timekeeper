@@ -4,7 +4,10 @@ import {
   jiraProjectSchema,
   StatusCondition,
   stubMessages,
+  toAPIWarpAuthStatus,
+  WarpAuthStatus,
   warpProjectSchema,
+  warpPersonIdSchema,
 } from '@tk/types'
 import { Hono } from 'hono'
 import { logger } from 'hono/logger'
@@ -180,6 +183,56 @@ app.on(['POST', 'GET'], '/api/auth/*', (c) => {
     console.log('auth handler', c.req.method, c.req.path, res.status)
     return res
   })
+})
+
+app.get('/api/sheets/auth', async (c) => {
+  const user = c.get('user')
+
+  if (!user) {
+    return c.json({ error: 'Unauthorized' }, 401)
+  }
+
+  try {
+    const db = createDb(c.env.DB)
+
+    const sheetAuthToken = await db.query.sheetAuthToken.findFirst({
+      where: (sheetAuthToken, { eq }) => eq(sheetAuthToken.userId, user.id),
+    })
+
+    if (!sheetAuthToken?.authToken) {
+      return c.json({ status: toAPIWarpAuthStatus(WarpAuthStatus.NoToken) })
+    }
+
+    const personIdResponse = await fetch(
+      `https://${c.env.WARP_TEST_DOMAIN}/api/users/me`,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${sheetAuthToken.authToken}`,
+        },
+      },
+    )
+
+    if (personIdResponse.status >= 400 && personIdResponse.status < 500) {
+      return c.json({ status: toAPIWarpAuthStatus(WarpAuthStatus.Stale) })
+    } else if (!personIdResponse.ok) {
+      throw new Error(
+        `Error getting response from Warp Person ID ${await personIdResponse.text()}`,
+      )
+    }
+
+    const personIdResponseJson = await personIdResponse.json()
+
+    const personIdParsed = warpPersonIdSchema.parse(personIdResponseJson)
+
+    return c.json({
+      status: toAPIWarpAuthStatus(WarpAuthStatus.Authed),
+      personId: personIdParsed.PersonId,
+    })
+  } catch (e) {
+    console.error(e)
+    return c.json({ reason: 'We had trouble processing your request' }, 500)
+  }
 })
 
 app.post('/api/sheets/auth', async (c) => {
@@ -937,7 +990,7 @@ export default {
         },
       })
 
-      if (!sheetAuthToken) {
+      if (!sheetAuthToken?.authToken) {
         throw new Error(
           `No sheet auth token stored for user: ${boardSheet.userId}`,
         )
@@ -954,22 +1007,10 @@ export default {
       ).then((res) =>
         responseParse({
           res,
-          schema: z.object({
-            PersonId: z.number(),
-            FirstName: z.string(),
-            Surname: z.string(),
-            Email: z.email(),
-            TelephoneNumber: z.string(),
-            is_admin: z.boolean(),
-            PersonStatus: z.string(),
-            CreatedOnUtc: z.string(),
-            ModifiedOnUtc: z.string(),
-            ProfilePictureUrl: z.string(),
-          }),
+          schema: warpPersonIdSchema,
           name: 'Person',
         }),
       )
-
       const entryIdResponse = await fetch(
         `https://${env.WARP_TEST_DOMAIN}/api/entry/create`,
         {
