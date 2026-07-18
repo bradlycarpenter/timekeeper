@@ -2,7 +2,7 @@
   "name": "api",
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev",
+    "dev": "doppler secrets download --no-file --format env -p timekeeper -c dev > .dev.vars && wrangler dev",
     "db:studio": "drizzle-kit studio",
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply timekeeper --local",
