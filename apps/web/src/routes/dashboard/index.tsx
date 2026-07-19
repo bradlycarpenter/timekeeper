@@ -10,7 +10,7 @@ import {
   TableRow,
 } from '#/components/ui/table'
 import { useQuery } from '@tanstack/react-query'
-import { createFileRoute } from '@tanstack/react-router'
+import { Link, createFileRoute } from '@tanstack/react-router'
 import {
   boardSheetSchema,
   toWarpAuthStatus,
@@ -18,8 +18,9 @@ import {
   WarpAuthStatus,
 } from '@tk/types'
 import { responseParse } from '@tk/utils'
-import warpLogo from '../../../public/assets/warp-logo-light-3.svg'
-import jiraLogo from '../../../public/assets/jira-logo-light.svg'
+import warpLogo from '#/assets/warp-logo-light-3.svg'
+import jiraLogo from '#/assets/jira-logo-light.svg'
+import { authClient } from '#/auth'
 
 export const Route = createFileRoute('/dashboard/')({
   component: RouteComponent,
@@ -58,6 +59,15 @@ function RouteComponent() {
       ),
   })
 
+  const {
+    error: accError,
+    isPending: accPending,
+    data: accData,
+  } = useQuery({
+    queryKey: ['accounts'],
+    queryFn: async () => (await authClient.listAccounts()).data ?? [],
+  })
+
   return (
     <div className="p-2 space-y-2">
       <h2 className="font-semibold text-xl">Dashboard</h2>
@@ -65,8 +75,8 @@ function RouteComponent() {
         <div className="w-full sm:w-xs space-y-2">
           <div className="flex justify-between items-center">
             <h3 className="font-semibold text-lg space-y-2">Connections</h3>
-            <Button variant="link" className="cursor-pointer">
-              Edit
+            <Button variant="link" className="cursor-pointer" asChild>
+              <Link to='/dashboard/connections'>Edit</Link>
             </Button>
           </div>
 
@@ -102,7 +112,19 @@ function RouteComponent() {
                 <p className="text-sm text-muted-foreground">Board</p>
               </div>
             </div>
-            <Badge className="bg-green-400 dark:bg-green-700">Connected</Badge>
+            {accError ? (
+              <Badge className="bg-red-400 dark:bg-red-700">Error</Badge>
+            ) : accPending ? (
+              <Skeleton className="rounded-full h-5 w-19" />
+            ) : !accData.some((a) => a.providerId === 'atlassian') ? (
+              <Badge className="bg-yellow-400 dark:bg-yellow-700">
+                Authenticate
+              </Badge>
+            ) : (
+              <Badge className="bg-green-400 dark:bg-green-700">
+                Connected
+              </Badge>
+            )}
           </div>
         </div>
         <div className="w-full sm:w-xs space-y-2">
