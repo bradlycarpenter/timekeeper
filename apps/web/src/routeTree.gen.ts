@@ -17,6 +17,8 @@ import { Route as DevMessageIndexRouteImport } from './routes/dev/message/index'
 import { Route as DevLoginIndexRouteImport } from './routes/dev/login/index'
 import { Route as DevCreateIndexRouteImport } from './routes/dev/create/index'
 import { Route as DevBoardsheetIndexRouteImport } from './routes/dev/boardsheet/index'
+import { Route as DashboardConnectionsIndexRouteImport } from './routes/dashboard/connections/index'
+import { Route as DashboardConnectionsWarpIndexRouteImport } from './routes/dashboard/connections/warp/index'
 
 const DashboardRouteRoute = DashboardRouteRouteImport.update({
   id: '/dashboard',
@@ -58,36 +60,54 @@ const DevBoardsheetIndexRoute = DevBoardsheetIndexRouteImport.update({
   path: '/dev/boardsheet/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardConnectionsIndexRoute =
+  DashboardConnectionsIndexRouteImport.update({
+    id: '/connections/',
+    path: '/connections/',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
+const DashboardConnectionsWarpIndexRoute =
+  DashboardConnectionsWarpIndexRouteImport.update({
+    id: '/connections/warp/',
+    path: '/connections/warp/',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRouteRouteWithChildren
   '/dashboard/': typeof DashboardIndexRoute
+  '/dashboard/connections/': typeof DashboardConnectionsIndexRoute
   '/dev/boardsheet/': typeof DevBoardsheetIndexRoute
   '/dev/create/': typeof DevCreateIndexRoute
   '/dev/login/': typeof DevLoginIndexRoute
   '/dev/message/': typeof DevMessageIndexRoute
   '/dev/stub/': typeof DevStubIndexRoute
+  '/dashboard/connections/warp/': typeof DashboardConnectionsWarpIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardIndexRoute
+  '/dashboard/connections': typeof DashboardConnectionsIndexRoute
   '/dev/boardsheet': typeof DevBoardsheetIndexRoute
   '/dev/create': typeof DevCreateIndexRoute
   '/dev/login': typeof DevLoginIndexRoute
   '/dev/message': typeof DevMessageIndexRoute
   '/dev/stub': typeof DevStubIndexRoute
+  '/dashboard/connections/warp': typeof DashboardConnectionsWarpIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRouteRouteWithChildren
   '/dashboard/': typeof DashboardIndexRoute
+  '/dashboard/connections/': typeof DashboardConnectionsIndexRoute
   '/dev/boardsheet/': typeof DevBoardsheetIndexRoute
   '/dev/create/': typeof DevCreateIndexRoute
   '/dev/login/': typeof DevLoginIndexRoute
   '/dev/message/': typeof DevMessageIndexRoute
   '/dev/stub/': typeof DevStubIndexRoute
+  '/dashboard/connections/warp/': typeof DashboardConnectionsWarpIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -95,30 +115,36 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/dashboard/'
+    | '/dashboard/connections/'
     | '/dev/boardsheet/'
     | '/dev/create/'
     | '/dev/login/'
     | '/dev/message/'
     | '/dev/stub/'
+    | '/dashboard/connections/warp/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/dashboard'
+    | '/dashboard/connections'
     | '/dev/boardsheet'
     | '/dev/create'
     | '/dev/login'
     | '/dev/message'
     | '/dev/stub'
+    | '/dashboard/connections/warp'
   id:
     | '__root__'
     | '/'
     | '/dashboard'
     | '/dashboard/'
+    | '/dashboard/connections/'
     | '/dev/boardsheet/'
     | '/dev/create/'
     | '/dev/login/'
     | '/dev/message/'
     | '/dev/stub/'
+    | '/dashboard/connections/warp/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -189,15 +215,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DevBoardsheetIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/connections/': {
+      id: '/dashboard/connections/'
+      path: '/connections'
+      fullPath: '/dashboard/connections/'
+      preLoaderRoute: typeof DashboardConnectionsIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/connections/warp/': {
+      id: '/dashboard/connections/warp/'
+      path: '/connections/warp'
+      fullPath: '/dashboard/connections/warp/'
+      preLoaderRoute: typeof DashboardConnectionsWarpIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
   }
 }
 
 interface DashboardRouteRouteChildren {
   DashboardIndexRoute: typeof DashboardIndexRoute
+  DashboardConnectionsIndexRoute: typeof DashboardConnectionsIndexRoute
+  DashboardConnectionsWarpIndexRoute: typeof DashboardConnectionsWarpIndexRoute
 }
 
 const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardIndexRoute: DashboardIndexRoute,
+  DashboardConnectionsIndexRoute: DashboardConnectionsIndexRoute,
+  DashboardConnectionsWarpIndexRoute: DashboardConnectionsWarpIndexRoute,
 }
 
 const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(
