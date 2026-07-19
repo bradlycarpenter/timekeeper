@@ -7,7 +7,7 @@ export const Route = createFileRoute('/dev/login/')({
 
 function RouteComponent() {
   return (
-    <>
+    <div className='flex flex-col gap-4'>
       <button
         type="button"
         onClick={async () => {
@@ -38,6 +38,16 @@ function RouteComponent() {
       >
         Logout
       </button>
-    </>
+      <button
+        type="button"
+        onClick={async () => {
+          await authClient.unlinkAccount({
+            providerId: 'atlassian'
+          })
+        }}
+      >
+        Unlink Atlassian
+      </button>
+    </div>
   )
 }
