@@ -286,6 +286,7 @@ app.post('/api/sheets/auth', async (c) => {
     return c.json({ success: true })
   } catch (e) {
     console.error(e)
+    // TODO: Make specific error for auth failing
     return c.json({ reason: 'We had trouble processing your request' }, 500)
   }
 })
