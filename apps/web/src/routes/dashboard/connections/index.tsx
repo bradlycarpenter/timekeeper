@@ -81,7 +81,10 @@ function RouteComponent() {
               className={cn(
                 'w-full',
                 saError && 'bg-red-500',
-                (saError || saPending) && 'pointer-events-none opacity-50',
+                (saError ||
+                  saPending ||
+                  toWarpAuthStatus(saData.status) === WarpAuthStatus.Authed) &&
+                  'pointer-events-none opacity-50',
                 !saPending &&
                   !saError &&
                   (toWarpAuthStatus(saData.status) !== WarpAuthStatus.Authed
