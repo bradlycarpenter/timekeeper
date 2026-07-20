@@ -283,7 +283,7 @@ app.post('/api/sheets/auth', async (c) => {
       .insert(sheetAuthToken)
       .values({ userId: user.id, authToken: authTokenResponse.token })
 
-    return c.json({ sucess: true })
+    return c.json({ success: true })
   } catch (e) {
     console.error(e)
     return c.json({ reason: 'We had trouble processing your request' }, 500)
