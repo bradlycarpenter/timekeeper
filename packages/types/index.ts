@@ -132,7 +132,7 @@ export type BoardSheet = z.infer<typeof boardSheetSchema>
 export const warpAuthStatusSchema = z.discriminatedUnion('status', [
   z.object({
     status: z.literal(toAPIWarpAuthStatus(WarpAuthStatus.Authed)),
-    personId: z.string(),
+    personId: z.number(),
   }),
   z.object({
     status: z.literal(toAPIWarpAuthStatus(WarpAuthStatus.NoToken)),
