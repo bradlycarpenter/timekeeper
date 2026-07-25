@@ -49,8 +49,6 @@ function RouteComponent() {
     queryFn: async () => (await authClient.listAccounts()).data ?? [],
   })
 
-  console.log(saPending)
-
   return (
     <div className="p-2 space-y-2">
       <div className="flex gap-1">

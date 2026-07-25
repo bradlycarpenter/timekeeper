@@ -270,7 +270,6 @@ function RouteComponent() {
                 }),
               })
                 .then(async (res) => await res.json())
-                .then(console.log)
                 .catch(() => errorSet('Error posting stub'))
                 .finally(() => loadingSet(false))
                 .finally(() => errorSet(''))

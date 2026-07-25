@@ -35,7 +35,6 @@ function RouteComponent() {
     loadingSet(true)
     fetch(`/api/messages/${boardSheetSelected.id}`)
       .then(async (res) => res.json())
-      .then(console.log)
       .catch(() => errorSet('Error fetching board sheets'))
       .finally(() => loadingSet(false))
   }, [boardSheetSelected])
