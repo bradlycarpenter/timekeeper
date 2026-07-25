@@ -1,4 +1,4 @@
-import type { JiraIssue } from '@tk/types'
+import type { JiraIssue, WarpProject } from '@tk/types'
 import {
   jiraIssuesResponseSchema,
   jiraProjectSchema,
@@ -22,6 +22,8 @@ import {
   stub,
 } from './db.schema.js'
 import { and, eq } from 'drizzle-orm'
+
+const ONE_WEEK = 60 * 60 * 24 * 7
 
 /** Can throw
  * Fetches all resources and returns the cloud ID from the first one
@@ -129,6 +131,7 @@ type DailyBoardSheetPostJob = {
 
 type Bindings = {
   DB: D1Database
+  KV: KVNamespace
   DAILY_POST_QUEUE: Queue<DailyBoardSheetPostJob>
   BETTER_AUTH_SECRET: string
   BETTER_AUTH_URL: string
@@ -282,6 +285,10 @@ app.post('/api/sheets/auth', async (c) => {
     await db
       .insert(sheetAuthToken)
       .values({ userId: user.id, authToken: authTokenResponse.token })
+      .onConflictDoUpdate({
+        target: sheetAuthToken.userId,
+        set: { authToken: authTokenResponse.token },
+      })
 
     return c.json({ success: true })
   } catch (e) {
@@ -291,34 +298,72 @@ app.post('/api/sheets/auth', async (c) => {
   }
 })
 
-app.get('/api/sheets/projects/:page', async (c) => {
-  const authHeader = c.req.header('Authorization')
+app.get('/api/sheets/projects/', async (c) => {
+  const user = c.get('user')
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    console.error('Issue validating token')
-    return c.json({ error: 'Missing or invalid Authorization header' }, 401)
+  if (!user) {
+    return c.json({ error: 'Unauthorized' }, 401)
   }
 
-  const token = authHeader.slice(7)
-
   try {
-    const projects = await fetch(
-      `https://${c.env.WARP_TEST_DOMAIN}/api/Project?per_page=500&page=${c.req.param().page}`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+    const db = createDb(c.env.DB)
+
+    const tokenQuery = await db.query.sheetAuthToken.findFirst({
+      where: (sheetAuthToken, { eq }) => eq(sheetAuthToken.userId, user.id),
+    })
+
+    if (!tokenQuery?.authToken) {
+      return c.json({ error: 'No token' }, 401)
+    }
+
+    const cachedProjects = await c.env.KV.get('warp-projects', { type: 'json' })
+
+    if (cachedProjects) {
+      const warpProjectsResult = warpProjectSchema
+        .array()
+        .safeParse(cachedProjects)
+
+      if (warpProjectsResult.success) {
+        return c.json(warpProjectsResult.data)
+      }
+
+      console.error('Error parsing Warp Projects from cache')
+    }
+
+    const PER_PAGE = 500
+
+    const fetchProjectPage = async (page: number): Promise<WarpProject[]> => {
+      const projects = await fetch(
+        `https://${c.env.WARP_TEST_DOMAIN}/api/Project?per_page=${PER_PAGE}&page=${page}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${tokenQuery.authToken}`,
+          },
         },
-      },
-    ).then(async (res) =>
-      responseParse({
-        res,
-        schema: warpProjectSchema.array(),
-        name: 'Projects',
-      }),
+      ).then(async (res) =>
+        responseParse({
+          res,
+          schema: warpProjectSchema.array(),
+          name: 'Projects',
+        }),
+      )
+
+      return projects.length < PER_PAGE
+        ? projects
+        : [...projects, ...(await fetchProjectPage(page + 1))]
+    }
+
+    const warpProjects = await fetchProjectPage(0)
+
+    c.executionCtx.waitUntil(
+      c.env.KV.put(`warp-projects`, JSON.stringify(warpProjects), {
+        expirationTtl: ONE_WEEK,
+      }).catch((err) => console.error('KV cache write failed', err)),
     )
-    return c.json(projects)
+
+    return c.json(warpProjects)
   } catch (e) {
     console.error(e)
     return c.json({ Reason: 'We had trouble fetching projects' }, 502)

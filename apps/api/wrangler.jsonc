@@ -19,20 +19,27 @@
       "database_id": "6511ced7-55e7-416a-a566-cefb6e98b139",
     },
   ],
+  "kv_namespaces": [
+    {
+      "binding": "KV",
+      "id": "26c8be17a3ba45c3ab50f8fbe39f31aa",
+      "preview_id": "<ID_OF_PREVIEW_KV_NAMESPACE_FOR_LOCAL_DEVELOPMENT>",
+    },
+  ],
   "triggers": {
-    "crons": ["0 17 * * mon-fri"]
+    "crons": ["0 17 * * mon-fri"],
   },
   "queues": {
     "producers": [
       {
         "binding": "DAILY_POST_QUEUE",
-        "queue": "daily-posts"
-      }
+        "queue": "daily-posts",
+      },
     ],
     "consumers": [
       {
-        "queue": "daily-posts"
-      }
-    ]
-  }
+        "queue": "daily-posts",
+      },
+    ],
+  },
 }
