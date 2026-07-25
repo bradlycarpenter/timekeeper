@@ -76,7 +76,7 @@ function RouteComponent() {
           <div className="flex justify-between items-center">
             <h3 className="font-semibold text-lg space-y-2">Connections</h3>
             <Button variant="link" className="cursor-pointer" asChild>
-              <Link to='/dashboard/connections'>Edit</Link>
+              <Link to="/dashboard/connections">Edit</Link>
             </Button>
           </div>
 
@@ -132,6 +132,9 @@ function RouteComponent() {
             <h3 className="font-semibold text-lg space-y-2">
               Connected Boards
             </h3>
+            {/* TODO: Got to only make this option available if they have at least one
+             ** sheet and one board.
+             */}
             <Button variant="link" className="cursor-pointer">
               Add Board
             </Button>
