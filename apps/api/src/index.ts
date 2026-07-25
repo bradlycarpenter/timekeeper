@@ -874,16 +874,6 @@ export default {
         })),
       )
     }
-
-    console.log('scheduled daily board sheet posts', {
-      cron: controller.cron,
-      scheduledTime: controller.scheduledTime,
-      entryDate,
-      boardSheetCount: boardSheets.length,
-      candidateCount: candidates.length,
-      insertedCount: insertedPosts.length,
-      enqueuedCount: insertedPosts.length,
-    })
   },
 
   async queue(
@@ -891,10 +881,6 @@ export default {
     env: Bindings,
     _ctx: ExecutionContext,
   ) {
-    console.log('daily post queue batch', {
-      queue: batch.queue,
-      messageCount: batch.messages.length,
-    })
     const db = createDb(env.DB)
 
     for (const message of batch.messages) {
@@ -908,11 +894,6 @@ export default {
       })
 
       if (!boardSheet) {
-        console.log('daily board sheet post skipped: board sheet not found', {
-          boardSheetId: job.boardSheetId,
-          entryDate: job.entryDate,
-        })
-
         message.ack()
         continue
       }
@@ -1052,15 +1033,6 @@ export default {
             eq(dailyBoardSheetPost.entryDate, job.entryDate),
           ),
         )
-
-      console.log('daily board sheet post loaded', {
-        boardSheetId: boardSheet.id,
-        boardKey: boardSheet.boardKey,
-        stubCount: boardSheet.stubs.length,
-        entryDate: job.entryDate,
-        newMessage,
-        entryId: entryIdResponse,
-      })
 
       message.ack()
     }
