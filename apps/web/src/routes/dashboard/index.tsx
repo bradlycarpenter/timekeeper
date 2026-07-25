@@ -135,8 +135,8 @@ function RouteComponent() {
             {/* TODO: Got to only make this option available if they have at least one
              ** sheet and one board.
              */}
-            <Button variant="link" className="cursor-pointer">
-              Add Board
+            <Button variant="link" className="cursor-pointer" asChild>
+              <Link to="/dashboard/boards">Add Board</Link>
             </Button>
           </div>
           {bsError ? (

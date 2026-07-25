@@ -18,6 +18,7 @@ import { Route as DevLoginIndexRouteImport } from './routes/dev/login/index'
 import { Route as DevCreateIndexRouteImport } from './routes/dev/create/index'
 import { Route as DevBoardsheetIndexRouteImport } from './routes/dev/boardsheet/index'
 import { Route as DashboardConnectionsIndexRouteImport } from './routes/dashboard/connections/index'
+import { Route as DashboardBoardsIndexRouteImport } from './routes/dashboard/boards/index'
 import { Route as DashboardConnectionsWarpIndexRouteImport } from './routes/dashboard/connections/warp/index'
 
 const DashboardRouteRoute = DashboardRouteRouteImport.update({
@@ -66,6 +67,11 @@ const DashboardConnectionsIndexRoute =
     path: '/connections/',
     getParentRoute: () => DashboardRouteRoute,
   } as any)
+const DashboardBoardsIndexRoute = DashboardBoardsIndexRouteImport.update({
+  id: '/boards/',
+  path: '/boards/',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
 const DashboardConnectionsWarpIndexRoute =
   DashboardConnectionsWarpIndexRouteImport.update({
     id: '/connections/warp/',
@@ -77,6 +83,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRouteRouteWithChildren
   '/dashboard/': typeof DashboardIndexRoute
+  '/dashboard/boards/': typeof DashboardBoardsIndexRoute
   '/dashboard/connections/': typeof DashboardConnectionsIndexRoute
   '/dev/boardsheet/': typeof DevBoardsheetIndexRoute
   '/dev/create/': typeof DevCreateIndexRoute
@@ -88,6 +95,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardIndexRoute
+  '/dashboard/boards': typeof DashboardBoardsIndexRoute
   '/dashboard/connections': typeof DashboardConnectionsIndexRoute
   '/dev/boardsheet': typeof DevBoardsheetIndexRoute
   '/dev/create': typeof DevCreateIndexRoute
@@ -101,6 +109,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRouteRouteWithChildren
   '/dashboard/': typeof DashboardIndexRoute
+  '/dashboard/boards/': typeof DashboardBoardsIndexRoute
   '/dashboard/connections/': typeof DashboardConnectionsIndexRoute
   '/dev/boardsheet/': typeof DevBoardsheetIndexRoute
   '/dev/create/': typeof DevCreateIndexRoute
@@ -115,6 +124,7 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/dashboard/'
+    | '/dashboard/boards/'
     | '/dashboard/connections/'
     | '/dev/boardsheet/'
     | '/dev/create/'
@@ -126,6 +136,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/dashboard'
+    | '/dashboard/boards'
     | '/dashboard/connections'
     | '/dev/boardsheet'
     | '/dev/create'
@@ -138,6 +149,7 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/dashboard/'
+    | '/dashboard/boards/'
     | '/dashboard/connections/'
     | '/dev/boardsheet/'
     | '/dev/create/'
@@ -222,6 +234,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardConnectionsIndexRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/dashboard/boards/': {
+      id: '/dashboard/boards/'
+      path: '/boards'
+      fullPath: '/dashboard/boards/'
+      preLoaderRoute: typeof DashboardBoardsIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
     '/dashboard/connections/warp/': {
       id: '/dashboard/connections/warp/'
       path: '/connections/warp'
@@ -234,12 +253,14 @@ declare module '@tanstack/react-router' {
 
 interface DashboardRouteRouteChildren {
   DashboardIndexRoute: typeof DashboardIndexRoute
+  DashboardBoardsIndexRoute: typeof DashboardBoardsIndexRoute
   DashboardConnectionsIndexRoute: typeof DashboardConnectionsIndexRoute
   DashboardConnectionsWarpIndexRoute: typeof DashboardConnectionsWarpIndexRoute
 }
 
 const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardIndexRoute: DashboardIndexRoute,
+  DashboardBoardsIndexRoute: DashboardBoardsIndexRoute,
   DashboardConnectionsIndexRoute: DashboardConnectionsIndexRoute,
   DashboardConnectionsWarpIndexRoute: DashboardConnectionsWarpIndexRoute,
 }
