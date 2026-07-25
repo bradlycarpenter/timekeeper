@@ -51,7 +51,7 @@ function RouteComponent() {
 
   return (
     <div className="p-2 space-y-2">
-      <div className="flex gap-1">
+      <div className="flex gap-1 flex-warp">
         <Link to="/dashboard">
           <h2 className="text-xl text-muted-foreground">Dashboard</h2>
         </Link>
@@ -59,8 +59,8 @@ function RouteComponent() {
         <h2 className="font-semibold text-xl">Connections</h2>
       </div>
 
-      <div className="flex gap-4">
-        <Card className="relative min-w-xs max-w-md pt-0">
+      <div className="flex flex-wrap gap-4">
+        <Card className="relative min-w-sm pt-0">
           <div className="absolute inset-0 z-30 aspect-video" />
           <img
             src="https://www.warpdevelopment.com/wp-content/uploads/2023/10/warp-logo-light-3.svg"
@@ -112,7 +112,7 @@ function RouteComponent() {
             </Button>
           </CardFooter>
         </Card>
-        <Card className="relative max-w-xs pt-0">
+        <Card className="relative max-w-sm pt-0">
           <div className="absolute inset-0 z-30 aspect-video" />
           <img
             src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Jira_Logo.svg/1280px-Jira_Logo.svg.png"
