@@ -26,8 +26,11 @@
       "preview_id": "<ID_OF_PREVIEW_KV_NAMESPACE_FOR_LOCAL_DEVELOPMENT>",
     },
   ],
+  // Cron is UTC: 15:00 UTC is 17:00 in Africa/Johannesburg, the end of the
+  // working day the entries are billed to. Change both this and TIMEZONE
+  // together if the team moves zone.
   "triggers": {
-    "crons": ["0 17 * * mon-fri"],
+    "crons": ["0 15 * * mon-fri"],
   },
   "queues": {
     "producers": [

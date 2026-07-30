@@ -1,12 +1,14 @@
 - [ ] Set up CI/CD for Cloudflare
   - [ ] Deployments
   - [ ] Database Migrations
-- [ ] Auth Token Saving
-  - [ ] Optional Email and Password Storing
-  - [ ] Hashing
-- [ ] Board Sheet Creation UI
-- [ ] Login UI
-- [ ] Recent Post History
 - [ ] Admin View to Display Queues
   - [ ] Admin Account
+- [ ] Encrypt the stored Warp token at rest
+- [ ] Code split the client bundle (one 742kB chunk today)
+- [ ] Decide whether a failed post should be retried by the queue rather than
+      only recorded as failed
 - [x] Configure Queueing System
+- [x] Auth Token Saving (Warp token exchanged from email and password, stored per user)
+- [x] Board Sheet Creation UI (guided wizard at /links/new)
+- [x] Login UI
+- [x] Recent Post History (on the Today screen)

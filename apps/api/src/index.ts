@@ -1,1085 +1,169 @@
-import type { JiraIssue, WarpProject } from '@tk/types'
+import type {
+  BoardSheet as BoardSheetDomain,
+  Today as TodayDomain,
+} from '@tk/domain'
+import { DateTime, Effect, Layer } from 'effect'
+import { Auth } from './Auth.ts'
 import {
-  jiraIssuesResponseSchema,
-  jiraProjectSchema,
-  StatusCondition,
-  stubMessages,
-  toAPIWarpAuthStatus,
-  WarpAuthStatus,
-  warpProjectSchema,
-  warpPersonIdSchema,
-} from '@tk/types'
-import { Hono } from 'hono'
-import { logger } from 'hono/logger'
-import { z } from 'zod'
-import { createAuth } from './auth.js'
-import { responseParse } from '@tk/utils'
-import { createDb } from './db.init.js'
-import {
-  boardSheet,
-  dailyBoardSheetPost,
-  sheetAuthToken,
-  stub,
-} from './db.schema.js'
-import { and, eq } from 'drizzle-orm'
+  Bindings,
+  type DailyPostJob,
+  type Env,
+  timeZone,
+} from './Bindings.ts'
+import { Repo } from './Repo.ts'
+import { servicesLayer, webHandler } from './Runtime.ts'
+import { Timesheet } from './Timesheet.ts'
 
-const ONE_WEEK = 60 * 60 * 24 * 7
+const runWithServices = <A, E>(
+  env: Env,
+  effect: Effect.Effect<A, E, Bindings | Auth | Repo | Timesheet>,
+) => Effect.runPromise(Effect.provide(effect, servicesLayer(env)) as Effect.Effect<A, E>)
 
-/** Can throw
- * Fetches all resources and returns the cloud ID from the first one
- * Can they have multiple resources?
- * What happens if they do?*/
-const cloudIdGet = async (accessToken: string) =>
-  await fetch('https://api.atlassian.com/oauth/token/accessible-resources', {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      Accept: 'application/json',
-    },
-  })
-    .then(async (res) =>
-      responseParse({
-        res,
-        schema: z
-          .object({
-            id: z.string(),
-            url: z.string(),
-            name: z.string(),
-          })
-          .array(),
-        name: 'Accessible Resources',
-      }),
-    )
-    .then((res) => res[0]?.id)
+/** The scheduled run only enqueues: it claims each link's slot for the day and
+ * hands the work to the queue, so a slow Jira or Warp cannot hold up the cron. */
+const enqueueToday = Effect.gen(function* () {
+  const env = yield* Bindings
+  const repo = yield* Repo
+  const zone = yield* timeZone
+  const now = yield* DateTime.now
+  const entryDate = DateTime.formatIsoDate(
+    DateTime.setZone(now, zone),
+  ) as TodayDomain.EntryDate
 
-/**Can throw*/
-const issuesGet = async (env: Bindings, jql: string) => {
-  let issues: JiraIssue[] = []
-  let isLast = true
-  let nextPageToken: string | undefined
-  do {
-    const params = new URLSearchParams({
-      jql,
-      fields: 'summary',
-      ...(nextPageToken ? { nextPageToken } : {}),
-    })
+  const candidates = yield* repo.linksToPost()
 
-    const issueResponse = await fetch(
-      `https://${env.TEST_JIRA_DOMAIN}/rest/api/3/search/jql?${params}`,
-      {
-        method: 'GET',
-        headers: {
-          Authorization: `Basic ${btoa(`${env.TEST_JIRA_EMAIL}:${env.TEST_JIRA_API_KEY}`)}`,
-        },
-      },
-    ).then((res) =>
-      responseParse({
-        res,
-        schema: jiraIssuesResponseSchema,
-        name: 'Issues',
-      }),
-    )
-    issues.push(...issueResponse.issues)
-    isLast = issueResponse.isLast
-    nextPageToken = issueResponse.nextPageToken
-    // Brad: Unlikey but will hit infinite loop if we hit this case
-    if (!isLast && !nextPageToken) {
-      throw new Error(
-        'Jira issue search response was not last page but did not include nextPageToken',
-      )
-    }
-  } while (!isLast)
-  return issues
-}
+  const claimed = yield* Effect.forEach(
+    candidates,
+    ({ userId, link }) =>
+      Effect.map(
+        repo.claimDay(userId, link.id, entryDate, 'queued'),
+        (won): DailyPostJob | undefined =>
+          won ? { boardSheetId: link.id, entryDate } : undefined,
+      ),
+    { concurrency: 5 },
+  )
 
-type IssueDescriptor = {
-  issues: JiraIssue[]
-  prefix: string
-}
+  const jobs = claimed.filter((job) => job !== undefined)
 
-const createMessage = (issueDescriptors: IssueDescriptor[]) => {
-  let message = ''
-  for (const issueDescriptor of issueDescriptors) {
-    if (message.length !== 0) {
-      message += ' '
-    }
-    for (const [i, issue] of issueDescriptor.issues.entries()) {
-      if (i === 0) {
-        message +=
-          issueDescriptor.prefix +
-          ' ' +
-          issue.key +
-          ' (' +
-          issue.fields.summary +
-          ')'
-        continue
-      }
-      if (i === issueDescriptor.issues.length - 1) {
-        message += ` and ${issue.key} (${issue.fields.summary})`
-        continue
-      }
-      message += `, ${issue.key} (${issue.fields.summary})`
-    }
-    message += '.'
-  }
-  return message
-}
-
-type DailyBoardSheetPostJob = {
-  boardSheetId: string
-  entryDate: string
-}
-
-type Bindings = {
-  DB: D1Database
-  KV: KVNamespace
-  DAILY_POST_QUEUE: Queue<DailyBoardSheetPostJob>
-  BETTER_AUTH_SECRET: string
-  BETTER_AUTH_URL: string
-  BETTER_AUTH_TRUSTED_ORIGINS?: string
-  MICROSOFT_CLIENT_ID: string
-  MICROSOFT_CLIENT_SECRET?: string
-  MICROSOFT_TENANT_ID?: string
-  ATLASSIAN_CLIENT_ID: string
-  ATLASSIAN_CLIENT_SECRET?: string
-  TEST_JIRA_DOMAIN: string
-  TEST_JIRA_EMAIL: string
-  TEST_JIRA_API_KEY: string
-  WARP_TEST_DOMAIN: string
-}
-
-type Auth = ReturnType<typeof createAuth>
-
-const app = new Hono<{
-  Bindings: Bindings
-  Variables: {
-    user: Auth['$Infer']['Session']['user'] | null
-    session: Auth['$Infer']['Session']['session'] | null
-  }
-}>()
-
-app.use('*', async (c, next) => {
-  const auth = createAuth(c.env)
-  const session = await auth.api.getSession({
-    headers: c.req.raw.headers,
+  yield* Effect.logInfo('scheduled run', {
+    entryDate,
+    candidates: candidates.length,
+    enqueued: jobs.length,
   })
 
-  if (!session) {
-    c.set('user', null)
-    c.set('session', null)
-    await next()
-    return
+  if (jobs.length === 0) return
+
+  /* Queue sends cap at 100 messages per batch. */
+  for (let index = 0; index < jobs.length; index += 100) {
+    const batch = jobs.slice(index, index + 100)
+    yield* Effect.tryPromise(() =>
+      env.DAILY_POST_QUEUE.sendBatch(batch.map((body) => ({ body }))),
+    ).pipe(
+      Effect.catchCause((cause) =>
+        Effect.logError('failed to enqueue daily posts', cause).pipe(
+          Effect.andThen(
+            /* Nothing is queued, so the claim is dropped and the next run — or
+             * the user — can try again. */
+            Effect.forEach(batch, (job) =>
+              repo.releaseDay(
+                job.boardSheetId as BoardSheetDomain.BoardSheetId,
+                job.entryDate as TodayDomain.EntryDate,
+              ),
+            ),
+          ),
+        ),
+      ),
+    )
   }
-
-  c.set('user', session.user)
-  c.set('session', session.session)
-  await next()
-})
-app.use(logger())
-
-app.get('/', (c) => {
-  return c.text('Healthy')
 })
 
-app.on(['POST', 'GET'], '/api/auth/*', (c) => {
-  const auth = createAuth(c.env)
-  return auth.handler(c.req.raw).then((res) => {
-    console.log('auth handler', c.req.method, c.req.path, res.status)
-    return res
+const runJob = (job: DailyPostJob) =>
+  Effect.gen(function* () {
+    const repo = yield* Repo
+    const timesheet = yield* Timesheet
+    const entryDate = job.entryDate as TodayDomain.EntryDate
+
+    const found = yield* repo.linkById(
+      job.boardSheetId as BoardSheetDomain.BoardSheetId,
+    )
+
+    if (found._tag === 'None') {
+      yield* Effect.logInfo('link vanished before posting', job)
+      return
+    }
+
+    const { userId, link } = found.value
+
+    /* The scheduled run already claimed the day, so posting has to go ahead
+     * even though a row exists; `post` only refuses when it is already posted. */
+    yield* timesheet.post(userId, link, entryDate).pipe(
+      Effect.tap(() => Effect.logInfo('posted daily entry', job)),
+      Effect.catchTags({
+        AlreadyPosted: () => Effect.logInfo('already posted, skipping', job),
+        NoWorkToday: () =>
+          Effect.logInfo('nothing matched today, skipping', job).pipe(
+            Effect.andThen(
+              repo.setStatus(userId, link.id, entryDate, 'skipped'),
+            ),
+          ),
+      }),
+      Effect.catchCause((cause) =>
+        Effect.logError('daily post failed', cause).pipe(
+          Effect.andThen(
+            repo.markFailed(
+              link.id,
+              entryDate,
+              'Timekeeper could not post this entry.',
+            ),
+          ),
+        ),
+      ),
+    )
   })
-})
-
-app.get('/api/sheets/auth', async (c) => {
-  const user = c.get('user')
-
-  if (!user) {
-    return c.json({ error: 'Unauthorized' }, 401)
-  }
-
-  try {
-    const db = createDb(c.env.DB)
-
-    const sheetAuthToken = await db.query.sheetAuthToken.findFirst({
-      where: (sheetAuthToken, { eq }) => eq(sheetAuthToken.userId, user.id),
-    })
-
-    if (!sheetAuthToken?.authToken) {
-      return c.json({ status: toAPIWarpAuthStatus(WarpAuthStatus.NoToken) })
-    }
-
-    const personIdResponse = await fetch(
-      `https://${c.env.WARP_TEST_DOMAIN}/api/users/me`,
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${sheetAuthToken.authToken}`,
-        },
-      },
-    )
-
-    if (personIdResponse.status >= 400 && personIdResponse.status < 500) {
-      return c.json({ status: toAPIWarpAuthStatus(WarpAuthStatus.Stale) })
-    } else if (!personIdResponse.ok) {
-      throw new Error(
-        `Error getting response from Warp Person ID ${await personIdResponse.text()}`,
-      )
-    }
-
-    const personIdResponseJson = await personIdResponse.json()
-
-    const personIdParsed = warpPersonIdSchema.parse(personIdResponseJson)
-
-    return c.json({
-      status: toAPIWarpAuthStatus(WarpAuthStatus.Authed),
-      personId: personIdParsed.PersonId,
-    })
-  } catch (e) {
-    console.error(e)
-    return c.json({ reason: 'We had trouble processing your request' }, 500)
-  }
-})
-
-app.post('/api/sheets/auth', async (c) => {
-  const user = c.get('user')
-
-  if (!user) {
-    return c.json({ error: 'Unauthorized' }, 401)
-  }
-
-  const bodyParseResult = z
-    .object({
-      email: z.email(),
-      password: z.string(),
-    })
-    .safeParse(await c.req.json())
-
-  if (!bodyParseResult.success) {
-    console.error(bodyParseResult.error)
-    return c.json({ reason: 'Invalid query' }, 400)
-  }
-
-  try {
-    const authTokenResponse = await fetch(
-      `https://${c.env.WARP_TEST_DOMAIN}/api/account/authorise`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          Email: bodyParseResult.data.email,
-          Password: bodyParseResult.data.password,
-        }),
-      },
-    ).then(async (res) =>
-      responseParse({
-        res,
-        schema: z.object({
-          token: z.string(),
-        }),
-        name: 'Auth Token',
-      }),
-    )
-
-    const db = createDb(c.env.DB)
-
-    await db
-      .insert(sheetAuthToken)
-      .values({ userId: user.id, authToken: authTokenResponse.token })
-      .onConflictDoUpdate({
-        target: sheetAuthToken.userId,
-        set: { authToken: authTokenResponse.token },
-      })
-
-    return c.json({ success: true })
-  } catch (e) {
-    console.error(e)
-    // TODO: Make specific error for auth failing
-    return c.json({ reason: 'We had trouble processing your request' }, 500)
-  }
-})
-
-app.get('/api/sheets/projects/', async (c) => {
-  const user = c.get('user')
-
-  if (!user) {
-    return c.json({ error: 'Unauthorized' }, 401)
-  }
-
-  try {
-    const db = createDb(c.env.DB)
-
-    const tokenQuery = await db.query.sheetAuthToken.findFirst({
-      where: (sheetAuthToken, { eq }) => eq(sheetAuthToken.userId, user.id),
-    })
-
-    if (!tokenQuery?.authToken) {
-      return c.json({ error: 'No token' }, 401)
-    }
-
-    const cachedProjects = await c.env.KV.get('warp-projects', { type: 'json' })
-
-    if (cachedProjects) {
-      const warpProjectsResult = warpProjectSchema
-        .array()
-        .safeParse(cachedProjects)
-
-      if (warpProjectsResult.success) {
-        return c.json(warpProjectsResult.data)
-      }
-
-      console.error('Error parsing Warp Projects from cache')
-    }
-
-    const PER_PAGE = 500
-
-    const fetchProjectPage = async (page: number): Promise<WarpProject[]> => {
-      const projects = await fetch(
-        `https://${c.env.WARP_TEST_DOMAIN}/api/Project?per_page=${PER_PAGE}&page=${page}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${tokenQuery.authToken}`,
-          },
-        },
-      ).then(async (res) =>
-        responseParse({
-          res,
-          schema: warpProjectSchema.array(),
-          name: 'Projects',
-        }),
-      )
-
-      return projects.length < PER_PAGE
-        ? projects
-        : [...projects, ...(await fetchProjectPage(page + 1))]
-    }
-
-    const warpProjects = await fetchProjectPage(0)
-
-    c.executionCtx.waitUntil(
-      c.env.KV.put(`warp-projects`, JSON.stringify(warpProjects), {
-        expirationTtl: ONE_WEEK,
-      }).catch((err) => console.error('KV cache write failed', err)),
-    )
-
-    return c.json(warpProjects)
-  } catch (e) {
-    console.error(e)
-    return c.json({ Reason: 'We had trouble fetching projects' }, 502)
-  }
-})
-
-app.get('/api/messages/:boardSheetId', async (c) => {
-  const user = c.get('user')
-
-  if (!user) {
-    return c.json({ error: 'Unauthorized' }, 401)
-  }
-
-  const { boardSheetId } = c.req.param()
-
-  try {
-    const db = createDb(c.env.DB)
-    const boardSheetStubs = await db.query.boardSheet.findFirst({
-      where: (boardSheet, { eq, and }) =>
-        and(eq(boardSheet.userId, user.id), eq(boardSheet.id, boardSheetId)),
-      with: {
-        stubs: true,
-      },
-    })
-
-    if (!boardSheetStubs) {
-      return c.json({ reason: 'No boardsheet for user at id.' }, 404)
-    }
-
-    const issueDescriptors: IssueDescriptor[] = []
-
-    for (const stub of boardSheetStubs.stubs) {
-      const stubMessage = stubMessages.find(
-        (stubMessage) => stubMessage.id === stub.messageId,
-      )
-
-      if (!stubMessage) {
-        throw new Error(`Unknown stub message id: ${stub.messageId}`)
-      }
-
-      switch (stub.statusCondition) {
-        case StatusCondition.Entered: {
-          const issues = await issuesGet(
-            c.env,
-            `project = ${boardSheetStubs.boardKey}
-             AND assignee = currentUser()
-             AND status CHANGED TO ${stub.statusId} AFTER startOfDay() AND status = ${stub.statusId}`,
-          )
-          if (issues.length > 0) {
-            issueDescriptors.push({
-              issues,
-              prefix: stubMessage.text,
-            })
-          }
-          break
-        }
-        case StatusCondition.Stationary: {
-          const issues = await issuesGet(
-            c.env,
-            `project = ${boardSheetStubs.boardKey}
-             AND assignee = currentUser()
-             AND status = ${stub.statusId}
-             AND status WAS ${stub.statusId} DURING (startOfDay(-1d), endOfDay(-1d))
-             AND NOT status CHANGED TO ${stub.statusId} AFTER startOfDay()`,
-          )
-          if (issues.length > 0) {
-            issueDescriptors.push({
-              issues,
-              prefix: stubMessage.text,
-            })
-          }
-          break
-        }
-        case StatusCondition.Left:
-          const issues = await issuesGet(
-            c.env,
-            `project = ${boardSheetStubs.boardKey}
-             AND assignee = currentUser()
-             AND status CHANGED FROM ${stub.statusId} AFTER startOfDay()
-             AND status != ${stub.statusId}`,
-          )
-          if (issues.length > 0) {
-            issueDescriptors.push({
-              issues,
-              prefix: stubMessage.text,
-            })
-          }
-          break
-        default:
-          break
-      }
-    }
-
-    const message = createMessage(issueDescriptors)
-    return c.json({ message })
-  } catch (e) {
-    console.error(e)
-    return c.json({ reason: 'We failed to fetch issues' }, 500)
-  }
-})
-
-app.get('/api/work/atlassian/issues/:stubId', async (c) => {
-  const user = c.get('user')
-
-  if (!user) {
-    return c.json({ error: 'Unauthorized' }, 401)
-  }
-
-  const { stubId } = c.req.param()
-
-  try {
-    const db = createDb(c.env.DB)
-    const stub = await db.query.stub.findFirst({
-      where: (stub, { eq }) => eq(stub.id, stubId),
-      with: {
-        boardSheet: true,
-      },
-    })
-
-    if (!stub) {
-      return c.json({ reason: 'No stub sotred at that ID' }, 404)
-    }
-
-    const auth = createAuth(c.env)
-    const { accessToken } = await auth.api.getAccessToken({
-      body: {
-        providerId: 'atlassian',
-        userId: user.id,
-      },
-      headers: c.req.raw.headers,
-    })
-
-    const cloudId = await cloudIdGet(accessToken)
-
-    if (!cloudId) {
-      return c.json({ reason: 'No accessible reasources' }, 400)
-    }
-
-    switch (stub.statusCondition) {
-      case StatusCondition.Entered: {
-        const issuesResponse = await issuesGet(
-          c.env,
-          `project = ${stub.boardSheet.boardKey}
-           AND assignee = currentUser()
-           AND status CHANGED TO ${stub.statusId} AFTER startOfDay() AND status = ${stub.statusId}`,
-        )
-        return c.json(issuesResponse)
-      }
-      case StatusCondition.Stationary: {
-        const issuesResponse = await issuesGet(
-          c.env,
-          `project = ${stub.boardSheet.boardKey}
-           AND assignee = currentUser()
-           AND status = ${stub.statusId}
-           AND status WAS ${stub.statusId} DURING (startOfDay(-1d), endOfDay(-1d))
-           AND NOT status CHANGED TO ${stub.statusId} AFTER startOfDay()`,
-        )
-        return c.json(issuesResponse)
-      }
-      case StatusCondition.Left:
-        const issuesResponse = await issuesGet(
-          c.env,
-          `project = ${stub.boardSheet.boardKey}
-           AND assignee = currentUser()
-           AND status CHANGED FROM ${stub.statusId} AFTER startOfDay()
-           AND status != ${stub.statusId}`,
-        )
-        return c.json(issuesResponse)
-      default:
-        return c.json({ reason: 'Operation not implemented yet' }, 501)
-    }
-  } catch (e) {
-    console.error(e)
-    return c.json({ reason: 'We failed to fetch issues' }, 500)
-  }
-})
-
-app.get('/api/work/atlassian/projects', async (c) => {
-  const user = c.get('user')
-
-  if (!user) {
-    return c.json({ error: 'Unauthorized' }, 401)
-  }
-
-  try {
-    // TODO: Test what happens if atlassian not linked
-    const auth = createAuth(c.env)
-    const { accessToken } = await auth.api.getAccessToken({
-      body: {
-        providerId: 'atlassian',
-        userId: user.id,
-      },
-      headers: c.req.raw.headers,
-    })
-
-    // Brad: We have to first get the stupid cloud ID because when using OAuth
-    // we need to hit the EX endpoint for whatever reason.
-
-    const cloudId = await cloudIdGet(accessToken)
-
-    if (!cloudId) {
-      return c.json({ reason: 'No accessible reasources' }, 400)
-    }
-
-    // Brad: We can't just look up what projects the user has access to because
-    // at Warp the user has access to every project under the sun so one way we
-    // can see what projects they are working on is by looking through all of
-    // their completed issues and then adding the projects related to those
-    // issues to a set so they are automatically deduped.
-
-    const jql = 'assignee = currentUser() AND statusCategory != Done'
-
-    const projectsById = new Map<
-      string,
-      { id: string; key: string; name: string }
-    >()
-
-    let nextPageToken: string | undefined
-
-    do {
-      const params = new URLSearchParams({
-        jql,
-        fields: 'project',
-        maxResults: '100',
-      })
-      if (nextPageToken) params.set('nextPageToken', nextPageToken)
-
-      const page = await fetch(
-        `https://api.atlassian.com/ex/jira/${cloudId}/rest/api/3/search/jql?${params}`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            Accept: 'application/json',
-          },
-        },
-      ).then(async (res) =>
-        responseParse({
-          res,
-          schema: z.object({
-            issues: z
-              .object({
-                fields: z.object({
-                  project: jiraProjectSchema,
-                }),
-              })
-              .array(),
-            nextPageToken: z.string().optional(),
-          }),
-          name: 'Issue Search',
-        }),
-      )
-
-      for (const issue of page.issues) {
-        projectsById.set(issue.fields.project.id, issue.fields.project)
-      }
-
-      nextPageToken = page.nextPageToken
-    } while (nextPageToken)
-
-    return c.json([...projectsById.values()])
-  } catch (e) {
-    console.error(e)
-    return c.json({ error: 'We had trouble fetching projects' }, 502)
-  }
-})
-
-app.get('/api/work/status/:projectKey', async (c) => {
-  const user = c.get('user')
-
-  if (!user) {
-    return c.json({ error: 'Unauthorized' }, 401)
-  }
-
-  const key = c.req.param('projectKey')
-
-  try {
-    const auth = createAuth(c.env)
-    const { accessToken } = await auth.api.getAccessToken({
-      body: {
-        providerId: 'atlassian',
-        userId: user.id,
-      },
-      headers: c.req.raw.headers,
-    })
-
-    const cloudId = await cloudIdGet(accessToken)
-
-    if (!cloudId) {
-      return c.json({ reason: 'User has no access to resources' }, 400)
-    }
-
-    const ticketTypes = await fetch(
-      `https://api.atlassian.com/ex/jira/${cloudId}/rest/api/3/project/${key}/statuses`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          Accept: 'application/json',
-        },
-      },
-    ).then(async (res) =>
-      responseParse({
-        res,
-        schema: z
-          .object({
-            self: z.url(),
-            id: z.string(),
-            name: z.string(),
-            subtask: z.boolean(),
-            statuses: z
-              .object({
-                self: z.url(),
-                description: z.string(),
-                iconUrl: z.url(),
-                name: z.string(),
-                untranslatedName: z.string(),
-                id: z.string(),
-                statusCategory: z.object({
-                  self: z.url(),
-                  id: z.number(),
-                  key: z.string(),
-                  colorName: z.string(),
-                  name: z.string(),
-                }),
-              })
-              .array(),
-          })
-          .array(),
-        name: 'Statuses',
-      }),
-    )
-
-    const statusCategories = new Map<
-      string,
-      {
-        self: string
-        id: number
-        key: string
-        colorName: string
-        name: string
-        statuses: { self: string; name: string; id: string }[]
-      }
-    >()
-
-    // Brad: Reformat the list as the map above.
-    // Loop over each ticket type, then each status inside the ticket type
-    // status array. Then separate the status category from the fields.
-    // Make a category variable, check if the map already has that category.
-    // If it doesn't, assign the category variable with the category from
-    // the current status in the iteration and an empty array of statuses,
-    // then store that category back into the map.
-    // Then, we'll have a category with fields and a status array so we check
-    // if the statuses array inside the category already has the status we're
-    // currently on (matched by id) and if it doesn't, we push it into that
-    // array or move on.
-
-    for (const ticketType of ticketTypes) {
-      for (const status of ticketType.statuses) {
-        const { statusCategory, ...statusFields } = status
-
-        let category = statusCategories.get(statusCategory.name)
-        if (!category) {
-          category = { ...statusCategory, statuses: [] }
-          statusCategories.set(statusCategory.name, category)
-        }
-
-        if (!category.statuses.some((s) => s.id === statusFields.id)) {
-          category.statuses.push({
-            self: statusFields.self,
-            name: statusFields.name,
-            id: statusFields.id,
-          })
-        }
-      }
-    }
-
-    return c.json([...statusCategories.values()])
-  } catch (e) {
-    console.error(e)
-    return c.json({ reason: 'We had trouble fetching statuses' }, 500)
-  }
-})
-
-app.get('/api/boardsheet', async (c) => {
-  const user = c.get('user')
-
-  if (!user) {
-    return c.json({ error: 'Unauthorized' }, 401)
-  }
-
-  try {
-    const db = createDb(c.env.DB)
-    const boardsheets = await db.query.boardSheet.findMany({
-      where: (bs, { eq }) => eq(bs.userId, user.id),
-    })
-    return c.json(boardsheets)
-  } catch (e) {
-    console.error(e)
-    return c.json({ reason: 'Error loading boardsheets' }, 500)
-  }
-})
-
-app.post('/api/boardsheet', async (c) => {
-  const user = c.get('user')
-
-  if (!user) {
-    return c.json({ error: 'Unauthorized' }, 401)
-  }
-
-  const bodyParseResult = z
-    .object({
-      warpProject: warpProjectSchema,
-      jiraProject: jiraProjectSchema,
-    })
-    .safeParse(await c.req.json())
-
-  if (!bodyParseResult.success) {
-    console.error(bodyParseResult.error)
-    return c.json({ reason: 'Invalid post body' }, 400)
-  }
-
-  const { warpProject, jiraProject } = bodyParseResult.data
-
-  try {
-    const db = createDb(c.env.DB)
-    await db.insert(boardSheet).values({
-      userId: user.id,
-      sheetTaskId: warpProject.TaskId,
-      sheetName: warpProject.Name,
-      sheetClientName: warpProject.Client.Name,
-      boardId: jiraProject.id,
-      boardName: jiraProject.name,
-      boardKey: jiraProject.key,
-    })
-    return c.json({ success: true }, 201)
-  } catch (e) {
-    console.error(e)
-    return c.json({ reason: 'Failed to save project link' }, 500)
-  }
-})
-
-app.get('/api/stub', async (c) => {
-  const user = c.get('user')
-
-  if (!user) {
-    return c.json({ error: 'Unauthorized' }, 401)
-  }
-
-  try {
-    const db = createDb(c.env.DB)
-    const boardSheetStubs = await db.query.boardSheet.findMany({
-      with: {
-        stubs: true,
-      },
-      where: (boardSheet, { eq }) => eq(boardSheet.userId, user.id),
-    })
-    return c.json(boardSheetStubs)
-  } catch (e) {
-    console.error()
-    return c.json({ reason: 'We had trouble fetching your stubs' }, 500)
-  }
-})
-
-app.post('/api/stub', async (c) => {
-  const user = c.get('user')
-
-  if (!user) {
-    return c.json({ error: 'Unauthorized' }, 401)
-  }
-
-  const bodyParseResult = z
-    .object({
-      boardSheetId: z.string(),
-      jiraStatusId: z.string(),
-      statusConditionId: z.enum(StatusCondition),
-      // TODO: Figure this shit out
-      stubMessageId: z.union([
-        z.literal(0),
-        z.literal(1),
-        z.literal(2),
-        z.literal(3),
-      ]),
-    })
-    .safeParse(await c.req.json())
-
-  if (!bodyParseResult.success) {
-    console.error(bodyParseResult.error)
-    return c.json({ reason: 'Invalid post body' }, 400)
-  }
-
-  const { boardSheetId, jiraStatusId, statusConditionId, stubMessageId } =
-    bodyParseResult.data
-
-  try {
-    const db = createDb(c.env.DB)
-    await db.insert(stub).values({
-      boardSheetId: boardSheetId,
-      messageId: stubMessageId,
-      statusCondition: statusConditionId,
-      statusId: jiraStatusId,
-    })
-    return c.json({ success: true })
-  } catch (e) {
-    console.error(e)
-    return c.json({ reason: 'Failed to save stub' }, 500)
-  }
-})
 
 export default {
-  fetch: app.fetch,
+  fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    const url = new URL(request.url)
 
-  async scheduled(
-    controller: ScheduledController,
-    env: Bindings,
-    _ctx: ExecutionContext,
-  ) {
-    const db = createDb(env.DB)
-
-    const boardSheets = await db.query.boardSheet.findMany({
-      with: {
-        stubs: true,
-      },
-    })
-
-    const entryDate = new Date(controller.scheduledTime)
-      .toISOString()
-      .slice(0, 10)
-
-    const candidates = boardSheets
-      .filter((boardSheet) => boardSheet.stubs.length > 0)
-      .map((boardSheet) => ({
-        boardSheetId: boardSheet.id,
-        userId: boardSheet.userId,
-        entryDate,
-        status: 'queued' as const,
-      }))
-
-    const insertedPosts =
-      candidates.length === 0
-        ? []
-        : await db
-            .insert(dailyBoardSheetPost)
-            .values(candidates)
-            .onConflictDoNothing()
-            .returning()
-
-    if (insertedPosts.length > 0) {
-      await env.DAILY_POST_QUEUE.sendBatch(
-        insertedPosts.map((post) => ({
-          body: {
-            boardSheetId: post.boardSheetId,
-            entryDate: post.entryDate,
-          },
-        })),
+    /* better-auth owns its own routes and speaks plain fetch, so it is mounted
+     * ahead of the Effect API rather than wrapped by it. */
+    if (url.pathname.startsWith('/api/auth/')) {
+      return Effect.runPromise(
+        Effect.provide(
+          Effect.flatMap(Auth, (auth) => auth.handler(request)),
+          servicesLayer(env),
+        ),
       )
     }
+
+    if (url.pathname === '/api/health') {
+      return Promise.resolve(Response.json({ status: 'healthy' }))
+    }
+
+    return webHandler(env)(request)
   },
 
-  async queue(
-    batch: MessageBatch<DailyBoardSheetPostJob>,
-    env: Bindings,
+  scheduled(
+    _controller: ScheduledController,
+    env: Env,
     _ctx: ExecutionContext,
-  ) {
-    const db = createDb(env.DB)
+  ): Promise<void> {
+    return runWithServices(env, enqueueToday).then(() => undefined)
+  },
 
-    for (const message of batch.messages) {
-      const job = message.body
-
-      const boardSheet = await db.query.boardSheet.findFirst({
-        where: (boardSheet, { eq }) => eq(boardSheet.id, job.boardSheetId),
-        with: {
-          stubs: true,
-        },
-      })
-
-      if (!boardSheet) {
-        message.ack()
-        continue
-      }
-
-      const issueDescriptors: IssueDescriptor[] = []
-
-      for (const stub of boardSheet.stubs) {
-        const stubMessage = stubMessages.find(
-          (stubMessage) => stubMessage.id === stub.messageId,
-        )
-
-        if (!stubMessage) {
-          throw new Error(`Unknown stub message id: ${stub.messageId}`)
-        }
-
-        switch (stub.statusCondition) {
-          case StatusCondition.Entered: {
-            const issues = await issuesGet(
-              env,
-              `project = ${boardSheet.boardKey}
-               AND assignee = currentUser()
-               AND status CHANGED TO ${stub.statusId} AFTER startOfDay() AND status = ${stub.statusId}`,
-            )
-            if (issues.length > 0) {
-              issueDescriptors.push({
-                issues,
-                prefix: stubMessage.text,
-              })
-            }
-            break
-          }
-          case StatusCondition.Stationary: {
-            const issues = await issuesGet(
-              env,
-              `project = ${boardSheet.boardKey}
-               AND assignee = currentUser()
-               AND status = ${stub.statusId}
-               AND status WAS ${stub.statusId} DURING (startOfDay(-1d), endOfDay(-1d))
-               AND NOT status CHANGED TO ${stub.statusId} AFTER startOfDay()`,
-            )
-            if (issues.length > 0) {
-              issueDescriptors.push({
-                issues,
-                prefix: stubMessage.text,
-              })
-            }
-            break
-          }
-          case StatusCondition.Left:
-            const issues = await issuesGet(
-              env,
-              `project = ${boardSheet.boardKey}
-               AND assignee = currentUser()
-               AND status CHANGED FROM ${stub.statusId} AFTER startOfDay()
-               AND status != ${stub.statusId}`,
-            )
-            if (issues.length > 0) {
-              issueDescriptors.push({
-                issues,
-                prefix: stubMessage.text,
-              })
-            }
-            break
-          default:
-            break
-        }
-      }
-
-      const newMessage = createMessage(issueDescriptors)
-
-      const sheetAuthToken = await db.query.sheetAuthToken.findFirst({
-        where: (sheetAuthToken, { eq }) =>
-          eq(sheetAuthToken.userId, boardSheet.userId),
-        columns: {
-          authToken: true,
-        },
-      })
-
-      if (!sheetAuthToken?.authToken) {
-        throw new Error(
-          `No sheet auth token stored for user: ${boardSheet.userId}`,
-        )
-      }
-
-      const personIdResponse = await fetch(
-        `https://${env.WARP_TEST_DOMAIN}/api/users/me`,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${sheetAuthToken.authToken}`,
-          },
-        },
-      ).then((res) =>
-        responseParse({
-          res,
-          schema: warpPersonIdSchema,
-          name: 'Person',
-        }),
-      )
-      const entryIdResponse = await fetch(
-        `https://${env.WARP_TEST_DOMAIN}/api/entry/create`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${sheetAuthToken.authToken}`,
-          },
-          body: JSON.stringify({
-            TaskId: boardSheet.sheetTaskId,
-            PersonId: personIdResponse.PersonId,
-            CostCodeId: '2',
-            DepartmentId: '1',
-            Overtime: '0',
-            Time: '8',
-            EntryDate: `${job.entryDate}T17:00:00`,
-            Comments: newMessage,
-            WorkLogId: '0',
-            Audited: '0',
-          }),
-        },
-      ).then((res) =>
-        responseParse({
-          res,
-          schema: z.object({
-            EntryId: z.number(),
-          }),
-          name: 'Entry',
-        }),
-      )
-
-      await db
-        .update(dailyBoardSheetPost)
-        .set({ status: 'posted', entryId: entryIdResponse.EntryId })
-        .where(
-          and(
-            eq(dailyBoardSheetPost.boardSheetId, boardSheet.id),
-            eq(dailyBoardSheetPost.entryDate, job.entryDate),
+  queue(batch: MessageBatch<DailyPostJob>, env: Env): Promise<void> {
+    return runWithServices(
+      env,
+      Effect.forEach(
+        batch.messages,
+        (message) =>
+          runJob(message.body).pipe(
+            /* Every outcome is recorded on the row, so retrying would only
+             * repeat work that has already been accounted for. */
+            Effect.ensuring(Effect.sync(() => message.ack())),
           ),
-        )
-
-      message.ack()
-    }
+        { concurrency: 3, discard: true },
+      ),
+    ).then(() => undefined)
   },
 }

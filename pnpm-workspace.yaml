@@ -5,6 +5,7 @@ packages:
 allowBuilds:
   better-sqlite3: true
   esbuild: true
+  msgpackr-extract: false
   sharp: true
   unrs-resolver: true
   workerd: true
@@ -12,6 +13,9 @@ allowBuilds:
 catalog:
   'better-auth': '^1.6.20'
   'zod': '^4.4.3'
+  'effect': '4.0.0-beta.102'
+  '@effect/sql-d1': '4.0.0-beta.102'
+  '@effect/atom-react': '4.0.0-beta.102'
 
 allowedDeprecatedVersions:
   '@esbuild-kit/core-utils': '*'

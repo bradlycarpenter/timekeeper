@@ -1,0 +1,55 @@
+import type { CostCodeId } from './BoardSheet.ts'
+
+/** Warp's cost codes are a fixed catalogue keyed by the ids its API expects, so
+ * they are shipped with the app rather than fetched. The gaps in the numbering
+ * are Warp's, not omissions. */
+export const costCodes = [
+  { id: 1, name: 'Consulting' },
+  { id: 2, name: 'Software Development' },
+  { id: 3, name: 'Graphic Design' },
+  { id: 5, name: 'Onsite Support: Infrastructure' },
+  { id: 6, name: 'Onsite Support: Software' },
+  { id: 8, name: 'Telephonic Support: Infrastructure' },
+  { id: 9, name: 'Telephonic Support: Software' },
+  { id: 10, name: 'Telephonic Support: Internet' },
+  { id: 11, name: 'Telephonic Support: Hosting' },
+  { id: 13, name: 'Sales: Internet' },
+  { id: 14, name: 'Sales: Hosting' },
+  { id: 15, name: 'Web Update' },
+  { id: 16, name: 'Quality Assurance' },
+  { id: 18, name: 'Software Design' },
+  { id: 19, name: 'Documentation' },
+  { id: 20, name: 'Testing: Software' },
+  { id: 21, name: 'Testing: Web' },
+  { id: 22, name: 'Testing: Hardware' },
+  { id: 23, name: 'Testing: Infrastructure' },
+  { id: 24, name: 'Bug Fix' },
+  { id: 26, name: 'Miscellaneous' },
+  { id: 27, name: 'Management' },
+  { id: 28, name: 'Support' },
+  { id: 29, name: 'Data Capturing' },
+  { id: 30, name: 'Research' },
+  { id: 31, name: 'Report' },
+  { id: 33, name: 'Social Marketing' },
+  { id: 34, name: 'Support: Callout JHB' },
+  { id: 35, name: 'Support: In House' },
+  { id: 36, name: 'Deployment' },
+  { id: 37, name: 'Onsite Support' },
+  { id: 38, name: 'Remote Support' },
+  { id: 40, name: 'Training' },
+  { id: 41, name: 'Styling' },
+  { id: 42, name: 'SEO' },
+  { id: 43, name: 'Scrum and Project Administration' },
+  { id: 45, name: 'Marketing Automation' },
+  { id: 46, name: 'Online Marketing' },
+  { id: 48, name: 'Copywriting' },
+  { id: 51, name: 'UX Design' },
+  { id: 52, name: 'Server maintenance' },
+  { id: 57, name: 'Timesheets' },
+  { id: 59, name: 'Daily Standup Meeting' },
+  { id: 60, name: 'Support Management' },
+  { id: 61, name: 'Planning & Design' },
+] as const
+
+export const costCodeName = (id: CostCodeId): string =>
+  costCodes.find((code) => code.id === id)?.name ?? `Cost code ${id}`
