@@ -17,10 +17,7 @@ export type Env = {
   readonly MICROSOFT_TENANT_ID?: string
   readonly ATLASSIAN_CLIENT_ID: string
   readonly ATLASSIAN_CLIENT_SECRET?: string
-  /** `WARP_TEST_DOMAIN` is the name this has always had in Doppler; the
-   * unprefixed name wins when both are present. */
-  readonly WARP_DOMAIN?: string
-  readonly WARP_TEST_DOMAIN?: string
+  readonly WARP_DOMAIN: string
   /** IANA zone deciding which calendar day work is billed to. */
   readonly TIMEZONE?: string
 }
@@ -29,10 +26,7 @@ export class Bindings extends Context.Service<Bindings, Env>()('tk/Bindings') {}
 
 export const DEFAULT_TIMEZONE = 'Africa/Johannesburg'
 
-export const warpDomain = Effect.map(
-  Bindings,
-  (env) => env.WARP_DOMAIN ?? env.WARP_TEST_DOMAIN ?? 'warpdevelopment.net',
-)
+export const warpDomain = Effect.map(Bindings, (env) => env.WARP_DOMAIN)
 
 /** The zone the user's working day is measured in. Everything that decides
  * "today" goes through here so a late-evening visit doesn't roll the date over
