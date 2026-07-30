@@ -6,8 +6,12 @@ import { LinkCard } from '#/components/link-card/link-card'
 import { ScreenState } from '#/components/screen-state/screen-state'
 import { Button } from '#/components/ui/button'
 import { linksAtom } from '#/lib/atoms'
+import { registry } from '#/lib/registry'
 
 export const Route = createFileRoute('/_app/links/')({
+  loader: () => {
+    registry.get(linksAtom)
+  },
   component: LinksScreen,
 })
 

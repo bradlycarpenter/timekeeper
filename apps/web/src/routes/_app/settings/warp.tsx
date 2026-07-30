@@ -9,10 +9,14 @@ import { Field, FieldError, FieldGroup, FieldLabel } from '#/components/ui/field
 import { Input } from '#/components/ui/input'
 import { Spinner } from '#/components/ui/spinner'
 import { keys } from '#/lib/api'
-import { connectSheetAtom } from '#/lib/atoms'
+import { connectSheetAtom, connectionsAtom } from '#/lib/atoms'
 import { describe } from '#/lib/errors'
+import { registry } from '#/lib/registry'
 
 export const Route = createFileRoute('/_app/settings/warp')({
+  loader: () => {
+    registry.get(connectionsAtom)
+  },
   component: ConnectWarpScreen,
 })
 

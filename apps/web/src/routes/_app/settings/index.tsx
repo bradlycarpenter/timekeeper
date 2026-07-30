@@ -12,8 +12,12 @@ import { Spinner } from '#/components/ui/spinner'
 import { keys } from '#/lib/api'
 import { connectionsAtom, disconnectSheetAtom } from '#/lib/atoms'
 import { describe } from '#/lib/errors'
+import { registry } from '#/lib/registry'
 
 export const Route = createFileRoute('/_app/settings/')({
+  loader: () => {
+    registry.get(connectionsAtom)
+  },
   component: SettingsScreen,
 })
 
