@@ -19,8 +19,13 @@ import {
   todayAtom,
 } from '#/lib/atoms'
 import { formatDayLong, formatDayShort } from '#/lib/dates'
+import { registry } from '#/lib/registry'
 
 export const Route = createFileRoute('/_app/today/')({
+  loader: () => {
+    registry.get(todayAtom)
+    registry.get(historyAtom)
+  },
   component: TodayScreen,
 })
 

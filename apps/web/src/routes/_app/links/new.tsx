@@ -22,8 +22,12 @@ import {
   sheetProjectsAtom,
 } from '#/lib/atoms'
 import { describe } from '#/lib/errors'
+import { registry } from '#/lib/registry'
 
 export const Route = createFileRoute('/_app/links/new')({
+  loader: () => {
+    registry.get(connectionsAtom)
+  },
   component: NewLinkScreen,
 })
 

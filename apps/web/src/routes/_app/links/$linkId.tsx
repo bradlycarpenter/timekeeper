@@ -30,8 +30,12 @@ import {
   updateLinkAtom,
 } from '#/lib/atoms'
 import { describe } from '#/lib/errors'
+import { registry } from '#/lib/registry'
 
 export const Route = createFileRoute('/_app/links/$linkId')({
+  loader: ({ params }) => {
+    registry.get(linkAtom(params.linkId as BoardSheet.BoardSheetId))
+  },
   component: LinkScreen,
 })
 

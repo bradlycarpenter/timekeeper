@@ -2,7 +2,7 @@ import { createFileRoute, redirect } from '@tanstack/react-router'
 import { Schema } from 'effect'
 import { TimerIcon } from 'lucide-react'
 import { useState } from 'react'
-import { authClient } from '#/auth'
+import { authClient, readSession } from '#/auth'
 import { Button } from '#/components/ui/button'
 import { Spinner } from '#/components/ui/spinner'
 
@@ -10,11 +10,14 @@ const SearchParams = Schema.Struct({
   next: Schema.optional(Schema.String),
 })
 
+/** Shares the same session cache as `_app` and `/`, so landing on `/login`
+ * with a still-valid session (e.g. the back button) redirects without
+ * another round trip to better-auth. */
 export const Route = createFileRoute('/login/')({
   validateSearch: Schema.decodeUnknownSync(SearchParams),
   beforeLoad: async () => {
-    const { data } = await authClient.getSession()
-    if (data?.user) {
+    const user = await readSession()
+    if (user) {
       throw redirect({ to: '/today' })
     }
   },
