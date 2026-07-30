@@ -60,7 +60,7 @@ const RuleRow = (props: RuleRowProps) => {
 }
 
 const RuleEmpty = (props: RuleEmptyProps) => (
-  <div className="border-muted rounded-2xl border border-dashed px-4 py-6 text-center">
+  <div className="border-muted rounded-lg border border-dashed px-4 py-6 text-center">
     <ListChecks className="text-muted-foreground mx-auto size-5" />
     <p className="mt-2 text-sm font-medium">No rules yet</p>
     <p className="text-muted-foreground mx-auto mt-1 max-w-xs text-sm">
@@ -159,7 +159,7 @@ const RulePreview = (props: RulePreviewProps) => {
     props.messageId,
   )
   return (
-    <div className="bg-muted/60 rounded-2xl px-4 py-3">
+    <div className="bg-muted/60 rounded-lg px-4 py-3">
       <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
         This rule says
       </p>

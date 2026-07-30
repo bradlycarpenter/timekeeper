@@ -13,7 +13,7 @@ import type {
 const ScreenStateLoading = (props: ScreenStateLoadingProps) => (
   <div className="space-y-3">
     {Array.from({ length: props.cards ?? 2 }, (_, index) => (
-      <div key={index} className="rounded-2xl border p-4">
+      <div key={index} className="rounded-lg border p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="w-full space-y-2">
             <Skeleton className="h-4 w-32" />
@@ -29,7 +29,7 @@ const ScreenStateLoading = (props: ScreenStateLoadingProps) => (
 )
 
 const ScreenStateFailed = (props: ScreenStateFailedProps) => (
-  <div className="border-destructive/30 bg-destructive/5 rounded-2xl border px-4 py-6 text-center">
+  <div className="border-destructive/30 bg-destructive/5 rounded-lg border px-4 py-6 text-center">
     <AlertTriangle className="text-destructive mx-auto size-5" />
     <p className="mt-2 text-sm font-medium">{props.title}</p>
     <p className="text-muted-foreground mx-auto mt-1 max-w-sm text-sm">
@@ -44,7 +44,7 @@ const ScreenStateFailed = (props: ScreenStateFailedProps) => (
 )
 
 const ScreenStateEmpty = (props: ScreenStateEmptyProps) => (
-  <div className="border-muted rounded-2xl border border-dashed px-4 py-10 text-center">
+  <div className="border-muted rounded-lg border border-dashed px-4 py-10 text-center">
     <div className="text-muted-foreground mx-auto flex size-10 items-center justify-center">
       {props.icon}
     </div>
