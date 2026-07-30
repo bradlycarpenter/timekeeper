@@ -1,4 +1,4 @@
-import type { BoardSheet, Jira } from '@tk/domain'
+import type { BoardSheet, Jira, Stub } from '@tk/domain'
 import { AsyncResult, Atom } from 'effect/unstable/reactivity'
 import { ApiClient, keys } from './api.ts'
 
@@ -70,6 +70,31 @@ export const linkAtom = (id: BoardSheet.BoardSheetId) =>
     reactivityKeys: keys.links,
     serializationKey: `link:${id}`,
   })
+
+type PreviewResult = AsyncResult.AsyncResult<Stub.StubPreview, unknown>
+
+/** A draft rule with no status yet cannot ask Jira anything, so the atom stays
+ * idle rather than firing a request that cannot succeed — same guard as
+ * `boardStatusesAtom`. */
+const noPreview: Atom.Atom<PreviewResult> = Atom.make(
+  AsyncResult.initial<Stub.StubPreview, never>(true),
+)
+
+/** `draft` is expected to already be debounced by the caller (see
+ * `useRulePreview`), so this only decides whether there is enough of a rule to
+ * ask about and how long a settled answer stays cached. */
+export const boardPreviewAtom = (
+  projectKey: string,
+  draft: Stub.StubDraft | undefined,
+): Atom.Atom<PreviewResult> =>
+  projectKey === '' || draft === undefined
+    ? noPreview
+    : (ApiClient.query('board', 'preview', {
+        params: { projectKey },
+        payload: draft,
+        serializationKey: `board-preview:${projectKey}:${draft.statusId}:${draft.condition}:${draft.messageId}`,
+        timeToLive: '5 minutes',
+      }) as Atom.Atom<PreviewResult>)
 
 export const connectSheetAtom = ApiClient.mutation('connections', 'connectSheet')
 export const disconnectSheetAtom = ApiClient.mutation(
