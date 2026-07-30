@@ -1,4 +1,5 @@
 import { Check } from 'lucide-react'
+import { Fragment } from 'react'
 import { Button } from '#/components/ui/button'
 import { Spinner } from '#/components/ui/spinner'
 import { cn } from '#/lib/utils'
@@ -16,11 +17,13 @@ const WizardRoot = (props: WizardRootProps) => (
 )
 
 /** A plain dot rail: on a phone there is no room for step titles, and the count
- * is what the user actually wants to know. */
+ * is what the user actually wants to know. Dots are fixed-size and only the
+ * connectors are flexible, so the rail fills the full width evenly with no
+ * trailing gap after the last dot. */
 const WizardSteps = (props: WizardStepsProps) => (
-  <div className="flex items-center gap-2">
+  <div className="flex items-center">
     {props.titles.map((title, index) => (
-      <div key={title} className="flex flex-1 items-center gap-2">
+      <Fragment key={title}>
         <span
           className={cn(
             'flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold',
@@ -34,12 +37,12 @@ const WizardSteps = (props: WizardStepsProps) => (
         {index < props.titles.length - 1 ? (
           <span
             className={cn(
-              'h-0.5 flex-1 rounded-full',
+              'mx-2 h-0.5 flex-1 rounded-full',
               index < props.current ? 'bg-primary' : 'bg-muted',
             )}
           />
         ) : null}
-      </div>
+      </Fragment>
     ))}
   </div>
 )
@@ -55,20 +58,27 @@ const WizardStep = (props: WizardStepProps) => (
 )
 
 const WizardActions = (props: WizardActionsProps) => (
-  <div className="flex gap-2 pt-2">{props.children}</div>
+  <div className="flex gap-3 pt-2">{props.children}</div>
 )
 
+/** h-11 (44px) on both buttons meets the minimum comfortable tap target on
+ * mobile; the button-variants scale tops out at 36px (size="lg"). */
 const WizardBack = (props: WizardBackProps) => (
-  <Button variant="ghost" onClick={props.onClick} disabled={props.disabled}>
+  <Button
+    variant="outline"
+    className="h-11 px-5"
+    onClick={props.onClick}
+    disabled={props.disabled}
+  >
     Back
   </Button>
 )
 
 const WizardNext = (props: WizardNextProps) => (
   <Button
+    className="h-11 flex-1"
     onClick={props.onClick}
     disabled={props.disabled || props.busy}
-    className="flex-1"
   >
     {props.busy ? <Spinner /> : null}
     {props.label}
