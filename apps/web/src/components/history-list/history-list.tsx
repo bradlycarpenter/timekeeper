@@ -14,7 +14,7 @@ const statusLabels = {
 } as const
 
 const HistoryListRoot = (props: HistoryListRootProps) => (
-  <ul className="divide-y rounded-2xl border">{props.children}</ul>
+  <ul className="divide-y rounded-lg border">{props.children}</ul>
 )
 
 const HistoryListRow = (props: HistoryListRowProps) => {

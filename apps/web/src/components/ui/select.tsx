@@ -73,12 +73,13 @@ function SelectContent({
         {...props}
       >
         <SelectScrollUpButton />
+        {/* No `h-(--radix-select-trigger-height)` here: it would pin the
+          * viewport to the trigger's height, showing one option at a time. It
+          * was harmless while `position` defaulted to "item-aligned" and the
+          * class never applied, but "popper" activates it. */}
         <SelectPrimitive.Viewport
           data-position={position}
-          className={cn(
-            "data-[position=popper]:h-(--radix-select-trigger-height) data-[position=popper]:w-full data-[position=popper]:min-w-(--radix-select-trigger-width)",
-            position === "popper" && ""
-          )}
+          className="data-[position=popper]:w-full data-[position=popper]:min-w-(--radix-select-trigger-width)"
         >
           {children}
         </SelectPrimitive.Viewport>
