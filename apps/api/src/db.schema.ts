@@ -1,8 +1,9 @@
-import type { StubMessageID, StatusCondition } from '@tk/types'
+import type { Stub } from '@tk/domain'
 import { relations, sql } from 'drizzle-orm'
 import {
   index,
   integer,
+  real,
   sqliteTable,
   text,
   uniqueIndex,
@@ -120,6 +121,8 @@ export const boardSheet = sqliteTable('board_sheet', {
   boardId: text('board_id').notNull(),
   boardName: text('board_name').notNull(),
   boardKey: text('board_key').notNull(),
+  hours: real('hours').notNull().default(8),
+  costCodeId: integer('cost_code_id').notNull().default(2),
 })
 
 export const stub = sqliteTable('stub', {
@@ -130,10 +133,12 @@ export const stub = sqliteTable('stub', {
     .notNull()
     .references(() => boardSheet.id, { onDelete: 'cascade' }),
   statusId: text('status_id').notNull(),
-  statusCondition: integer('status_condition')
-    .notNull()
-    .$type<StatusCondition>(),
-  messageId: integer('message_id').notNull().$type<StubMessageID>(),
+  /** Denormalised so rules render without a Jira round trip. */
+  statusName: text('status_name').notNull().default(''),
+  /** Stored as the integer the first migration used; the domain maps it to a
+   * named condition. */
+  statusCondition: integer('status_condition').notNull(),
+  messageId: integer('message_id').notNull().$type<Stub.StubMessageId>(),
 })
 
 export const dailyBoardSheetPost = sqliteTable(
@@ -153,6 +158,10 @@ export const dailyBoardSheetPost = sqliteTable(
       enum: ['queued', 'processing', 'posted', 'skipped', 'failed'],
     }).notNull(),
     entryId: integer('entry_id'),
+    /** What was actually sent to Warp, so history shows the posted text rather
+     * than recomputing it from Jira's current state. */
+    message: text('message'),
+    hours: real('hours'),
     error: text('error'),
     createdAt: integer('created_at', { mode: 'timestamp_ms' })
       .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)

@@ -1,0 +1,89 @@
+import { useAtomRefresh, useAtomValue } from '@effect/atom-react'
+import { Link, createFileRoute } from '@tanstack/react-router'
+import { AsyncResult } from 'effect/unstable/reactivity'
+import { Link2, Plus, Settings2 } from 'lucide-react'
+import { LinkCard } from '#/components/link-card/link-card'
+import { ScreenState } from '#/components/screen-state/screen-state'
+import { Button } from '#/components/ui/button'
+import { linksAtom } from '#/lib/atoms'
+
+export const Route = createFileRoute('/_app/links/')({
+  component: LinksScreen,
+})
+
+function LinksScreen() {
+  const links = useAtomValue(linksAtom)
+  const refresh = useAtomRefresh(linksAtom)
+
+  return (
+    <>
+      <div className="mb-4 flex items-end justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Links</h1>
+          <p className="text-muted-foreground text-sm">
+            Each link turns one Jira board into one timesheet entry a day.
+          </p>
+        </div>
+        <Button asChild size="sm">
+          <Link to="/links/new">
+            <Plus className="size-4" />
+            New
+          </Link>
+        </Button>
+      </div>
+
+      {AsyncResult.builder(links)
+        .onInitialOrWaiting(() => <ScreenState.Loading cards={2} />)
+        .onError(() => (
+          <ScreenState.Failed
+            title="Links could not be loaded"
+            detail="Something went wrong reading your links."
+            onRetry={refresh}
+          />
+        ))
+        .onSuccess((all) =>
+          all.length === 0 ? (
+            <ScreenState.Empty
+              icon={<Link2 className="size-8" />}
+              title="No links yet"
+              detail="A link pairs a Jira board with the timesheet project it should be billed to."
+            >
+              <Button asChild>
+                <Link to="/links/new">
+                  <Plus className="size-4" />
+                  Create a link
+                </Link>
+              </Button>
+            </ScreenState.Empty>
+          ) : (
+            <div className="space-y-3">
+              {all.map((link) => (
+                <LinkCard.Root key={link.id}>
+                  <LinkCard.Heading
+                    clientName={link.sheetClientName}
+                    projectName={link.sheetName}
+                    boardName={link.boardName}
+                    boardKey={link.boardKey}
+                  />
+                  <LinkCard.Terms
+                    hours={link.hours}
+                    costCodeId={link.costCodeId}
+                  />
+                  <LinkCard.RuleCount count={link.stubs.length} />
+                  <LinkCard.Actions>
+                    <Button asChild variant="outline" size="sm" className="flex-1">
+                      <Link to="/links/$linkId" params={{ linkId: link.id }}>
+                        <Settings2 className="size-4" />
+                        {link.stubs.length === 0 ? 'Add rules' : 'Manage'}
+                      </Link>
+                    </Button>
+                  </LinkCard.Actions>
+                </LinkCard.Root>
+              ))}
+            </div>
+          ),
+        )
+        .render()}
+    </>
+  )
+}

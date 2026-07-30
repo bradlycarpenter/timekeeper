@@ -1,0 +1,17 @@
+{
+  "name": "@tk/domain",
+  "version": "1.0.0",
+  "author": "Bradly Carpenter",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "effect": "catalog:"
+  },
+  "devDependencies": {
+    "@tk/config": "workspace:*",
+    "typescript": "^7.0.2"
+  }
+}

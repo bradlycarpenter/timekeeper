@@ -9,21 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as DashboardRouteRouteImport } from './routes/dashboard/route'
+import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
-import { Route as DevStubIndexRouteImport } from './routes/dev/stub/index'
-import { Route as DevMessageIndexRouteImport } from './routes/dev/message/index'
-import { Route as DevLoginIndexRouteImport } from './routes/dev/login/index'
-import { Route as DevCreateIndexRouteImport } from './routes/dev/create/index'
-import { Route as DevBoardsheetIndexRouteImport } from './routes/dev/boardsheet/index'
-import { Route as DashboardConnectionsIndexRouteImport } from './routes/dashboard/connections/index'
-import { Route as DashboardBoardsIndexRouteImport } from './routes/dashboard/boards/index'
-import { Route as DashboardConnectionsWarpIndexRouteImport } from './routes/dashboard/connections/warp/index'
+import { Route as LoginIndexRouteImport } from './routes/login/index'
+import { Route as AppTodayIndexRouteImport } from './routes/_app/today/index'
+import { Route as AppSettingsIndexRouteImport } from './routes/_app/settings/index'
+import { Route as AppLinksIndexRouteImport } from './routes/_app/links/index'
+import { Route as AppSettingsWarpRouteImport } from './routes/_app/settings/warp'
+import { Route as AppLinksNewRouteImport } from './routes/_app/links/new'
+import { Route as AppLinksLinkIdRouteImport } from './routes/_app/links/$linkId'
 
-const DashboardRouteRoute = DashboardRouteRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -31,151 +28,121 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardIndexRoute = DashboardIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => DashboardRouteRoute,
-} as any)
-const DevStubIndexRoute = DevStubIndexRouteImport.update({
-  id: '/dev/stub/',
-  path: '/dev/stub/',
+const LoginIndexRoute = LoginIndexRouteImport.update({
+  id: '/login/',
+  path: '/login/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DevMessageIndexRoute = DevMessageIndexRouteImport.update({
-  id: '/dev/message/',
-  path: '/dev/message/',
-  getParentRoute: () => rootRouteImport,
+const AppTodayIndexRoute = AppTodayIndexRouteImport.update({
+  id: '/today/',
+  path: '/today/',
+  getParentRoute: () => AppRoute,
 } as any)
-const DevLoginIndexRoute = DevLoginIndexRouteImport.update({
-  id: '/dev/login/',
-  path: '/dev/login/',
-  getParentRoute: () => rootRouteImport,
+const AppSettingsIndexRoute = AppSettingsIndexRouteImport.update({
+  id: '/settings/',
+  path: '/settings/',
+  getParentRoute: () => AppRoute,
 } as any)
-const DevCreateIndexRoute = DevCreateIndexRouteImport.update({
-  id: '/dev/create/',
-  path: '/dev/create/',
-  getParentRoute: () => rootRouteImport,
+const AppLinksIndexRoute = AppLinksIndexRouteImport.update({
+  id: '/links/',
+  path: '/links/',
+  getParentRoute: () => AppRoute,
 } as any)
-const DevBoardsheetIndexRoute = DevBoardsheetIndexRouteImport.update({
-  id: '/dev/boardsheet/',
-  path: '/dev/boardsheet/',
-  getParentRoute: () => rootRouteImport,
+const AppSettingsWarpRoute = AppSettingsWarpRouteImport.update({
+  id: '/settings/warp',
+  path: '/settings/warp',
+  getParentRoute: () => AppRoute,
 } as any)
-const DashboardConnectionsIndexRoute =
-  DashboardConnectionsIndexRouteImport.update({
-    id: '/connections/',
-    path: '/connections/',
-    getParentRoute: () => DashboardRouteRoute,
-  } as any)
-const DashboardBoardsIndexRoute = DashboardBoardsIndexRouteImport.update({
-  id: '/boards/',
-  path: '/boards/',
-  getParentRoute: () => DashboardRouteRoute,
+const AppLinksNewRoute = AppLinksNewRouteImport.update({
+  id: '/links/new',
+  path: '/links/new',
+  getParentRoute: () => AppRoute,
 } as any)
-const DashboardConnectionsWarpIndexRoute =
-  DashboardConnectionsWarpIndexRouteImport.update({
-    id: '/connections/warp/',
-    path: '/connections/warp/',
-    getParentRoute: () => DashboardRouteRoute,
-  } as any)
+const AppLinksLinkIdRoute = AppLinksLinkIdRouteImport.update({
+  id: '/links/$linkId',
+  path: '/links/$linkId',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRouteRouteWithChildren
-  '/dashboard/': typeof DashboardIndexRoute
-  '/dashboard/boards/': typeof DashboardBoardsIndexRoute
-  '/dashboard/connections/': typeof DashboardConnectionsIndexRoute
-  '/dev/boardsheet/': typeof DevBoardsheetIndexRoute
-  '/dev/create/': typeof DevCreateIndexRoute
-  '/dev/login/': typeof DevLoginIndexRoute
-  '/dev/message/': typeof DevMessageIndexRoute
-  '/dev/stub/': typeof DevStubIndexRoute
-  '/dashboard/connections/warp/': typeof DashboardConnectionsWarpIndexRoute
+  '/login/': typeof LoginIndexRoute
+  '/links/$linkId': typeof AppLinksLinkIdRoute
+  '/links/new': typeof AppLinksNewRoute
+  '/settings/warp': typeof AppSettingsWarpRoute
+  '/links/': typeof AppLinksIndexRoute
+  '/settings/': typeof AppSettingsIndexRoute
+  '/today/': typeof AppTodayIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardIndexRoute
-  '/dashboard/boards': typeof DashboardBoardsIndexRoute
-  '/dashboard/connections': typeof DashboardConnectionsIndexRoute
-  '/dev/boardsheet': typeof DevBoardsheetIndexRoute
-  '/dev/create': typeof DevCreateIndexRoute
-  '/dev/login': typeof DevLoginIndexRoute
-  '/dev/message': typeof DevMessageIndexRoute
-  '/dev/stub': typeof DevStubIndexRoute
-  '/dashboard/connections/warp': typeof DashboardConnectionsWarpIndexRoute
+  '/login': typeof LoginIndexRoute
+  '/links/$linkId': typeof AppLinksLinkIdRoute
+  '/links/new': typeof AppLinksNewRoute
+  '/settings/warp': typeof AppSettingsWarpRoute
+  '/links': typeof AppLinksIndexRoute
+  '/settings': typeof AppSettingsIndexRoute
+  '/today': typeof AppTodayIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRouteRouteWithChildren
-  '/dashboard/': typeof DashboardIndexRoute
-  '/dashboard/boards/': typeof DashboardBoardsIndexRoute
-  '/dashboard/connections/': typeof DashboardConnectionsIndexRoute
-  '/dev/boardsheet/': typeof DevBoardsheetIndexRoute
-  '/dev/create/': typeof DevCreateIndexRoute
-  '/dev/login/': typeof DevLoginIndexRoute
-  '/dev/message/': typeof DevMessageIndexRoute
-  '/dev/stub/': typeof DevStubIndexRoute
-  '/dashboard/connections/warp/': typeof DashboardConnectionsWarpIndexRoute
+  '/_app': typeof AppRouteWithChildren
+  '/login/': typeof LoginIndexRoute
+  '/_app/links/$linkId': typeof AppLinksLinkIdRoute
+  '/_app/links/new': typeof AppLinksNewRoute
+  '/_app/settings/warp': typeof AppSettingsWarpRoute
+  '/_app/links/': typeof AppLinksIndexRoute
+  '/_app/settings/': typeof AppSettingsIndexRoute
+  '/_app/today/': typeof AppTodayIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/dashboard'
-    | '/dashboard/'
-    | '/dashboard/boards/'
-    | '/dashboard/connections/'
-    | '/dev/boardsheet/'
-    | '/dev/create/'
-    | '/dev/login/'
-    | '/dev/message/'
-    | '/dev/stub/'
-    | '/dashboard/connections/warp/'
+    | '/login/'
+    | '/links/$linkId'
+    | '/links/new'
+    | '/settings/warp'
+    | '/links/'
+    | '/settings/'
+    | '/today/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/dashboard'
-    | '/dashboard/boards'
-    | '/dashboard/connections'
-    | '/dev/boardsheet'
-    | '/dev/create'
-    | '/dev/login'
-    | '/dev/message'
-    | '/dev/stub'
-    | '/dashboard/connections/warp'
+    | '/login'
+    | '/links/$linkId'
+    | '/links/new'
+    | '/settings/warp'
+    | '/links'
+    | '/settings'
+    | '/today'
   id:
     | '__root__'
     | '/'
-    | '/dashboard'
-    | '/dashboard/'
-    | '/dashboard/boards/'
-    | '/dashboard/connections/'
-    | '/dev/boardsheet/'
-    | '/dev/create/'
-    | '/dev/login/'
-    | '/dev/message/'
-    | '/dev/stub/'
-    | '/dashboard/connections/warp/'
+    | '/_app'
+    | '/login/'
+    | '/_app/links/$linkId'
+    | '/_app/links/new'
+    | '/_app/settings/warp'
+    | '/_app/links/'
+    | '/_app/settings/'
+    | '/_app/today/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  DashboardRouteRoute: typeof DashboardRouteRouteWithChildren
-  DevBoardsheetIndexRoute: typeof DevBoardsheetIndexRoute
-  DevCreateIndexRoute: typeof DevCreateIndexRoute
-  DevLoginIndexRoute: typeof DevLoginIndexRoute
-  DevMessageIndexRoute: typeof DevMessageIndexRoute
-  DevStubIndexRoute: typeof DevStubIndexRoute
+  AppRoute: typeof AppRouteWithChildren
+  LoginIndexRoute: typeof LoginIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteRouteImport
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -185,98 +152,82 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dashboard/': {
-      id: '/dashboard/'
-      path: '/'
-      fullPath: '/dashboard/'
-      preLoaderRoute: typeof DashboardIndexRouteImport
-      parentRoute: typeof DashboardRouteRoute
-    }
-    '/dev/stub/': {
-      id: '/dev/stub/'
-      path: '/dev/stub'
-      fullPath: '/dev/stub/'
-      preLoaderRoute: typeof DevStubIndexRouteImport
+    '/login/': {
+      id: '/login/'
+      path: '/login'
+      fullPath: '/login/'
+      preLoaderRoute: typeof LoginIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dev/message/': {
-      id: '/dev/message/'
-      path: '/dev/message'
-      fullPath: '/dev/message/'
-      preLoaderRoute: typeof DevMessageIndexRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_app/today/': {
+      id: '/_app/today/'
+      path: '/today'
+      fullPath: '/today/'
+      preLoaderRoute: typeof AppTodayIndexRouteImport
+      parentRoute: typeof AppRoute
     }
-    '/dev/login/': {
-      id: '/dev/login/'
-      path: '/dev/login'
-      fullPath: '/dev/login/'
-      preLoaderRoute: typeof DevLoginIndexRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_app/settings/': {
+      id: '/_app/settings/'
+      path: '/settings'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof AppSettingsIndexRouteImport
+      parentRoute: typeof AppRoute
     }
-    '/dev/create/': {
-      id: '/dev/create/'
-      path: '/dev/create'
-      fullPath: '/dev/create/'
-      preLoaderRoute: typeof DevCreateIndexRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_app/links/': {
+      id: '/_app/links/'
+      path: '/links'
+      fullPath: '/links/'
+      preLoaderRoute: typeof AppLinksIndexRouteImport
+      parentRoute: typeof AppRoute
     }
-    '/dev/boardsheet/': {
-      id: '/dev/boardsheet/'
-      path: '/dev/boardsheet'
-      fullPath: '/dev/boardsheet/'
-      preLoaderRoute: typeof DevBoardsheetIndexRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_app/settings/warp': {
+      id: '/_app/settings/warp'
+      path: '/settings/warp'
+      fullPath: '/settings/warp'
+      preLoaderRoute: typeof AppSettingsWarpRouteImport
+      parentRoute: typeof AppRoute
     }
-    '/dashboard/connections/': {
-      id: '/dashboard/connections/'
-      path: '/connections'
-      fullPath: '/dashboard/connections/'
-      preLoaderRoute: typeof DashboardConnectionsIndexRouteImport
-      parentRoute: typeof DashboardRouteRoute
+    '/_app/links/new': {
+      id: '/_app/links/new'
+      path: '/links/new'
+      fullPath: '/links/new'
+      preLoaderRoute: typeof AppLinksNewRouteImport
+      parentRoute: typeof AppRoute
     }
-    '/dashboard/boards/': {
-      id: '/dashboard/boards/'
-      path: '/boards'
-      fullPath: '/dashboard/boards/'
-      preLoaderRoute: typeof DashboardBoardsIndexRouteImport
-      parentRoute: typeof DashboardRouteRoute
-    }
-    '/dashboard/connections/warp/': {
-      id: '/dashboard/connections/warp/'
-      path: '/connections/warp'
-      fullPath: '/dashboard/connections/warp/'
-      preLoaderRoute: typeof DashboardConnectionsWarpIndexRouteImport
-      parentRoute: typeof DashboardRouteRoute
+    '/_app/links/$linkId': {
+      id: '/_app/links/$linkId'
+      path: '/links/$linkId'
+      fullPath: '/links/$linkId'
+      preLoaderRoute: typeof AppLinksLinkIdRouteImport
+      parentRoute: typeof AppRoute
     }
   }
 }
 
-interface DashboardRouteRouteChildren {
-  DashboardIndexRoute: typeof DashboardIndexRoute
-  DashboardBoardsIndexRoute: typeof DashboardBoardsIndexRoute
-  DashboardConnectionsIndexRoute: typeof DashboardConnectionsIndexRoute
-  DashboardConnectionsWarpIndexRoute: typeof DashboardConnectionsWarpIndexRoute
+interface AppRouteChildren {
+  AppLinksLinkIdRoute: typeof AppLinksLinkIdRoute
+  AppLinksNewRoute: typeof AppLinksNewRoute
+  AppSettingsWarpRoute: typeof AppSettingsWarpRoute
+  AppLinksIndexRoute: typeof AppLinksIndexRoute
+  AppSettingsIndexRoute: typeof AppSettingsIndexRoute
+  AppTodayIndexRoute: typeof AppTodayIndexRoute
 }
 
-const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
-  DashboardIndexRoute: DashboardIndexRoute,
-  DashboardBoardsIndexRoute: DashboardBoardsIndexRoute,
-  DashboardConnectionsIndexRoute: DashboardConnectionsIndexRoute,
-  DashboardConnectionsWarpIndexRoute: DashboardConnectionsWarpIndexRoute,
+const AppRouteChildren: AppRouteChildren = {
+  AppLinksLinkIdRoute: AppLinksLinkIdRoute,
+  AppLinksNewRoute: AppLinksNewRoute,
+  AppSettingsWarpRoute: AppSettingsWarpRoute,
+  AppLinksIndexRoute: AppLinksIndexRoute,
+  AppSettingsIndexRoute: AppSettingsIndexRoute,
+  AppTodayIndexRoute: AppTodayIndexRoute,
 }
 
-const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(
-  DashboardRouteRouteChildren,
-)
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  DashboardRouteRoute: DashboardRouteRouteWithChildren,
-  DevBoardsheetIndexRoute: DevBoardsheetIndexRoute,
-  DevCreateIndexRoute: DevCreateIndexRoute,
-  DevLoginIndexRoute: DevLoginIndexRoute,
-  DevMessageIndexRoute: DevMessageIndexRoute,
-  DevStubIndexRoute: DevStubIndexRoute,
+  AppRoute: AppRouteWithChildren,
+  LoginIndexRoute: LoginIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
