@@ -11,6 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as TermsIndexRouteImport } from './routes/terms/index'
+import { Route as SupportIndexRouteImport } from './routes/support/index'
+import { Route as PrivacyIndexRouteImport } from './routes/privacy/index'
 import { Route as LoginIndexRouteImport } from './routes/login/index'
 import { Route as AppTodayIndexRouteImport } from './routes/_app/today/index'
 import { Route as AppSettingsIndexRouteImport } from './routes/_app/settings/index'
@@ -26,6 +29,21 @@ const AppRoute = AppRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsIndexRoute = TermsIndexRouteImport.update({
+  id: '/terms/',
+  path: '/terms/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SupportIndexRoute = SupportIndexRouteImport.update({
+  id: '/support/',
+  path: '/support/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyIndexRoute = PrivacyIndexRouteImport.update({
+  id: '/privacy/',
+  path: '/privacy/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginIndexRoute = LoginIndexRouteImport.update({
@@ -67,6 +85,9 @@ const AppLinksLinkIdRoute = AppLinksLinkIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login/': typeof LoginIndexRoute
+  '/privacy/': typeof PrivacyIndexRoute
+  '/support/': typeof SupportIndexRoute
+  '/terms/': typeof TermsIndexRoute
   '/links/$linkId': typeof AppLinksLinkIdRoute
   '/links/new': typeof AppLinksNewRoute
   '/settings/warp': typeof AppSettingsWarpRoute
@@ -77,6 +98,9 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginIndexRoute
+  '/privacy': typeof PrivacyIndexRoute
+  '/support': typeof SupportIndexRoute
+  '/terms': typeof TermsIndexRoute
   '/links/$linkId': typeof AppLinksLinkIdRoute
   '/links/new': typeof AppLinksNewRoute
   '/settings/warp': typeof AppSettingsWarpRoute
@@ -89,6 +113,9 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
   '/login/': typeof LoginIndexRoute
+  '/privacy/': typeof PrivacyIndexRoute
+  '/support/': typeof SupportIndexRoute
+  '/terms/': typeof TermsIndexRoute
   '/_app/links/$linkId': typeof AppLinksLinkIdRoute
   '/_app/links/new': typeof AppLinksNewRoute
   '/_app/settings/warp': typeof AppSettingsWarpRoute
@@ -101,6 +128,9 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login/'
+    | '/privacy/'
+    | '/support/'
+    | '/terms/'
     | '/links/$linkId'
     | '/links/new'
     | '/settings/warp'
@@ -111,6 +141,9 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/login'
+    | '/privacy'
+    | '/support'
+    | '/terms'
     | '/links/$linkId'
     | '/links/new'
     | '/settings/warp'
@@ -122,6 +155,9 @@ export interface FileRouteTypes {
     | '/'
     | '/_app'
     | '/login/'
+    | '/privacy/'
+    | '/support/'
+    | '/terms/'
     | '/_app/links/$linkId'
     | '/_app/links/new'
     | '/_app/settings/warp'
@@ -134,6 +170,9 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
   LoginIndexRoute: typeof LoginIndexRoute
+  PrivacyIndexRoute: typeof PrivacyIndexRoute
+  SupportIndexRoute: typeof SupportIndexRoute
+  TermsIndexRoute: typeof TermsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -150,6 +189,27 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms/': {
+      id: '/terms/'
+      path: '/terms'
+      fullPath: '/terms/'
+      preLoaderRoute: typeof TermsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/support/': {
+      id: '/support/'
+      path: '/support'
+      fullPath: '/support/'
+      preLoaderRoute: typeof SupportIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy/': {
+      id: '/privacy/'
+      path: '/privacy'
+      fullPath: '/privacy/'
+      preLoaderRoute: typeof PrivacyIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login/': {
@@ -228,6 +288,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
   LoginIndexRoute: LoginIndexRoute,
+  PrivacyIndexRoute: PrivacyIndexRoute,
+  SupportIndexRoute: SupportIndexRoute,
+  TermsIndexRoute: TermsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

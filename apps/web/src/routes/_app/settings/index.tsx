@@ -151,6 +151,21 @@ function SettingsScreen() {
           </div>
         ))
         .render()}
+
+      <div className="mt-8 flex gap-4">
+        <Link
+          to="/privacy"
+          className="text-muted-foreground text-xs hover:text-foreground"
+        >
+          Privacy policy
+        </Link>
+        <Link
+          to="/terms"
+          className="text-muted-foreground text-xs hover:text-foreground"
+        >
+          Terms of service
+        </Link>
+      </div>
     </>
   )
 }

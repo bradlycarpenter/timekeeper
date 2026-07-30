@@ -1,4 +1,4 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { Link, createFileRoute, redirect } from '@tanstack/react-router'
 import { Schema } from 'effect'
 import { TimerIcon } from 'lucide-react'
 import { useState } from 'react'
@@ -68,6 +68,21 @@ function LoginScreen() {
         <p className="text-muted-foreground mt-4 text-xs leading-relaxed">
           You will connect Jira and your Warp timesheet after signing in.
         </p>
+
+        <div className="mt-8 flex justify-center gap-4">
+          <Link
+            to="/privacy"
+            className="text-muted-foreground text-xs hover:text-foreground"
+          >
+            Privacy policy
+          </Link>
+          <Link
+            to="/terms"
+            className="text-muted-foreground text-xs hover:text-foreground"
+          >
+            Terms of service
+          </Link>
+        </div>
       </div>
     </div>
   )
