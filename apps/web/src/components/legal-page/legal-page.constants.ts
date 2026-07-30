@@ -5,6 +5,4 @@ export const JURISDICTION = '{{JURISDICTION}}'
 export const POSTAL_ADDRESS = '{{POSTAL_ADDRESS}}'
 export const EFFECTIVE_DATE = '{{EFFECTIVE_DATE}}'
 
-/** A personal address used as a placeholder default, not a decision — a
- * dedicated support alias should replace this before publishing. */
-export const CONTACT_EMAIL = 'bradly@dinnermatch.co.za'
+export const CONTACT_EMAIL = 'bradly@warpdevelopment.co.za'
