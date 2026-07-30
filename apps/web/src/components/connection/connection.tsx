@@ -34,7 +34,7 @@ const ConnectionRoot = (props: ConnectionRootProps) => (
 
 const ConnectionHeading = (props: ConnectionHeadingProps) => (
   <CardContent className="flex items-start gap-3 px-4">
-    <div className="bg-muted flex size-10 shrink-0 items-center justify-center rounded-xl">
+    <div className="bg-muted flex size-10 shrink-0 items-center justify-center rounded-lg">
       {props.logo}
     </div>
     <div className="min-w-0 flex-1">

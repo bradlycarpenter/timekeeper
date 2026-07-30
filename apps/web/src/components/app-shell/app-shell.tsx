@@ -103,7 +103,7 @@ const AppShellNav = (props: AppShellNavProps) => (
 const AppShellNavItem = (props: AppShellNavItemProps) => (
   <Link
     to={props.to}
-    className="text-muted-foreground data-[status=active]:text-primary data-[status=active]:md:bg-accent data-[status=active]:md:text-accent-foreground flex min-w-16 flex-col items-center gap-1 rounded-2xl px-3 py-1.5 text-[0.6875rem] font-medium transition-colors md:flex-row md:gap-3 md:px-3 md:py-2.5 md:text-sm"
+    className="text-muted-foreground data-[status=active]:text-primary data-[status=active]:md:bg-accent data-[status=active]:md:text-accent-foreground flex min-w-16 flex-col items-center gap-1 rounded-lg px-3 py-1.5 text-[0.6875rem] font-medium transition-colors md:flex-row md:gap-3 md:px-3 md:py-2.5 md:text-sm"
   >
     {props.icon}
     <span>{props.label}</span>

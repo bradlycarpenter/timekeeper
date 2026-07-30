@@ -17,7 +17,7 @@ import type { ProjectPickerRootProps } from './project-picker.types.ts'
 const ProjectPickerRoot = (props: ProjectPickerRootProps) => (
   <div className="space-y-1.5">
     <Label>{props.label}</Label>
-    <Command className="rounded-2xl border" shouldFilter>
+    <Command className="rounded-lg border" shouldFilter>
       <CommandInput placeholder={props.placeholder} />
       <CommandList className="max-h-64">
         <CommandEmpty>{props.emptyText}</CommandEmpty>
