@@ -117,3 +117,30 @@ describe('partFor', () => {
     expect(part.issues).toHaveLength(1)
   })
 })
+
+const draft = (
+  condition: Stub.StatusCondition,
+  messageId: Stub.StubMessageId,
+): Stub.StubDraft => ({
+  statusId: '10001' as Stub.StubDraft['statusId'],
+  statusName: 'In Progress',
+  condition,
+  messageId,
+})
+
+describe('previewing a draft rule', () => {
+  it('builds the same JQL from a draft as from a saved stub, id or not', () => {
+    expect(jqlForStub('WEB', draft('entered', 0))).toBe(
+      jqlForStub('WEB', stub('entered', 0)),
+    )
+  })
+
+  it('composes the sentence a draft would write, before it has a StubId', () => {
+    const issues = [issue('AB-1', 'Fix login')]
+    const part = partFor(draft('entered', 0), issues)
+
+    expect(composeMessage([part])).toBe(
+      'Today I began working on AB-1 (Fix login).',
+    )
+  })
+})

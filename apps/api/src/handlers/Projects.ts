@@ -2,6 +2,7 @@ import { Api, Errors } from '@tk/domain'
 import { Effect, Option } from 'effect'
 import { HttpApiBuilder } from 'effect/unstable/httpapi'
 import { Jira } from '../Jira.ts'
+import { composeMessage, jqlForStub, partFor } from '../Message.ts'
 import { Repo } from '../Repo.ts'
 import { Warp } from '../Warp.ts'
 
@@ -39,6 +40,20 @@ export const BoardLive = HttpApiBuilder.group(Api.api, 'board', (handlers) =>
         const user = yield* Api.CurrentUser
         const jira = yield* Jira
         return yield* jira.statuses(user.id, params.projectKey)
+      }),
+    )
+    .handle('preview', ({ params, payload }) =>
+      Effect.gen(function* () {
+        const user = yield* Api.CurrentUser
+        const jira = yield* Jira
+        const issues = yield* jira.search(
+          user.id,
+          jqlForStub(params.projectKey, payload),
+        )
+        return {
+          issues,
+          message: composeMessage([partFor(payload, issues)]),
+        }
       }),
     ),
 )

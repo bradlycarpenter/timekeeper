@@ -6,6 +6,7 @@ import { Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { Rule } from '#/components/rule/rule'
+import { useRulePreview } from '#/components/rule/use-rule-preview'
 import { ScreenState } from '#/components/screen-state/screen-state'
 import { TermsFields } from '#/components/terms-fields/terms-fields'
 import { Button } from '#/components/ui/button'
@@ -62,6 +63,7 @@ function LinkScreen() {
     .onSuccess((value) => value.boardKey)
     .orElse(() => '')
   const statuses = useAtomValue(boardStatusesAtom(boardKey))
+  const draftPreview = useRulePreview(boardKey, status, condition, messageId)
 
   const saveTerms = async (patch: BoardSheet.BoardSheetPatch) => {
     const exit = await update({
@@ -158,6 +160,7 @@ function LinkScreen() {
                     statusName={status?.name}
                     condition={condition}
                     messageId={messageId}
+                    preview={draftPreview}
                   />
                 </div>
                 <DialogFooter>
@@ -204,6 +207,8 @@ function LinkScreen() {
               {value.stubs.map((stub) => (
                 <Rule.Row
                   key={stub.id}
+                  boardKey={value.boardKey}
+                  statusId={stub.statusId}
                   statusName={stub.statusName || 'that status'}
                   condition={stub.condition}
                   messageId={stub.messageId}

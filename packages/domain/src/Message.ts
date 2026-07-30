@@ -1,5 +1,5 @@
 import type { JiraIssue } from './Jira.ts'
-import type { Stub } from './Stub.ts'
+import type { StubDraft } from './Stub.ts'
 import { stubMessageText } from './Stub.ts'
 import type { MessagePart } from './Today.ts'
 
@@ -25,8 +25,10 @@ export const composeMessage = (
     })
     .join(' ')
 
+/** Takes a `StubDraft`, not a `Stub`: a rule being previewed before save has no
+ * id yet, and only `messageId` is ever read. A saved `Stub` satisfies this too. */
 export const partFor = (
-  stub: Stub,
+  stub: StubDraft,
   issues: ReadonlyArray<JiraIssue>,
 ): MessagePart => ({
   prefix: stubMessageText(stub.messageId),

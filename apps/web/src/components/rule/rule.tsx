@@ -1,5 +1,7 @@
 import { Stub } from '@tk/domain'
-import { ListChecks, Trash2 } from 'lucide-react'
+import { AsyncResult } from 'effect/unstable/reactivity'
+import { AlertTriangle, ListChecks, Trash2 } from 'lucide-react'
+import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import { Label } from '#/components/ui/label'
 import {
@@ -12,6 +14,7 @@ import {
   SelectValue,
 } from '#/components/ui/select'
 import { Spinner } from '#/components/ui/spinner'
+import { describe } from '#/lib/errors'
 import type {
   RuleConditionFieldProps,
   RuleEmptyProps,
@@ -21,6 +24,7 @@ import type {
   RuleRowProps,
   RuleStatusFieldProps,
 } from './rule.types.ts'
+import { useRulePreview } from './use-rule-preview.ts'
 
 /** Rules read as a sentence so their three parts explain themselves without a
  * legend: when a ticket <condition> <status>, write "<message>". */
@@ -39,22 +43,31 @@ const RuleRoot = (props: RuleRootProps) => (
 
 const RuleRow = (props: RuleRowProps) => {
   const text = sentence(props.condition, props.statusName, props.messageId)
+  const preview = useRulePreview(
+    props.boardKey,
+    { id: props.statusId, name: props.statusName },
+    props.condition,
+    props.messageId,
+  )
   return (
-    <li className="flex items-start justify-between gap-3 py-3">
-      <div className="min-w-0">
-        <p className="text-sm font-medium">{text.when}</p>
-        <p className="text-muted-foreground mt-0.5 text-sm">{text.then}</p>
+    <li className="py-3">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-sm font-medium">{text.when}</p>
+          <p className="text-muted-foreground mt-0.5 text-sm">{text.then}</p>
+        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={props.onRemove}
+          disabled={props.removing}
+          aria-label="Remove rule"
+          className="text-muted-foreground hover:text-destructive shrink-0"
+        >
+          {props.removing ? <Spinner /> : <Trash2 className="size-4" />}
+        </Button>
       </div>
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={props.onRemove}
-        disabled={props.removing}
-        aria-label="Remove rule"
-        className="text-muted-foreground hover:text-destructive shrink-0"
-      >
-        {props.removing ? <Spinner /> : <Trash2 className="size-4" />}
-      </Button>
+      <PreviewTickets preview={preview} />
     </li>
   )
 }
@@ -152,6 +165,59 @@ const RuleMessageField = (props: RuleMessageFieldProps) => (
   </div>
 )
 
+/** The five states a live preview can be in: idle (no `preview` passed, so a
+ * draft has no status yet), loading, zero matches, matches, and unreachable. */
+const PreviewTickets = (props: {
+  preview: RulePreviewProps['preview']
+}) => {
+  if (!props.preview) return null
+
+  return AsyncResult.builder(props.preview)
+    .onInitialOrWaiting(() => (
+      <div className="mt-3 flex items-center gap-2 border-t pt-3">
+        <Spinner className="size-3.5" />
+        <p className="text-muted-foreground text-sm">
+          Checking today's tickets…
+        </p>
+      </div>
+    ))
+    .onError((_error, result) => (
+      <div className="mt-3 flex items-start gap-2 border-t pt-3">
+        <AlertTriangle className="text-destructive mt-0.5 size-3.5 shrink-0" />
+        <p className="text-muted-foreground text-sm">
+          {describe(result.cause, 'Jira could not be reached for this board.')}
+        </p>
+      </div>
+    ))
+    .onSuccess((value) =>
+      value.issues.length === 0 ? (
+        <div className="mt-3 border-t pt-3">
+          <p className="text-muted-foreground text-sm">
+            Nothing matches today. The rule is fine, it is just quiet — this
+            condition is checked against today only.
+          </p>
+        </div>
+      ) : (
+        <div className="mt-3 space-y-2 border-t pt-3">
+          <ul className="space-y-1">
+            {value.issues.map((issue) => (
+              <li key={issue.id} className="flex items-center gap-2 text-sm">
+                <Badge variant="outline" className="shrink-0 font-mono text-[0.6875rem]">
+                  {issue.key}
+                </Badge>
+                <span className="truncate">{issue.summary}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="text-muted-foreground text-sm italic">
+            “{value.message}”
+          </p>
+        </div>
+      ),
+    )
+    .render()
+}
+
 const RulePreview = (props: RulePreviewProps) => {
   const text = sentence(
     props.condition,
@@ -165,6 +231,7 @@ const RulePreview = (props: RulePreviewProps) => {
       </p>
       <p className="mt-1 text-sm font-medium">{text.when}</p>
       <p className="text-muted-foreground mt-0.5 text-sm">{text.then}</p>
+      <PreviewTickets preview={props.preview} />
     </div>
   )
 }

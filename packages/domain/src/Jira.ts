@@ -17,6 +17,7 @@ export const JiraIssue = Schema.Struct({
   id: Schema.String,
   key: Schema.String,
   summary: Schema.String,
+  status: Schema.optional(Schema.String),
 })
 export type JiraIssue = typeof JiraIssue.Type
 

@@ -1,11 +1,14 @@
 import type { ReactNode } from 'react'
 import type { Jira, Stub } from '@tk/domain'
+import type { AsyncResult } from 'effect/unstable/reactivity'
 
 export type RuleRootProps = {
   children: ReactNode
 }
 
 export type RuleRowProps = {
+  boardKey: string
+  statusId: Jira.JiraStatusId
   statusName: string
   condition: Stub.StatusCondition
   messageId: Stub.StubMessageId
@@ -37,4 +40,8 @@ export type RulePreviewProps = {
   statusName: string | undefined
   condition: Stub.StatusCondition
   messageId: Stub.StubMessageId
+  /** The live ticket preview for this rule. Omit while the draft has no
+   * status yet — the static sentence still renders on its own. */
+  preview?: AsyncResult.AsyncResult<Stub.StubPreview, unknown> | undefined
 }
+
