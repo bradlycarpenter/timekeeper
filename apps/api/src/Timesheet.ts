@@ -122,17 +122,35 @@ export const TimesheetLive = Layer.effect(
         }
 
         /* A board that will not answer should not take the whole day's view
-         * down with it, so the failure is reported against the one entry. */
-        const parts = yield* partsFor(userId, link).pipe(
-          Effect.catchTags({
-            BoardNotConnected: () => Effect.succeed(undefined),
-            UpstreamFailed: () => Effect.succeed(undefined),
-          }),
+         * down with it, so the failure is reported against the one entry.
+         * BoardNotConnected and UpstreamFailed are kept distinct here (rather
+         * than both collapsing to "could not be reached") because they call
+         * for different user action: reconnect vs. try again later. */
+        const outcome = yield* partsFor(userId, link).pipe(
+          Effect.map(
+            (parts) => ({ _tag: 'ok' as const, parts }),
+          ),
+          Effect.catchTag('BoardNotConnected', () =>
+            Effect.succeed({ _tag: 'boardNotConnected' as const }),
+          ),
+          Effect.catchTag('UpstreamFailed', (failure) =>
+            Effect.succeed({
+              _tag: 'upstreamFailed' as const,
+              detail: failure.detail,
+            }),
+          ),
         )
 
-        if (parts === undefined) {
+        if (outcome._tag === 'boardNotConnected') {
           return entryFrom(link, stored?.status ?? 'pending', '', [], {
-            error: 'Jira could not be reached for this board.',
+            error: 'Jira is not connected. Reconnect your Atlassian account to preview this board.',
+            ...(stored?.entryId !== undefined ? { entryId: stored.entryId } : {}),
+          })
+        }
+
+        if (outcome._tag === 'upstreamFailed') {
+          return entryFrom(link, stored?.status ?? 'pending', '', [], {
+            error: `Jira could not be reached for this board: ${outcome.detail}`,
             ...(stored?.entryId !== undefined ? { entryId: stored.entryId } : {}),
           })
         }
@@ -140,8 +158,8 @@ export const TimesheetLive = Layer.effect(
         return entryFrom(
           link,
           stored?.status ?? 'pending',
-          composeMessage(parts),
-          parts,
+          composeMessage(outcome.parts),
+          outcome.parts,
           stored?.error !== undefined ? { error: stored.error } : {},
         )
       })
