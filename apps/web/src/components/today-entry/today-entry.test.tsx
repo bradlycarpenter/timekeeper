@@ -61,3 +61,55 @@ describe('TodayEntry.Status', () => {
     expect(screen.getByText('Failed')).toBeTruthy()
   })
 })
+
+describe('TodayEntry.Heading', () => {
+  it('marks a sample entry so it never reads as real', () => {
+    render(
+      <TodayEntry.Heading
+        sample
+        clientName="Lumix"
+        projectName="Development"
+        boardKey="LUM"
+        hours={8}
+      />,
+    )
+
+    expect(screen.getByText('Example')).toBeTruthy()
+  })
+
+  it('shows no example badge for a real entry', () => {
+    render(
+      <TodayEntry.Heading
+        clientName="Lumix"
+        projectName="Development"
+        boardKey="LUM"
+        hours={8}
+      />,
+    )
+
+    expect(screen.queryByText('Example')).toBeNull()
+  })
+})
+
+describe('TodayEntry.Problem', () => {
+  it('can carry an action pointing the user at a fix', () => {
+    render(
+      <TodayEntry.Problem
+        message="No rules yet, so there is nothing to write."
+        action={<button type="button">Add a rule</button>}
+      />,
+    )
+
+    expect(
+      screen.getByText('No rules yet, so there is nothing to write.'),
+    ).toBeTruthy()
+    expect(screen.getByText('Add a rule')).toBeTruthy()
+  })
+})
+
+describe('TodayEntry.SampleLabel', () => {
+  it('renders the given explanatory text', () => {
+    render(<TodayEntry.SampleLabel text="Nothing matched yet." />)
+    expect(screen.getByText('Nothing matched yet.')).toBeTruthy()
+  })
+})

@@ -85,6 +85,8 @@ export const TimesheetLive = Layer.effect(
       status,
       message,
       parts,
+      hasRules: link.stubs.length > 0,
+      ruleMessageIds: link.stubs.map((stub) => stub.messageId),
       ...(extra?.entryId !== undefined ? { entryId: extra.entryId } : {}),
       ...(extra?.error !== undefined ? { error: extra.error } : {}),
     })

@@ -9,6 +9,7 @@ import { DaySummary } from '#/components/day-summary/day-summary'
 import { HistoryList } from '#/components/history-list/history-list'
 import { ScreenState } from '#/components/screen-state/screen-state'
 import { TodayEntry } from '#/components/today-entry/today-entry'
+import { demoEntry, sampleEntryFor } from '#/components/today-entry/today-entry.sample.ts'
 import { Button } from '#/components/ui/button'
 import { keys } from '#/lib/api'
 import { describe } from '#/lib/errors'
@@ -100,18 +101,33 @@ function TodayScreen() {
             </DaySummary.Root>
 
             {day.entries.length === 0 ? (
-              <ScreenState.Empty
-                icon={<CalendarCheck className="size-8" />}
-                title="Nothing to post yet"
-                detail="Link a Jira board to a timesheet project and Timekeeper will start writing your day."
-              >
-                <Button asChild>
-                  <Link to="/links/new">
-                    <Plus className="size-4" />
-                    Set up your first link
-                  </Link>
-                </Button>
-              </ScreenState.Empty>
+              <div className="space-y-4">
+                <ScreenState.Empty
+                  icon={<CalendarCheck className="size-8" />}
+                  title="Nothing to post yet"
+                  detail="Link a Jira board to a timesheet project and Timekeeper will start writing your day."
+                >
+                  <Button asChild>
+                    <Link to="/links/new">
+                      <Plus className="size-4" />
+                      Set up your first link
+                    </Link>
+                  </Button>
+                </ScreenState.Empty>
+
+                <TodayEntry.Root status="pending">
+                  <TodayEntry.Heading
+                    sample
+                    clientName={demoEntry.sheetClientName}
+                    projectName={demoEntry.sheetName}
+                    boardKey={demoEntry.boardKey}
+                    hours={demoEntry.hours}
+                  />
+                  <TodayEntry.Message message={demoEntry.message} />
+                  <TodayEntry.Breakdown parts={demoEntry.parts} />
+                  <TodayEntry.SampleLabel text="Example only — this is what a linked board looks like once it has rules and matching tickets." />
+                </TodayEntry.Root>
+              </div>
             ) : (
               <div className="space-y-3">
                 {day.entries.map((entry) => (
@@ -137,8 +153,38 @@ function TodayScreen() {
                       <>
                         <TodayEntry.Message message={entry.message} />
                         <TodayEntry.Breakdown parts={entry.parts} />
+
+                        {entry.hasRules &&
+                        entry.message.length === 0 &&
+                        !entry.error ? (
+                          (() => {
+                            const sample = sampleEntryFor(entry)
+                            return (
+                              <>
+                                <TodayEntry.SampleLabel text="Nothing matched yet — here's what it will look like when it does." />
+                                <TodayEntry.Message message={sample.message} />
+                                <TodayEntry.Breakdown parts={sample.parts} />
+                              </>
+                            )
+                          })()
+                        ) : null}
+
                         {entry.error ? (
-                          <TodayEntry.Problem message={entry.error} />
+                          <TodayEntry.Problem
+                            message={entry.error}
+                            action={
+                              !entry.hasRules ? (
+                                <Button asChild variant="outline" size="sm">
+                                  <Link
+                                    to="/links/$linkId"
+                                    params={{ linkId: entry.boardSheetId }}
+                                  >
+                                    Add a rule
+                                  </Link>
+                                </Button>
+                              ) : undefined
+                            }
+                          />
                         ) : null}
 
                         {entry.status === 'posted' ||
