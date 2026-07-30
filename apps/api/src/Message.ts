@@ -1,5 +1,5 @@
-import type { Jira, Stub, Today } from '@tk/domain'
-import { Stub as StubDomain } from '@tk/domain'
+import type { Stub } from '@tk/domain'
+import { Message as MessageDomain } from '@tk/domain'
 
 /** JQL is assembled from a board key and a status id, both of which come from
  * Jira itself, so the status id is quoted to survive ids that are not bare
@@ -18,31 +18,7 @@ export const jqlForStub = (boardKey: string, stub: Stub.Stub): string => {
   }
 }
 
-const describeIssue = (issue: Jira.JiraIssue) =>
-  `${issue.key} (${issue.summary})`
-
-/** Renders one sentence per rule that matched, reading as prose:
- * "Today I completed AB-1 (One), AB-2 (Two) and AB-3 (Three)." */
-export const composeMessage = (
-  parts: ReadonlyArray<Today.MessagePart>,
-): string =>
-  parts
-    .filter((part) => part.issues.length > 0)
-    .map((part) => {
-      const described = part.issues.map(describeIssue)
-      const last = described[described.length - 1]!
-      const list =
-        described.length === 1
-          ? last
-          : `${described.slice(0, -1).join(', ')} and ${last}`
-      return `${part.prefix} ${list}.`
-    })
-    .join(' ')
-
-export const partFor = (
-  stub: Stub.Stub,
-  issues: ReadonlyArray<Jira.JiraIssue>,
-): Today.MessagePart => ({
-  prefix: StubDomain.stubMessageText(stub.messageId),
-  issues,
-})
+/** Composition itself lives in `@tk/domain` so the web app's sample preview
+ * can reuse the exact same wording instead of a second copy drifting apart. */
+export const composeMessage = MessageDomain.composeMessage
+export const partFor = MessageDomain.partFor

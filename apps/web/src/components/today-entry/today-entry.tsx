@@ -1,4 +1,4 @@
-import { AlertTriangle, Check } from 'lucide-react'
+import { AlertTriangle, Check, Sparkles } from 'lucide-react'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader } from '#/components/ui/card'
@@ -13,6 +13,7 @@ import type {
   TodayEntryHeadingProps,
   TodayEntryMessageProps,
   TodayEntryProblemProps,
+  TodayEntrySampleLabelProps,
   TodayEntryRootProps,
   TodayEntryStatusProps,
 } from './today-entry.types.ts'
@@ -61,6 +62,12 @@ const TodayEntryHeading = (props: TodayEntryHeadingProps) => (
         </p>
       </div>
       <div className="flex shrink-0 items-center gap-1.5">
+        {props.sample ? (
+          <Badge className="gap-1 border-0 bg-violet-100 text-violet-800 dark:bg-violet-950 dark:text-violet-300">
+            <Sparkles className="size-3" />
+            Example
+          </Badge>
+        ) : null}
         <Badge variant="outline" className="font-mono text-[0.6875rem]">
           {props.boardKey}
         </Badge>
@@ -150,10 +157,22 @@ const TodayEntryBreakdown = (props: TodayEntryBreakdownProps) =>
   )
 
 const TodayEntryProblem = (props: TodayEntryProblemProps) => (
-  <CardContent className="px-4">
+  <CardContent className="space-y-2 px-4">
     <p className="text-destructive flex items-start gap-2 text-sm">
       <AlertTriangle className="mt-0.5 size-4 shrink-0" />
       <span>{props.message}</span>
+    </p>
+    {props.action ? <div className="pl-6">{props.action}</div> : null}
+  </CardContent>
+)
+
+/** Marks a block of reused Message/Breakdown content as fabricated, so a
+ * sample never reads as if it were already posted or matched. */
+const TodayEntrySampleLabel = (props: TodayEntrySampleLabelProps) => (
+  <CardContent className="px-4 pb-0">
+    <p className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium">
+      <Sparkles className="size-3.5" />
+      {props.text}
     </p>
   </CardContent>
 )
@@ -183,6 +202,7 @@ export const TodayEntry = {
   Editor: TodayEntryEditor,
   Breakdown: TodayEntryBreakdown,
   Problem: TodayEntryProblem,
+  SampleLabel: TodayEntrySampleLabel,
   Actions: TodayEntryActions,
   Action: TodayEntryAction,
 }

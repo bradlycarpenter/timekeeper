@@ -11,6 +11,8 @@ export type TodayEntryHeadingProps = {
   projectName: string
   boardKey: string
   hours: number
+  /** Marks the card as a fabricated example rather than a real entry. */
+  sample?: boolean
 }
 
 export type TodayEntryStatusProps = {
@@ -36,6 +38,11 @@ export type TodayEntryBreakdownProps = {
 
 export type TodayEntryProblemProps = {
   message: string
+  action?: ReactNode
+}
+
+export type TodayEntrySampleLabelProps = {
+  text: string
 }
 
 export type TodayEntryActionsProps = {

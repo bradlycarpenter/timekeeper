@@ -1,6 +1,7 @@
 import { Schema } from 'effect'
 import { BoardSheetId } from './BoardSheet.ts'
 import { JiraIssue } from './Jira.ts'
+import { StubMessageId } from './Stub.ts'
 
 /** Entry dates are calendar days in the user's working timezone, never
  * timestamps, because Warp bills against a date. */
@@ -35,6 +36,13 @@ export const TodayEntry = Schema.Struct({
   status: PostStatus,
   message: Schema.String,
   parts: Schema.Array(MessagePart),
+  /** Whether the link has any rules configured at all, kept separate from an
+   * empty `message` so the UI can tell "nothing to write yet" (no rules) apart
+   * from "rules exist, nothing matched today". */
+  hasRules: Schema.Boolean,
+  /** The sentence opener each configured rule would use, so the UI can preview
+   * what this link's own rules would produce even when none matched today. */
+  ruleMessageIds: Schema.Array(StubMessageId),
   entryId: Schema.optional(Schema.Number),
   error: Schema.optional(Schema.String),
 })
