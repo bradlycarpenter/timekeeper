@@ -3,8 +3,9 @@ import { Stub as StubDomain } from '@tk/domain'
 
 /** JQL is assembled from a board key and a status id, both of which come from
  * Jira itself, so the status id is quoted to survive ids that are not bare
- * numbers. */
-export const jqlForStub = (boardKey: string, stub: Stub.Stub): string => {
+ * numbers. Takes a `StubDraft` rather than a `Stub` since a draft being
+ * previewed before save has no id yet, and this never reads one. */
+export const jqlForStub = (boardKey: string, stub: Stub.StubDraft): string => {
   const scope = `project = "${boardKey}" AND assignee = currentUser()`
   const status = `"${stub.statusId}"`
 
@@ -40,7 +41,7 @@ export const composeMessage = (
     .join(' ')
 
 export const partFor = (
-  stub: Stub.Stub,
+  stub: Stub.StubDraft,
   issues: ReadonlyArray<Jira.JiraIssue>,
 ): Today.MessagePart => ({
   prefix: StubDomain.stubMessageText(stub.messageId),

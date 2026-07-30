@@ -18,7 +18,7 @@ import {
   UpstreamFailed,
 } from './Errors.ts'
 import { JiraProject, JiraStatusCategory } from './Jira.ts'
-import { StubDraft, StubId } from './Stub.ts'
+import { StubDraft, StubId, StubPreview } from './Stub.ts'
 import { HistoryEntry, PostNow, Today, TodayEntry } from './Today.ts'
 import { SheetProject } from './Warp.ts'
 
@@ -81,6 +81,17 @@ const board = HttpApiGroup.make('board')
     HttpApiEndpoint.get('statuses', '/projects/:projectKey/statuses', {
       params: { projectKey: Schema.String },
       success: Schema.Array(JiraStatusCategory),
+      error: [BoardNotConnected, UpstreamFailed],
+    }),
+  )
+  /* One rule per request, not a batch of the whole rule set: a slow or
+   * unreachable board then only stalls the row being edited, and each draft
+   * can be cached and debounced independently by its own atom key. */
+  .add(
+    HttpApiEndpoint.post('preview', '/projects/:projectKey/preview', {
+      params: { projectKey: Schema.String },
+      payload: StubDraft,
+      success: StubPreview,
       error: [BoardNotConnected, UpstreamFailed],
     }),
   )

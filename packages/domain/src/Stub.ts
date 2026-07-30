@@ -1,5 +1,5 @@
 import { Schema } from 'effect'
-import { JiraStatusId } from './Jira.ts'
+import { JiraIssue, JiraStatusId } from './Jira.ts'
 
 export const StubId = Schema.String.pipe(Schema.brand('StubId'))
 export type StubId = typeof StubId.Type
@@ -69,3 +69,11 @@ export const StubDraft = Schema.Struct({
   messageId: StubMessageId,
 })
 export type StubDraft = typeof StubDraft.Type
+
+/** What a draft rule would surface today, so the wizard can show it before the
+ * rule is saved. */
+export const StubPreview = Schema.Struct({
+  issues: Schema.Array(JiraIssue),
+  message: Schema.String,
+})
+export type StubPreview = typeof StubPreview.Type

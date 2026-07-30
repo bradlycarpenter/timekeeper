@@ -20,7 +20,10 @@ const IssuePage = Schema.Struct({
     Schema.Struct({
       id: Schema.String,
       key: Schema.String,
-      fields: Schema.Struct({ summary: Schema.String }),
+      fields: Schema.Struct({
+        summary: Schema.String,
+        status: Schema.optional(Schema.Struct({ name: Schema.String })),
+      }),
     }),
   ),
   isLast: Schema.optional(Schema.Boolean),
@@ -154,7 +157,10 @@ export const JiraLive = Layer.effect(
           let nextPageToken: string | undefined
 
           do {
-            const params = new URLSearchParams({ jql, fields: 'summary' })
+            const params = new URLSearchParams({
+              jql,
+              fields: 'summary,status',
+            })
             if (nextPageToken) params.set('nextPageToken', nextPageToken)
 
             const response = yield* send(
@@ -173,6 +179,7 @@ export const JiraLive = Layer.effect(
                 id: issue.id,
                 key: issue.key,
                 summary: issue.fields.summary,
+                ...(issue.fields.status ? { status: issue.fields.status.name } : {}),
               })
             }
 
