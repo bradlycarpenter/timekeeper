@@ -6,6 +6,7 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import { ProjectPicker } from '#/components/project-picker/project-picker'
 import { Rule } from '#/components/rule/rule'
+import { useRulePreview } from '#/components/rule/use-rule-preview'
 import { ScreenState } from '#/components/screen-state/screen-state'
 import { TermsFields } from '#/components/terms-fields/terms-fields'
 import { Wizard } from '#/components/wizard/wizard'
@@ -66,6 +67,12 @@ function NewLinkScreen() {
   )
 
   const statuses = useAtomValue(boardStatusesAtom(board?.key ?? ''))
+  const draftPreview = useRulePreview(
+    board?.key ?? '',
+    status,
+    condition,
+    messageId,
+  )
 
   const finish = async () => {
     if (!sheet || !board) return
@@ -261,6 +268,7 @@ function NewLinkScreen() {
               statusName={status?.name}
               condition={condition}
               messageId={messageId}
+              preview={draftPreview}
             />
           </div>
         </Wizard.Step>

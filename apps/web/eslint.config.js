@@ -38,6 +38,14 @@ export default [
     },
   },
   {
-    ignores: ['eslint.config.js', 'prettier.config.js'],
+    /* The radius rule's own fixtures are off-scale class names on purpose, and
+     * the shared source is plain JS outside the typed project. */
+    files: ['eslint/**'],
+    rules: {
+      'no-restricted-syntax': 'off',
+    },
+  },
+  {
+    ignores: ['eslint.config.js', 'prettier.config.js', 'eslint/*.js'],
   },
 ]

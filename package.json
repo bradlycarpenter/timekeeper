@@ -13,7 +13,10 @@
     "db:generate": "pnpm --filter api db:generate",
     "db:migrate:local": "pnpm --filter api db:migrate:local",
     "format": "prettier --write apps/ packages/",
-    "request": "doppler run -c=dev -p=timekeeper -- bash scripts/requests.sh"
+    "request": "doppler run -c=dev -p=timekeeper -- bash scripts/requests.sh",
+    "lint": "pnpm --filter web lint",
+    "typecheck": "pnpm -r exec tsc --noEmit",
+    "test": "pnpm -r test"
   },
   "devEngines": {
     "packageManager": {

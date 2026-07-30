@@ -155,3 +155,6 @@ vite.config.ts.timestamp-*
 
 # Local reference clone of the Effect source (see CLAUDE.md)
 libraries/
+
+# macOS
+.DS_Store
