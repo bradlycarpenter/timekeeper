@@ -1,8 +1,9 @@
-import { RegistryProvider } from '@effect/atom-react'
+import { RegistryContext } from '@effect/atom-react'
 import { Outlet, createRootRoute } from '@tanstack/react-router'
 import { Toaster } from '#/components/ui/sonner'
 import { ThemeProvider } from '#/components/ui/theme-provider'
 import { TooltipProvider } from '#/components/ui/tooltip'
+import { registry } from '#/lib/registry.ts'
 
 export const Route = createRootRoute({
   component: RootComponent,
@@ -17,14 +18,17 @@ export const Route = createRootRoute({
 })
 
 function RootComponent() {
+  /* `RegistryProvider` would create its own registry, which route loaders
+   * could not reach. Providing the shared singleton directly is what lets a
+   * loader prime the same node a screen then subscribes to. */
   return (
-    <RegistryProvider>
+    <RegistryContext.Provider value={registry}>
       <ThemeProvider defaultTheme="system" storageKey="timekeeper-theme">
         <TooltipProvider>
           <Outlet />
           <Toaster position="top-center" />
         </TooltipProvider>
       </ThemeProvider>
-    </RegistryProvider>
+    </RegistryContext.Provider>
   )
 }

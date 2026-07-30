@@ -3,15 +3,17 @@ import { Outlet, createFileRoute, redirect } from '@tanstack/react-router'
 import { AsyncResult } from 'effect/unstable/reactivity'
 import { CalendarCheck, Link2, Settings } from 'lucide-react'
 import { AppShell } from '#/components/app-shell/app-shell'
-import { authClient } from '#/auth'
+import { authClient, readSession } from '#/auth'
 import { viewerAtom } from '#/lib/atoms'
 
 /** Every screen behind this route needs a session, so the check happens once
- * here rather than in each screen. */
+ * here rather than in each screen. `readSession` reads from cache on every
+ * navigation but the first, so this guards without reintroducing a network
+ * round trip per route change. */
 export const Route = createFileRoute('/_app')({
   beforeLoad: async ({ location }) => {
-    const { data } = await authClient.getSession()
-    if (!data?.user) {
+    const user = await readSession()
+    if (!user) {
       throw redirect({ to: '/login', search: { next: location.href } })
     }
   },
