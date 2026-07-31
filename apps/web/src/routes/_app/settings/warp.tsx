@@ -3,6 +3,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { Info } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { PageHeader } from '#/components/page-header/page-header'
 import { Alert, AlertDescription } from '#/components/ui/alert'
 import { Button } from '#/components/ui/button'
 import { Field, FieldError, FieldGroup, FieldLabel } from '#/components/ui/field'
@@ -54,13 +55,14 @@ function ConnectWarpScreen() {
 
   return (
     <div className="max-w-sm">
-      <h1 className="text-2xl font-semibold tracking-tight">Connect Warp</h1>
-      <p className="text-muted-foreground mt-1 text-sm">
-        Sign in with your Warp account so Timekeeper can file entries as you.
-      </p>
+      <PageHeader.Root>
+        <PageHeader.Title
+          heading="Connect Warp"
+          description="Sign in with your Warp account so Timekeeper can file entries as you."
+        />
+      </PageHeader.Root>
 
       <form
-        className="mt-6"
         onSubmit={(event) => {
           event.preventDefault()
           void submit()
