@@ -4,7 +4,7 @@ import type { LegalContent } from './legal-page.types.ts'
 export const SUPPORT_CONTENT: LegalContent = {
   title: 'Support',
   intro:
-    'Timekeeper is maintained by one person, so support is handled directly by email rather than a ticketing system.',
+    'Support for Timekeeper is handled by email, so you can reach us directly about anything that is not working.',
   sections: [
     {
       heading: 'Get help',

@@ -1,4 +1,4 @@
-import { CONTACT_EMAIL, JURISDICTION, LEGAL_ENTITY, POSTAL_ADDRESS } from './legal-page.constants.ts'
+import { CONTACT_EMAIL, JURISDICTION, LEGAL_ENTITY } from './legal-page.constants.ts'
 import type { LegalContent } from './legal-page.types.ts'
 
 export const PRIVACY_CONTENT: LegalContent = {
@@ -9,11 +9,11 @@ export const PRIVACY_CONTENT: LegalContent = {
     {
       heading: 'Information we collect',
       paragraphs: [
-        'When you sign in with Microsoft, we store your name, email address, and profile image, plus a session token, the IP address and user agent of your sign-in, and timestamps.',
-        `When you connect Jira, we store the Atlassian account identifier and the OAuth access and refresh tokens issued to us, under the scopes read:jira-user, read:jira-work, read:me and read:account. Those scopes let us read your accessible Jira sites, issues assigned to you (their key, ID and summary), the projects they belong to, and the status categories on your board — we do not write to Jira.`,
-        'When you connect your Warp timesheet, we store the sign-in token Warp issues after you enter your Warp email and password once, so a later scheduled post can run without you being signed in to Timekeeper.',
+        'When you sign in with Microsoft, we receive your name, email address and profile image, and we record sign-in details needed to keep your session secure.',
+        'When you connect Jira, we store the identifier of your Atlassian account and the access credentials Atlassian issues to us. You grant read-only access, which lets us see your Jira sites, the issues assigned to you, the projects they belong to, and the statuses on your board. We never write to Jira.',
+        'When you connect your Warp timesheet, we store the credential Warp issues after you sign in once, so a later scheduled entry can be filed without you being signed in to Timekeeper.',
         'When you set up a board link, we store the Warp task, client, cost code and default hours you chose, and the Jira project and status rules you mapped to them.',
-        'Each time an entry is filed, we store the entry date, status, the hours and the exact text of the comment we posted to Warp, and any error if the post failed — this becomes your post history.',
+        'Each time an entry is filed, we store the date, the outcome, the hours and the text of the entry we posted to Warp. This becomes your entry history.',
       ],
     },
     {
@@ -23,41 +23,41 @@ export const PRIVACY_CONTENT: LegalContent = {
       ],
     },
     {
-      heading: 'The scheduled post',
+      heading: 'The scheduled entry',
       paragraphs: [
-        'Every weekday at 17:00 in Africa/Johannesburg (15:00 UTC), an automated job checks each board link you have set up and, if your Jira board shows qualifying activity, posts a timesheet entry to Warp using your stored connection — without you needing to be signed in at the time. This is the core function of the product, not an optional background task.',
+        'At the end of each working day, Timekeeper checks the board links you have set up and, if your Jira board shows qualifying activity, files a timesheet entry to Warp using your stored connections — without you needing to be signed in at the time. This is the core function of the product, not an optional background task.',
       ],
     },
     {
       heading: 'Where it is stored',
       paragraphs: [
-        'Data is stored in Cloudflare D1 (a SQL database) and Cloudflare KV (short-lived caches, such as your Jira site identifier, cached for about a day). Both run on Cloudflare’s infrastructure; we have not pinned them to a specific region, and Cloudflare determines physical location.',
+        'Your data is held with established third-party cloud infrastructure providers under their own security and privacy commitments. It may be processed or stored outside the country you use Timekeeper from.',
       ],
     },
     {
       heading: 'Who it is disclosed to',
       paragraphs: [
-        'Atlassian, so we can read your Jira data under the scopes above. Warp, so we can create the timesheet entry. Cloudflare, as the infrastructure provider hosting our database, cache and background jobs. We do not sell your data or use it for advertising.',
+        'Atlassian, so we can read your Jira data under the read-only access you granted. Warp, so we can create the timesheet entry. Our infrastructure providers, who host the service on our behalf. We do not sell your data or use it for advertising.',
       ],
     },
     {
       heading: 'Security',
       paragraphs: [
-        'Connections to Atlassian, Warp and our own servers use HTTPS in transit. Access to the database is restricted to the application itself.',
-        'We are being direct about a known gap: the Warp sign-in token is not currently encrypted at rest in our database — it is stored as plain text, protected only by access controls, not by encryption. We are tracking this as an issue to fix and do not want to overstate the protection in place today.',
+        'Traffic between you, Timekeeper, Atlassian and Warp travels over HTTPS. Access to your stored data is limited to the application itself and to the people who operate it.',
+        'No service can promise perfect security. If you believe your account or a connection has been compromised, disconnect it in Settings, revoke Timekeeper’s access from the provider, and contact us.',
       ],
     },
     {
       heading: 'How long we keep it',
       paragraphs: [
-        'Session tokens expire automatically, and cached Jira lookups expire on their own. Everything else — your profile, your Jira and Warp connections, your board links, and your post history — is kept indefinitely. We do not currently run an automated job to delete old data.',
+        'Sign-in sessions and cached lookups expire on their own. Your profile, your connections, your board links and your entry history are kept for as long as your account exists, so that your history stays available to you. You can ask us to delete any of it at any time.',
       ],
     },
     {
       heading: 'Your choices',
       paragraphs: [
-        `You can disconnect Warp from Settings at any time, which deletes the stored Warp token. Disconnecting Jira is not yet self-service: contact us at ${CONTACT_EMAIL} and we will remove the linked Atlassian account and its tokens. You can also revoke Timekeeper's access from your Atlassian account settings at any time, which stops us reading your Jira data immediately.`,
-        `To delete your account entirely, or to have your board links and post history removed, contact us at ${CONTACT_EMAIL}. This is currently a manual process on our side, not a self-service action.`,
+        `You can disconnect Warp or Jira from Settings at any time, which removes the stored credential for that connection. You can also revoke Timekeeper’s access from your Atlassian account settings, which stops us reading your Jira data immediately.`,
+        `To delete your account entirely, or to have your board links and entry history removed, contact us at ${CONTACT_EMAIL} and we will action it.`,
       ],
     },
     {
@@ -69,7 +69,7 @@ export const PRIVACY_CONTENT: LegalContent = {
     {
       heading: 'Contact',
       paragraphs: [
-        `${LEGAL_ENTITY}, ${POSTAL_ADDRESS} (${JURISDICTION}). Email: ${CONTACT_EMAIL}.`,
+        `Timekeeper is operated by ${LEGAL_ENTITY}, based in ${JURISDICTION}. Email: ${CONTACT_EMAIL}.`,
       ],
     },
   ],
