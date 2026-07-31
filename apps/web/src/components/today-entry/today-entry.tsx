@@ -93,7 +93,9 @@ const TodayEntryStatus = (props: TodayEntryStatusProps) => {
 const TodayEntryMessage = (props: TodayEntryMessageProps) =>
   props.message.length > 0 ? (
     <CardContent className="px-4">
-      <p className="text-[0.9375rem] leading-relaxed">{props.message}</p>
+      <p className="max-w-[70ch] text-[0.9375rem] leading-relaxed">
+        {props.message}
+      </p>
     </CardContent>
   ) : (
     <CardContent className="px-4">
@@ -114,11 +116,11 @@ const TodayEntryEditor = (props: TodayEntryEditorProps) => (
       className="text-[0.9375rem] leading-relaxed"
     />
     <div className="flex justify-end gap-2">
-      <Button variant="ghost" size="sm" onClick={props.onCancel}>
+      <Button variant="ghost" className="h-11 md:h-8" onClick={props.onCancel}>
         Cancel
       </Button>
       <Button
-        size="sm"
+        className="h-11 md:h-8"
         onClick={props.onSave}
         disabled={props.saving || props.value.trim().length === 0}
       >
@@ -181,13 +183,17 @@ const TodayEntryActions = (props: TodayEntryActionsProps) => (
   <CardFooter className="gap-2 px-4">{props.children}</CardFooter>
 )
 
+/** Posting the day is the app's primary action, and on a phone it is a thumb
+ * target: 44px is the comfortable minimum, and the variant scale deliberately
+ * tops out at 36px, so the height is overridden here rather than by stretching
+ * the scale for everything. Back to the compact scale from `md` up, where the
+ * pointer is a mouse. */
 const TodayEntryAction = (props: TodayEntryActionProps) => (
   <Button
     variant={props.variant ?? 'default'}
-    size="sm"
     onClick={props.onClick}
     disabled={props.disabled || props.busy}
-    className="flex-1"
+    className="h-11 flex-1 md:h-8"
   >
     {props.busy ? <Spinner /> : props.icon}
     {props.label}

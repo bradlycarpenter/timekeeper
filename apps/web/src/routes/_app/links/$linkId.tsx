@@ -5,6 +5,7 @@ import { AsyncResult } from 'effect/unstable/reactivity'
 import { Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { PageHeader } from '#/components/page-header/page-header'
 import { Rule } from '#/components/rule/rule'
 import { useRulePreview } from '#/components/rule/use-rule-preview'
 import { ScreenState } from '#/components/screen-state/screen-state'
@@ -86,15 +87,12 @@ function LinkScreen() {
     ))
     .onSuccess((value) => (
       <>
-        <div className="mb-5">
-          <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-            {value.boardKey} → {value.sheetClientName}
-          </p>
-          <h1 className="mt-0.5 text-2xl font-semibold tracking-tight">
-            {value.sheetName}
-          </h1>
-          <p className="text-muted-foreground text-sm">{value.boardName}</p>
-        </div>
+        <PageHeader.Root>
+          <PageHeader.Title
+            heading={value.sheetName}
+            description={`${value.boardKey} ${value.boardName} → ${value.sheetClientName}`}
+          />
+        </PageHeader.Root>
 
         <Card className="py-4">
           <CardContent className="space-y-4 px-4">

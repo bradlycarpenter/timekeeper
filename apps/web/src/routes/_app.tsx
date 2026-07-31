@@ -23,6 +23,24 @@ export const Route = createFileRoute('/_app')({
 function AppLayout() {
   const viewer = useAtomValue(viewerAtom)
 
+  /* Rendered into both the phone header and the desktop rail footer, because
+   * the header is hidden from `md` up and the account would otherwise be
+   * unreachable there. */
+  const account = AsyncResult.builder(viewer)
+    .onSuccess((user) => (
+      <AppShell.Account
+        name={user.name}
+        email={user.email}
+        image={user.image}
+        onSignOut={() => {
+          void authClient.signOut().then(() => {
+            window.location.href = '/login'
+          })
+        }}
+      />
+    ))
+    .render()
+
   return (
     <AppShell.Root>
       <AppShell.Nav>
@@ -41,24 +59,10 @@ function AppLayout() {
           label="Settings"
           icon={<Settings className="size-5" />}
         />
+        <AppShell.NavFooter>{account}</AppShell.NavFooter>
       </AppShell.Nav>
       <div className="flex min-w-0 flex-1 flex-col">
-        <AppShell.Header>
-          {AsyncResult.builder(viewer)
-            .onSuccess((user) => (
-              <AppShell.Account
-                name={user.name}
-                email={user.email}
-                image={user.image}
-                onSignOut={() => {
-                  void authClient.signOut().then(() => {
-                    window.location.href = '/login'
-                  })
-                }}
-              />
-            ))
-            .render()}
-        </AppShell.Header>
+        <AppShell.Header>{account}</AppShell.Header>
         <AppShell.Content>
           <Outlet />
         </AppShell.Content>

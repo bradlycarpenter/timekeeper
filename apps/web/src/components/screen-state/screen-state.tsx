@@ -56,11 +56,14 @@ const ScreenStateEmpty = (props: ScreenStateEmptyProps) => (
   </div>
 )
 
+/** The section heading takes the headline step (1.25rem) rather than inheriting
+ * 1rem, so it outranks the 1rem card titles beneath it instead of tying with
+ * them. Scale reads 1.5rem page / 1.25rem section / 1rem card. */
 const ScreenStateSection = (props: ScreenStateSectionProps) => (
-  <section className="mt-8 space-y-3">
+  <section className="mt-10 space-y-3">
     <div className="flex items-end justify-between gap-3">
       <div>
-        <h2 className="font-semibold tracking-tight">{props.title}</h2>
+        <h2 className="text-xl font-semibold tracking-tight">{props.title}</h2>
         {props.description ? (
           <p className="text-muted-foreground text-sm">{props.description}</p>
         ) : null}

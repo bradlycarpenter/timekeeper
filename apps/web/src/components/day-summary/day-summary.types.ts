@@ -1,15 +1,8 @@
-import type { ReactNode } from 'react'
-
-export type DaySummaryRootProps = {
-  children: ReactNode
-}
-
-export type DaySummaryTitleProps = {
-  eyebrow: string
-  date: string
-}
-
-export type DaySummaryHoursProps = {
+export type DaySummaryTallyProps = {
+  filed: number
+  skipped: number
   total: number
+  hours: number
   expected: number
+  postsAt: string
 }

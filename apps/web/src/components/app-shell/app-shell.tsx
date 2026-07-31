@@ -14,6 +14,7 @@ import type {
   AppShellAccountProps,
   AppShellContentProps,
   AppShellHeaderProps,
+  AppShellNavFooterProps,
   AppShellNavItemProps,
   AppShellNavProps,
   AppShellRootProps,
@@ -25,8 +26,10 @@ const AppShellRoot = (props: AppShellRootProps) => (
   </div>
 )
 
-/** Sits above the content on phones and inside the rail on wider screens, so the
- * brand and account are always in the same place relative to the navigation. */
+/** Phones only. On wider screens the brand moves into the rail and the account
+ * moves into `NavFooter`, so this whole bar disappears rather than duplicating
+ * the rail. Anything placed here must have a rail counterpart or it becomes
+ * unreachable on desktop. */
 const AppShellHeader = (props: AppShellHeaderProps) => (
   <header className="bg-background/80 sticky top-0 z-20 flex shrink-0 items-center justify-between gap-2 border-b px-4 py-3 backdrop-blur md:hidden">
     <Link to="/today" className="flex items-center gap-1.5">
@@ -110,6 +113,13 @@ const AppShellNavItem = (props: AppShellNavItemProps) => (
   </Link>
 )
 
+/** The rail's counterpart to the phone header: the account lives here on wider
+ * screens, where the header is hidden. Collapsed on phones, where the tab bar
+ * has no room for it and the header carries it instead. */
+const AppShellNavFooter = (props: AppShellNavFooterProps) => (
+  <div className="mt-auto hidden border-t pt-3 md:block">{props.children}</div>
+)
+
 export const AppShell = {
   Root: AppShellRoot,
   Header: AppShellHeader,
@@ -117,4 +127,5 @@ export const AppShell = {
   Content: AppShellContent,
   Nav: AppShellNav,
   NavItem: AppShellNavItem,
+  NavFooter: AppShellNavFooter,
 }

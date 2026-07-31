@@ -31,10 +31,10 @@ describe('LegalPage.Root', () => {
 
 describe('LegalPage.Title', () => {
   it('shows the heading and the last-updated date', () => {
-    render(<LegalPage.Title heading="Privacy policy" updated="{{EFFECTIVE_DATE}}" />)
+    render(<LegalPage.Title heading="Privacy policy" updated="31 July 2026" />)
 
     expect(screen.getByRole('heading', { name: 'Privacy policy' })).toBeTruthy()
-    expect(screen.getByText('Last updated: {{EFFECTIVE_DATE}}')).toBeTruthy()
+    expect(screen.getByText('Last updated: 31 July 2026')).toBeTruthy()
   })
 })
 

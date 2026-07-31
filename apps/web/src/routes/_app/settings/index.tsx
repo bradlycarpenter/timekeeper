@@ -6,6 +6,7 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import { authClient } from '#/auth'
 import { Connection } from '#/components/connection/connection'
+import { PageHeader } from '#/components/page-header/page-header'
 import { ScreenState } from '#/components/screen-state/screen-state'
 import { Button } from '#/components/ui/button'
 import { Spinner } from '#/components/ui/spinner'
@@ -31,12 +32,12 @@ function SettingsScreen() {
 
   return (
     <>
-      <div className="mb-4">
-        <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground text-sm">
-          Timekeeper reads from Jira and writes to your Warp timesheet.
-        </p>
-      </div>
+      <PageHeader.Root>
+        <PageHeader.Title
+          heading="Settings"
+          description="Timekeeper reads from Jira and writes to your Warp timesheet."
+        />
+      </PageHeader.Root>
 
       {AsyncResult.builder(connections)
         .onInitialOrWaiting(() => <ScreenState.Loading cards={2} />)
@@ -48,7 +49,7 @@ function SettingsScreen() {
           />
         ))
         .onSuccess((state) => (
-          <div className="space-y-3">
+          <div className="space-y-6">
             <Connection.Root>
               <Connection.Heading
                 name="Warp timesheet"
@@ -70,7 +71,7 @@ function SettingsScreen() {
                 {state.sheet.status === 'connected' ? (
                   <Button
                     variant="outline"
-                    size="sm"
+                    className="h-11 md:h-8"
                     disabled={disconnecting}
                     onClick={() => {
                       setDisconnecting(true)
@@ -92,7 +93,7 @@ function SettingsScreen() {
                     Disconnect
                   </Button>
                 ) : (
-                  <Button asChild size="sm" className="flex-1">
+                  <Button asChild className="h-11 flex-1 md:h-8">
                     <Link to="/settings/warp">
                       {state.sheet.status === 'stale'
                         ? 'Sign in again'
@@ -115,7 +116,7 @@ function SettingsScreen() {
                 {state.board.status === 'connected' ? (
                   <Button
                     variant="outline"
-                    size="sm"
+                    className="h-11 md:h-8"
                     onClick={() => {
                       void authClient
                         .unlinkAccount({ providerId: 'atlassian' })
@@ -129,8 +130,7 @@ function SettingsScreen() {
                   </Button>
                 ) : (
                   <Button
-                    size="sm"
-                    className="flex-1"
+                    className="h-11 flex-1 md:h-8"
                     disabled={linking}
                     onClick={() => {
                       setLinking(true)

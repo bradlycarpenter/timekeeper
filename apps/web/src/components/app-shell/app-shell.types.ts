@@ -29,3 +29,7 @@ export type AppShellNavItemProps = {
   label: string
   icon: ReactNode
 }
+
+export type AppShellNavFooterProps = {
+  children?: ReactNode
+}

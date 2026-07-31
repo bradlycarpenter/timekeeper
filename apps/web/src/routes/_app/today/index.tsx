@@ -7,6 +7,7 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import { DaySummary } from '#/components/day-summary/day-summary'
 import { HistoryList } from '#/components/history-list/history-list'
+import { PageHeader } from '#/components/page-header/page-header'
 import { ScreenState } from '#/components/screen-state/screen-state'
 import { TodayEntry } from '#/components/today-entry/today-entry'
 import { demoEntry, sampleEntryFor } from '#/components/today-entry/today-entry.sample.ts'
@@ -92,21 +93,27 @@ function TodayScreen() {
         ))
         .onSuccess((day) => (
           <>
-            <DaySummary.Root>
-              <DaySummary.Title
-                eyebrow={`Posts at ${day.postsAt}`}
-                date={formatDayLong(day.date)}
+            <PageHeader.Root>
+              <PageHeader.Title heading={formatDayLong(day.date)} />
+            </PageHeader.Root>
+
+            {day.entries.length > 0 ? (
+              <DaySummary.Tally
+                filed={
+                  day.entries.filter((entry) => entry.status === 'posted').length
+                }
+                skipped={
+                  day.entries.filter((entry) => entry.status === 'skipped').length
+                }
+                total={day.entries.length}
+                hours={day.totalHours}
+                expected={EXPECTED_HOURS}
+                postsAt={day.postsAt}
               />
-              {day.entries.length > 0 ? (
-                <DaySummary.Hours
-                  total={day.totalHours}
-                  expected={EXPECTED_HOURS}
-                />
-              ) : null}
-            </DaySummary.Root>
+            ) : null}
 
             {day.entries.length === 0 ? (
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <ScreenState.Empty
                   icon={<CalendarCheck className="size-8" />}
                   title="Nothing to post yet"
@@ -134,7 +141,9 @@ function TodayScreen() {
                 </TodayEntry.Root>
               </div>
             ) : (
-              <div className="space-y-3">
+              /* 24px between records against 12px inside one, so an entry reads
+               * as a single group without leaning on its ring to do it. */
+              <div className="space-y-6">
                 {day.entries.map((entry) => (
                   <TodayEntry.Root key={entry.boardSheetId} status={entry.status}>
                     <TodayEntry.Heading

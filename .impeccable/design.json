@@ -1,0 +1,433 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-31T18:45:00Z",
+  "title": "Design System: Timekeeper",
+  "extensions": {
+    "colorMeta": {
+      "ledger-blue": {
+        "role": "primary",
+        "displayName": "Ledger Blue",
+        "canonical": "oklch(0.6231 0.1880 259.8145)",
+        "tonalRamp": [
+          "oklch(0.15 0.075 259.8145)",
+          "oklch(0.26 0.115 259.8145)",
+          "oklch(0.37 0.150 259.8145)",
+          "oklch(0.48 0.180 259.8145)",
+          "oklch(0.58 0.188 259.8145)",
+          "oklch(0.69 0.170 259.8145)",
+          "oklch(0.80 0.120 259.8145)",
+          "oklch(0.92 0.055 259.8145)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "oklch(0.3211 0 0)",
+        "tonalRamp": [
+          "oklch(0.15 0 0)",
+          "oklch(0.26 0 0)",
+          "oklch(0.37 0 0)",
+          "oklch(0.48 0 0)",
+          "oklch(0.59 0 0)",
+          "oklch(0.70 0 0)",
+          "oklch(0.82 0 0)",
+          "oklch(0.95 0 0)"
+        ]
+      },
+      "page": {
+        "role": "neutral",
+        "displayName": "Page",
+        "canonical": "oklch(1.0000 0 0)",
+        "tonalRamp": [
+          "oklch(0.15 0 0)",
+          "oklch(0.26 0 0)",
+          "oklch(0.37 0 0)",
+          "oklch(0.48 0 0)",
+          "oklch(0.59 0 0)",
+          "oklch(0.70 0 0)",
+          "oklch(0.82 0 0)",
+          "oklch(0.95 0 0)"
+        ]
+      },
+      "rule": {
+        "role": "neutral",
+        "displayName": "Rule",
+        "canonical": "oklch(0.9276 0.0058 264.5313)",
+        "tonalRamp": [
+          "oklch(0.15 0.0058 264.5313)",
+          "oklch(0.26 0.0058 264.5313)",
+          "oklch(0.37 0.0058 264.5313)",
+          "oklch(0.48 0.0058 264.5313)",
+          "oklch(0.59 0.0058 264.5313)",
+          "oklch(0.70 0.0058 264.5313)",
+          "oklch(0.82 0.0058 264.5313)",
+          "oklch(0.95 0.0058 264.5313)"
+        ]
+      },
+      "quiet": {
+        "role": "neutral",
+        "displayName": "Quiet",
+        "canonical": "oklch(0.9846 0.0017 247.8389)",
+        "tonalRamp": [
+          "oklch(0.15 0.0017 247.8389)",
+          "oklch(0.26 0.0017 247.8389)",
+          "oklch(0.37 0.0017 247.8389)",
+          "oklch(0.48 0.0017 247.8389)",
+          "oklch(0.59 0.0017 247.8389)",
+          "oklch(0.70 0.0017 247.8389)",
+          "oklch(0.82 0.0017 247.8389)",
+          "oklch(0.95 0.0017 247.8389)"
+        ]
+      },
+      "chip": {
+        "role": "neutral",
+        "displayName": "Chip",
+        "canonical": "oklch(0.9670 0.0029 264.5419)",
+        "tonalRamp": [
+          "oklch(0.15 0.0029 264.5419)",
+          "oklch(0.26 0.0029 264.5419)",
+          "oklch(0.37 0.0029 264.5419)",
+          "oklch(0.48 0.0029 264.5419)",
+          "oklch(0.59 0.0029 264.5419)",
+          "oklch(0.70 0.0029 264.5419)",
+          "oklch(0.82 0.0029 264.5419)",
+          "oklch(0.95 0.0029 264.5419)"
+        ]
+      },
+      "wash": {
+        "role": "secondary",
+        "displayName": "Wash",
+        "canonical": "oklch(0.9514 0.0250 236.8242)",
+        "tonalRamp": [
+          "oklch(0.15 0.025 236.8242)",
+          "oklch(0.26 0.025 236.8242)",
+          "oklch(0.37 0.025 236.8242)",
+          "oklch(0.48 0.025 236.8242)",
+          "oklch(0.59 0.025 236.8242)",
+          "oklch(0.70 0.025 236.8242)",
+          "oklch(0.82 0.025 236.8242)",
+          "oklch(0.95 0.025 236.8242)"
+        ]
+      },
+      "alarm": {
+        "role": "tertiary",
+        "displayName": "Alarm",
+        "canonical": "oklch(0.6368 0.2078 25.3313)",
+        "tonalRamp": [
+          "oklch(0.15 0.080 25.3313)",
+          "oklch(0.26 0.120 25.3313)",
+          "oklch(0.37 0.160 25.3313)",
+          "oklch(0.48 0.190 25.3313)",
+          "oklch(0.58 0.207 25.3313)",
+          "oklch(0.69 0.185 25.3313)",
+          "oklch(0.80 0.130 25.3313)",
+          "oklch(0.92 0.060 25.3313)"
+        ]
+      },
+      "settled": {
+        "role": "tertiary",
+        "displayName": "Settled (borrowed emerald)",
+        "canonical": "#059669",
+        "tonalRamp": [
+          "#022c22",
+          "#064e3b",
+          "#065f46",
+          "#047857",
+          "#059669",
+          "#10b981",
+          "#6ee7b7",
+          "#d1fae5"
+        ]
+      },
+      "attention": {
+        "role": "tertiary",
+        "displayName": "Attention (borrowed amber)",
+        "canonical": "#b45309",
+        "tonalRamp": [
+          "#451a03",
+          "#78350f",
+          "#92400e",
+          "#b45309",
+          "#d97706",
+          "#f59e0b",
+          "#fcd34d",
+          "#fef3c7"
+        ]
+      },
+      "fabricated": {
+        "role": "tertiary",
+        "displayName": "Fabricated (borrowed violet)",
+        "canonical": "#6d28d9",
+        "tonalRamp": [
+          "#2e1065",
+          "#4c1d95",
+          "#5b21b6",
+          "#6d28d9",
+          "#7c3aed",
+          "#8b5cf6",
+          "#c4b5fd",
+          "#ede9fe"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "The one true page heading per screen — the date on Today, the title on a legal page."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Section headings within a screen, and the step title inside the wizard. Sits between the 1.5rem page heading and the 1rem card title so a section outranks the cards inside it."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Card titles. Weight 500, not 600 — these are labels, not headlines."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "The interface default: descriptions, list rows, button labels, form text."
+      },
+      "prose": {
+        "displayName": "Prose",
+        "purpose": "Text meant to be read rather than scanned — the posted timesheet message, the editor, legal paragraphs. Capped at a 70ch measure everywhere it appears."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Badge text. There are no eyebrows or kickers above headings anywhere in this system."
+      },
+      "micro": {
+        "displayName": "Micro",
+        "purpose": "Mobile nav labels, role badges, board-key badges. The floor — nothing smaller exists."
+      },
+      "mono": {
+        "displayName": "Mono",
+        "purpose": "Jira ticket keys and board keys only. Never prose."
+      }
+    },
+    "shadows": [
+      {
+        "name": "overlay",
+        "value": "0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 2px 4px -1px hsl(0 0% 0% / 0.10)",
+        "purpose": "Dropdown menus, select menus, command palettes, popovers. The only shadow most of the app uses."
+      },
+      {
+        "name": "overlay-raised",
+        "value": "0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 4px 6px -1px hsl(0 0% 0% / 0.10)",
+        "purpose": "The one popover that must read as further forward than its siblings."
+      },
+      {
+        "name": "ring-hairline",
+        "value": "0 0 0 1px oklch(0.3211 0 0 / 0.1)",
+        "purpose": "Not a shadow but the card's actual delineation — ring-1 ring-foreground/10. In light mode this is the only thing separating a card from the page."
+      }
+    ],
+    "motion": [
+      {
+        "name": "transition-colors",
+        "value": "color, background-color, border-color 150ms cubic-bezier(0.4, 0, 0.2, 1)",
+        "purpose": "Nav items and inputs. The default for state changes that only shift color."
+      },
+      {
+        "name": "transition-all",
+        "value": "all 150ms cubic-bezier(0.4, 0, 0.2, 1)",
+        "purpose": "Buttons and badges, which move as well as recolor."
+      },
+      {
+        "name": "press-nudge",
+        "value": "translateY(1px)",
+        "purpose": "active: state on buttons — a genuine 1px physical depression. Suppressed on menu triggers, which stay down while open."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The single accent-filled action per surface. 32px tall — compact by design.",
+      "html": "<button class=\"ds-btn-primary\">Post this</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 0.375rem; height: 2rem; padding: 0 0.625rem; border: 1px solid transparent; border-radius: var(--radius, 0.75rem); background: var(--primary, oklch(0.6231 0.1880 259.8145)); color: var(--primary-foreground, #fff); font-size: 0.875rem; font-weight: 500; line-height: 1; white-space: nowrap; cursor: pointer; outline: none; transition: all 150ms cubic-bezier(0.4,0,0.2,1); } .ds-btn-primary:hover { background: color-mix(in oklch, var(--primary, oklch(0.6231 0.1880 259.8145)) 80%, transparent); } .ds-btn-primary:focus-visible { border-color: var(--ring, oklch(0.6231 0.1880 259.8145)); box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.6231 0.1880 259.8145)) 50%, transparent); } .ds-btn-primary:active { transform: translateY(1px); }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "The secondary action. Page-colored with a rule-colored edge; fills with Quiet on hover.",
+      "html": "<button class=\"ds-btn-outline\">Disconnect</button>",
+      "css": ".ds-btn-outline { display: inline-flex; align-items: center; justify-content: center; gap: 0.375rem; height: 2rem; padding: 0 0.625rem; border: 1px solid var(--border, oklch(0.9276 0.0058 264.5313)); border-radius: var(--radius, 0.75rem); background: var(--background, #fff); color: var(--foreground, oklch(0.3211 0 0)); font-size: 0.875rem; font-weight: 500; line-height: 1; white-space: nowrap; cursor: pointer; outline: none; transition: all 150ms cubic-bezier(0.4,0,0.2,1); } .ds-btn-outline:hover { background: var(--muted, oklch(0.9846 0.0017 247.8389)); } .ds-btn-outline:focus-visible { border-color: var(--ring, oklch(0.6231 0.1880 259.8145)); box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.6231 0.1880 259.8145)) 50%, transparent); } .ds-btn-outline:active { transform: translateY(1px); }"
+    },
+    {
+      "name": "Destructive Button",
+      "kind": "button",
+      "refersTo": "button-destructive",
+      "description": "A 10% Alarm tint with Alarm text — never a solid red fill. Serious without shouting.",
+      "html": "<button class=\"ds-btn-destructive\">Delete link</button>",
+      "css": ".ds-btn-destructive { display: inline-flex; align-items: center; justify-content: center; gap: 0.375rem; height: 2rem; padding: 0 0.625rem; border: 1px solid transparent; border-radius: var(--radius, 0.75rem); background: color-mix(in oklch, var(--destructive, oklch(0.6368 0.2078 25.3313)) 10%, transparent); color: var(--destructive, oklch(0.6368 0.2078 25.3313)); font-size: 0.875rem; font-weight: 500; line-height: 1; white-space: nowrap; cursor: pointer; outline: none; transition: all 150ms cubic-bezier(0.4,0,0.2,1); } .ds-btn-destructive:hover { background: color-mix(in oklch, var(--destructive, oklch(0.6368 0.2078 25.3313)) 20%, transparent); } .ds-btn-destructive:focus-visible { border-color: color-mix(in oklch, var(--destructive, oklch(0.6368 0.2078 25.3313)) 40%, transparent); box-shadow: 0 0 0 3px color-mix(in oklch, var(--destructive, oklch(0.6368 0.2078 25.3313)) 20%, transparent); } .ds-btn-destructive:active { transform: translateY(1px); }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "32px, transparent fill, rule-colored stroke. Focus shifts the border to the accent and adds a 3px ring.",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"Search projects\" />",
+      "css": ".ds-input { display: block; width: 100%; min-width: 0; height: 2rem; padding: 0.25rem 0.625rem; border: 1px solid var(--input, oklch(0.9276 0.0058 264.5313)); border-radius: var(--radius, 0.75rem); background: transparent; color: var(--foreground, oklch(0.3211 0 0)); font-size: 0.875rem; line-height: 1.5; outline: none; transition: color 150ms, background-color 150ms, border-color 150ms; } .ds-input::placeholder { color: var(--muted-foreground, oklch(0.5510 0.0234 264.3637)); } .ds-input:focus-visible { border-color: var(--ring, oklch(0.6231 0.1880 259.8145)); box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.6231 0.1880 259.8145)) 50%, transparent); } .ds-input[aria-invalid=\"true\"] { border-color: var(--destructive, oklch(0.6368 0.2078 25.3313)); box-shadow: 0 0 0 3px color-mix(in oklch, var(--destructive, oklch(0.6368 0.2078 25.3313)) 20%, transparent); }"
+    },
+    {
+      "name": "Status Badge",
+      "kind": "chip",
+      "refersTo": "badge-status",
+      "description": "A borrowed-hue pill that always spells its state out in words. Shown here in Settled emerald for a posted entry.",
+      "html": "<span class=\"ds-badge-status\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M21.801 10A10 10 0 1 1 17 3.335\"/><path d=\"m9 11 3 3L22 4\"/></svg>Posted</span>",
+      "css": ".ds-badge-status { display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; height: 1.25rem; width: fit-content; padding: 0.125rem 0.5rem; border: 0; border-radius: 9999px; background: #d1fae5; color: #065f46; font-size: 0.75rem; font-weight: 500; line-height: 1.4; white-space: nowrap; } .ds-badge-status svg { width: 0.875rem; height: 0.875rem; flex-shrink: 0; } @media (prefers-color-scheme: dark) { .ds-badge-status { background: #022c22; color: #6ee7b7; } }"
+    },
+    {
+      "name": "Neutral Badge",
+      "kind": "chip",
+      "refersTo": "badge-status",
+      "description": "The workhorse quantity pill — Chip fill with tabular figures, used for hours.",
+      "html": "<span class=\"ds-badge-quantity\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><polyline points=\"12 6 12 12 16 14\"/></svg>8h of 8h</span>",
+      "css": ".ds-badge-quantity { display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; height: 1.25rem; width: fit-content; padding: 0.125rem 0.5rem; border: 1px solid transparent; border-radius: 9999px; background: var(--secondary, oklch(0.9670 0.0029 264.5419)); color: var(--secondary-foreground, oklch(0.4461 0.0263 256.8018)); font-size: 0.75rem; font-weight: 500; line-height: 1.4; font-variant-numeric: tabular-nums; white-space: nowrap; } .ds-badge-quantity svg { width: 0.875rem; height: 0.875rem; flex-shrink: 0; }"
+    },
+    {
+      "name": "Entry Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "The system's centerpiece. Flat, ring-ruled, with the posted message at prose size and the board key in mono. A skipped entry drops to 60% opacity rather than disappearing.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-head\"><div class=\"ds-card-titles\"><p class=\"ds-card-client\">Northwind Trading</p><p class=\"ds-card-project\">Platform Rebuild</p></div><div class=\"ds-card-meta\"><span class=\"ds-card-key\">PLAT</span><span class=\"ds-card-hours\">8h</span></div></div><div class=\"ds-card-body\"><p class=\"ds-card-message\">Moved PLAT-418 and PLAT-422 to review, and closed out PLAT-410.</p></div><div class=\"ds-card-foot\"><button class=\"ds-btn-primary\">Post this</button></div></div>",
+      "css": ".ds-card { display: flex; flex-direction: column; gap: 0.75rem; overflow: hidden; padding: 1rem 0; border-radius: var(--radius, 0.75rem); background: var(--card, #fff); color: var(--card-foreground, oklch(0.3211 0 0)); box-shadow: 0 0 0 1px color-mix(in oklch, var(--foreground, oklch(0.3211 0 0)) 10%, transparent); font-size: 0.875rem; } .ds-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem; padding: 0 1rem; } .ds-card-titles { min-width: 0; } .ds-card-client { margin: 0; font-size: 0.875rem; font-weight: 600; } .ds-card-project { margin: 0; font-size: 0.875rem; color: var(--muted-foreground, oklch(0.5510 0.0234 264.3637)); } .ds-card-meta { display: flex; flex-shrink: 0; align-items: center; gap: 0.375rem; } .ds-card-key { display: inline-flex; align-items: center; height: 1.25rem; padding: 0.125rem 0.5rem; border: 1px solid var(--border, oklch(0.9276 0.0058 264.5313)); border-radius: 9999px; font-family: \"JetBrains Mono\", monospace; font-size: 0.6875rem; } .ds-card-hours { display: inline-flex; align-items: center; height: 1.25rem; padding: 0.125rem 0.5rem; border-radius: 9999px; background: var(--secondary, oklch(0.9670 0.0029 264.5419)); color: var(--secondary-foreground, oklch(0.4461 0.0263 256.8018)); font-size: 0.75rem; font-weight: 500; font-variant-numeric: tabular-nums; } .ds-card-body { padding: 0 1rem; } .ds-card-message { margin: 0; font-size: 0.9375rem; line-height: 1.625; } .ds-card-foot { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.25rem; padding: 1rem; border-top: 1px solid var(--border, oklch(0.9276 0.0058 264.5313)); background: color-mix(in oklch, var(--muted, oklch(0.9846 0.0017 247.8389)) 50%, transparent); }"
+    },
+    {
+      "name": "Desktop Nav Item",
+      "kind": "nav",
+      "refersTo": "nav-item-active",
+      "description": "A rail row. Active state is a Wash fill on desktop; on mobile the same item becomes icon-over-label with accent text and no fill.",
+      "html": "<nav class=\"ds-nav\"><a class=\"ds-nav-item ds-nav-item--active\" href=\"#\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M8 2v4\"/><path d=\"M16 2v4\"/><rect width=\"18\" height=\"18\" x=\"3\" y=\"4\" rx=\"2\"/><path d=\"M3 10h18\"/><path d=\"m9 16 2 2 4-4\"/></svg><span>Today</span></a><a class=\"ds-nav-item\" href=\"#\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M9 17H7A5 5 0 0 1 7 7h2\"/><path d=\"M15 7h2a5 5 0 1 1 0 10h-2\"/><line x1=\"8\" x2=\"16\" y1=\"12\" y2=\"12\"/></svg><span>Links</span></a></nav>",
+      "css": ".ds-nav { display: flex; flex-direction: column; gap: 0.25rem; width: 15rem; padding: 1rem; } .ds-nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.625rem 0.75rem; border-radius: var(--radius, 0.75rem); color: var(--muted-foreground, oklch(0.5510 0.0234 264.3637)); font-size: 0.875rem; font-weight: 500; text-decoration: none; transition: color 150ms, background-color 150ms; } .ds-nav-item svg { width: 1.25rem; height: 1.25rem; flex-shrink: 0; } .ds-nav-item:hover { color: var(--foreground, oklch(0.3211 0 0)); } .ds-nav-item--active { background: var(--accent, oklch(0.9514 0.0250 236.8242)); color: var(--accent-foreground, oklch(0.3791 0.1378 265.5222)); } .ds-nav-item:focus-visible { outline: none; box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.6231 0.1880 259.8145)) 50%, transparent); }"
+    },
+    {
+      "name": "Wizard Dot Rail",
+      "kind": "custom",
+      "refersTo": "nav-item-active",
+      "description": "Fixed 24px dots with flexible connectors, so the rail fills its container with no trailing gap. Completed steps show a check; titles are deliberately absent.",
+      "html": "<div class=\"ds-rail\"><span class=\"ds-rail-dot ds-rail-dot--done\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M20 6 9 17l-5-5\"/></svg></span><span class=\"ds-rail-line ds-rail-line--done\"></span><span class=\"ds-rail-dot ds-rail-dot--current\">2</span><span class=\"ds-rail-line\"></span><span class=\"ds-rail-dot\">3</span></div>",
+      "css": ".ds-rail { display: flex; align-items: center; } .ds-rail-dot { display: flex; flex-shrink: 0; align-items: center; justify-content: center; width: 1.5rem; height: 1.5rem; border-radius: 9999px; background: var(--muted, oklch(0.9846 0.0017 247.8389)); color: var(--muted-foreground, oklch(0.5510 0.0234 264.3637)); font-size: 0.75rem; font-weight: 600; } .ds-rail-dot svg { width: 0.875rem; height: 0.875rem; } .ds-rail-dot--done, .ds-rail-dot--current { background: var(--primary, oklch(0.6231 0.1880 259.8145)); color: var(--primary-foreground, #fff); } .ds-rail-line { flex: 1; height: 0.125rem; margin: 0 0.5rem; border-radius: 9999px; background: var(--muted, oklch(0.9846 0.0017 247.8389)); } .ds-rail-line--done { background: var(--primary, oklch(0.6231 0.1880 259.8145)); }"
+    },
+    {
+      "name": "Empty State",
+      "kind": "custom",
+      "refersTo": "card",
+      "description": "Absence is dashed. The only dashed edge in the system — error is tinted, loading is shaped, empty is dashed.",
+      "html": "<div class=\"ds-empty\"><div class=\"ds-empty-icon\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M9 17H7A5 5 0 0 1 7 7h2\"/><path d=\"M15 7h2a5 5 0 1 1 0 10h-2\"/><line x1=\"8\" x2=\"16\" y1=\"12\" y2=\"12\"/></svg></div><p class=\"ds-empty-title\">No board links yet</p><p class=\"ds-empty-detail\">Link a Jira project to a timesheet task and Timekeeper will file the entry for you.</p><button class=\"ds-btn-primary\">Create a link</button></div>",
+      "css": ".ds-empty { padding: 2.5rem 1rem; border: 1px dashed var(--border, oklch(0.9276 0.0058 264.5313)); border-radius: var(--radius, 0.75rem); text-align: center; } .ds-empty-icon { display: flex; align-items: center; justify-content: center; width: 2.5rem; height: 2.5rem; margin: 0 auto; color: var(--muted-foreground, oklch(0.5510 0.0234 264.3637)); } .ds-empty-icon svg { width: 1.25rem; height: 1.25rem; } .ds-empty-title { margin: 0.25rem 0 0; font-size: 0.875rem; font-weight: 500; } .ds-empty-detail { max-width: 20rem; margin: 0.25rem auto 0; color: var(--muted-foreground, oklch(0.5510 0.0234 264.3637)); font-size: 0.875rem; } .ds-empty .ds-btn-primary { margin-top: 1.25rem; display: inline-flex; align-items: center; justify-content: center; height: 2rem; padding: 0 0.625rem; border: 1px solid transparent; border-radius: var(--radius, 0.75rem); background: var(--primary, oklch(0.6231 0.1880 259.8145)); color: var(--primary-foreground, #fff); font-size: 0.875rem; font-weight: 500; cursor: pointer; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Standing Ledger",
+    "overview": "Timekeeper is a record that keeps itself. Its core promise is that the day's entry is already filed and correct before the user thinks to check, so the interface is not a control panel — it is the ledger you consult afterward to confirm what was written in your name. Every screen is a page of that ledger: ruled with hairlines rather than boxed in with borders, set in tabular figures that align down the column, and printed at reading size where the text is the artifact itself rather than a label for one.\n\nThe philosophy is quiet, exact, and unshowy. Restraint is the point, not a budget constraint. Nothing decorative survives: there are no gradients, no illustrations, no ornamental shadows, and no color that isn't carrying information. Confidence comes from precision — a single radius everywhere, one blue that means one thing, status stated in words inside a pill rather than implied by a dot. The system is comfortable being plain because the product's voice is plain; it states what happened, including when what happened was a failure.\n\nDensity is desktop-first and deliberately compact. Controls are small (a 32px default button) because the audience is colleagues on laptops who want more of the ledger visible at once, and the places where fingers are genuinely involved override to a comfortable target explicitly rather than inflating the whole scale. The accent earns its brightness by appearing almost nowhere.",
+    "keyCharacteristics": [
+      "Flat, ring-ruled surfaces — no resting shadows anywhere",
+      "One radius (0.75rem) across every element, lint-enforced",
+      "One accent blue, used for the single primary action and the active nav row",
+      "Tabular figures for every hour, monospace for every ticket key",
+      "Status always spelled out in a pill, never encoded in color alone",
+      "Reading-size prose (15px/1.625) for the posted text, because it is the product",
+      "Compact controls with deliberate, commented touch-target exceptions"
+    ],
+    "rules": [
+      {
+        "name": "The One Signal Rule",
+        "body": "Ledger Blue marks exactly one thing per surface: the primary action, or the active nav row, never both competing. If a second element wants the accent, one of them is not actually primary.",
+        "section": "colors"
+      },
+      {
+        "name": "The Borrowed Status Rule",
+        "body": "The three status hues — Settled emerald (posted, connected), Attention amber (queued, stale, an unbalanced day), and Fabricated violet (sample content that is not real) — are borrowed Tailwind steps, not system tokens. They appear only as a tinted pill with border-0 and always ship a light/dark pair. Never promote one into the brand palette, and never use one as a surface or text color outside a status pill.",
+        "section": "colors"
+      },
+      {
+        "name": "The Named State Rule",
+        "body": "No state is conveyed by color alone. Every status pill carries its word — \"Posted\", \"Skipped\", \"Failed\", \"Sending\", \"Scheduled\", \"Not connected\", \"Sign in again\" — and most carry an icon as well.",
+        "section": "colors"
+      },
+      {
+        "name": "The Verbatim Rule",
+        "body": "The text that will reach the timesheet renders at prose size (0.9375rem / 1.625), never at UI body size. It is the artifact the product produces, and it is shown exactly as it will be posted — there must be no gap between what is displayed and what gets filed.",
+        "section": "typography"
+      },
+      {
+        "name": "The Tabular Rule",
+        "body": "Every hour figure carries tabular-nums so columns of hours align. Every Jira ticket key and board key carries font-mono. These are not stylistic choices; they are how a number is distinguished from a word and an identifier from a name.",
+        "section": "typography"
+      },
+      {
+        "name": "The Thumb Rail Rule",
+        "body": "Primary navigation is bottom-anchored on phones and side-anchored on desktop — never a hamburger, never a top tab strip. Content must always reserve clearance for the floating bar.",
+        "section": "layout"
+      },
+      {
+        "name": "The One Column Rule",
+        "body": "Screens are a single stack of full-width cards. Do not introduce side-by-side card grids; the ledger reads top to bottom.",
+        "section": "layout"
+      },
+      {
+        "name": "The Grouping Gap Rule",
+        "body": "The space between two records must visibly exceed the largest space inside one (0.75rem within, 1.5rem between). If a card needs its ring to be legible as a single object, the gap is too small — fix the spacing, not the border.",
+        "section": "layout"
+      },
+      {
+        "name": "The Flat Ledger Rule",
+        "body": "A surface that is part of the page is flat and ring-ruled. Shadow is reserved exclusively for elements that overlay the page and will be dismissed. If a card has a shadow, it is wrong.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Ring Not Border Rule",
+        "body": "Card edges are rings, not borders, so adding one never shifts layout by a pixel. Reach for border only on structural chrome edges and single-sided dividers.",
+        "section": "elevation"
+      },
+      {
+        "name": "The One Radius Rule",
+        "body": "0.75rem, everywhere, no exceptions beyond rounded-full, rounded-none, var(--radius-chrome), and the small-control clamp. Never hardcode a radius; never name a tier expecting a different result.",
+        "section": "shapes"
+      }
+    ],
+    "dos": [
+      "Do use the single radius (0.75rem) by any tier name — they are identical — and reach for rounded-full only for genuine pills, dots, and avatars.",
+      "Do delineate cards with ring-1 ring-foreground/10 and keep them flat.",
+      "Do spend Ledger Blue on exactly one element per surface, per The One Signal Rule.",
+      "Do put tabular-nums on every hour figure and font-mono on every ticket or board key.",
+      "Do render posted or postable message text at prose size (0.9375rem / 1.625), per The Verbatim Rule.",
+      "Do spell out every status in words inside its pill, and ship a light/dark pair for any borrowed status hue.",
+      "Do drive validity styling from aria-invalid, and focus styling from :focus-visible with the 3px accent ring.",
+      "Do override to a 44px target where a control is a real mobile tap target, using h-11 md:h-8, and leave a comment saying why.",
+      "Do build new composites as compound components (Thing.Root, Thing.Heading) assembled at the route, never as a props-configured wrapper.",
+      "Do open every screen with PageHeader, and keep records 1.5rem apart against 0.75rem within, per The Grouping Gap Rule.",
+      "Do shape loading skeletons like the card they replace."
+    ],
+    "donts": [
+      "Don't put a shadow on a resting surface. Shadow belongs only to dismissible overlays.",
+      "Don't use border where a ring belongs — a card border shifts layout.",
+      "Don't hardcode a radius or write an arbitrary rounded-[…] unless it is built from var(--radius) or var(--radius-chrome). Lint will fail the build.",
+      "Don't name rounded-2xl, rounded-3xl, or rounded-4xl even though they resolve correctly — the rule bans the names to keep intent honest.",
+      "Don't make a destructive control a solid red fill; it is a 10% tint with Alarm text.",
+      "Don't promote emerald, amber, or violet beyond a status pill, or use one as a surface, body text, or second brand color.",
+      "Don't convey state by color alone.",
+      "Don't \"fix\" the text-base md:text-sm input sizing — the larger mobile size prevents iOS zoom on focus.",
+      "Don't inflate the button scale past 36px to solve a touch target; override the single instance instead.",
+      "Don't introduce side-by-side card grids or a second content column.",
+      "Don't add a gradient, illustration, decorative shadow, or ornamental flourish. Nothing in this system is decorative.",
+      "Don't revive --chart-1 through --chart-5, the eight --sidebar-* tokens, or --font-serif. All fourteen are unreferenced leftovers from a theme generator; treat them as debt to delete, not as system tokens. If the app ever needs charts or a serif, that is a new decision made deliberately.",
+      "Don't hand-roll a page heading, and don't put an eyebrow or kicker above one — that information belongs in the description.",
+      "Don't add anything to the phone header without a desktop rail counterpart; the header is md:hidden and whatever sits there alone disappears."
+    ]
+  }
+}
