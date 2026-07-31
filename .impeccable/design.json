@@ -1,22 +1,22 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-07-31T18:45:00Z",
+  "generatedAt": "2026-07-31T19:05:00Z",
   "title": "Design System: Timekeeper",
   "extensions": {
     "colorMeta": {
       "ledger-blue": {
         "role": "primary",
-        "displayName": "Ledger Blue",
-        "canonical": "oklch(0.6231 0.1880 259.8145)",
+        "displayName": "Ledger Blue (light mode; dark mode is oklch(0.6231 0.1880 259.8145))",
+        "canonical": "oklch(0.5744 0.1880 259.8145)",
         "tonalRamp": [
           "oklch(0.15 0.075 259.8145)",
           "oklch(0.26 0.115 259.8145)",
           "oklch(0.37 0.150 259.8145)",
-          "oklch(0.48 0.180 259.8145)",
-          "oklch(0.58 0.188 259.8145)",
-          "oklch(0.69 0.170 259.8145)",
-          "oklch(0.80 0.120 259.8145)",
-          "oklch(0.92 0.055 259.8145)"
+          "oklch(0.4757 0.180 259.8145)",
+          "oklch(0.5744 0.188 259.8145)",
+          "oklch(0.6231 0.188 259.8145)",
+          "oklch(0.75 0.140 259.8145)",
+          "oklch(0.90 0.065 259.8145)"
         ]
       },
       "ink": {
@@ -111,8 +111,8 @@
       },
       "alarm": {
         "role": "tertiary",
-        "displayName": "Alarm",
-        "canonical": "oklch(0.6368 0.2078 25.3313)",
+        "displayName": "Alarm (light mode; dark mode is oklch(0.6368 0.2078 25.3313))",
+        "canonical": "oklch(0.5933 0.2078 25.3313)",
         "tonalRamp": [
           "oklch(0.15 0.080 25.3313)",
           "oklch(0.26 0.120 25.3313)",
@@ -254,9 +254,9 @@
       "name": "Primary Button",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "The single accent-filled action per surface. 32px tall — compact by design.",
+      "description": "The single accent-filled action per surface. 32px tall — compact by design. Hover mixes toward --foreground so label contrast rises rather than falls.",
       "html": "<button class=\"ds-btn-primary\">Post this</button>",
-      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 0.375rem; height: 2rem; padding: 0 0.625rem; border: 1px solid transparent; border-radius: var(--radius, 0.75rem); background: var(--primary, oklch(0.6231 0.1880 259.8145)); color: var(--primary-foreground, #fff); font-size: 0.875rem; font-weight: 500; line-height: 1; white-space: nowrap; cursor: pointer; outline: none; transition: all 150ms cubic-bezier(0.4,0,0.2,1); } .ds-btn-primary:hover { background: color-mix(in oklch, var(--primary, oklch(0.6231 0.1880 259.8145)) 80%, transparent); } .ds-btn-primary:focus-visible { border-color: var(--ring, oklch(0.6231 0.1880 259.8145)); box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.6231 0.1880 259.8145)) 50%, transparent); } .ds-btn-primary:active { transform: translateY(1px); }"
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 0.375rem; height: 2rem; padding: 0 0.625rem; border: 1px solid transparent; border-radius: var(--radius, 0.75rem); background: var(--primary, oklch(0.5744 0.1880 259.8145)); color: var(--primary-foreground, #fff); font-size: 0.875rem; font-weight: 500; line-height: 1; white-space: nowrap; cursor: pointer; outline: none; transition: all 150ms cubic-bezier(0.4,0,0.2,1); } .ds-btn-primary:hover { background: color-mix(in oklch, var(--primary, oklch(0.5744 0.1880 259.8145)), var(--foreground, oklch(0.3211 0 0)) 15%); } .ds-btn-primary:focus-visible { border-color: var(--ring, oklch(0.5744 0.1880 259.8145)); box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.5744 0.1880 259.8145)) 50%, transparent); } .ds-btn-primary:active { transform: translateY(1px); }"
     },
     {
       "name": "Outline Button",
@@ -264,7 +264,7 @@
       "refersTo": "button-outline",
       "description": "The secondary action. Page-colored with a rule-colored edge; fills with Quiet on hover.",
       "html": "<button class=\"ds-btn-outline\">Disconnect</button>",
-      "css": ".ds-btn-outline { display: inline-flex; align-items: center; justify-content: center; gap: 0.375rem; height: 2rem; padding: 0 0.625rem; border: 1px solid var(--border, oklch(0.9276 0.0058 264.5313)); border-radius: var(--radius, 0.75rem); background: var(--background, #fff); color: var(--foreground, oklch(0.3211 0 0)); font-size: 0.875rem; font-weight: 500; line-height: 1; white-space: nowrap; cursor: pointer; outline: none; transition: all 150ms cubic-bezier(0.4,0,0.2,1); } .ds-btn-outline:hover { background: var(--muted, oklch(0.9846 0.0017 247.8389)); } .ds-btn-outline:focus-visible { border-color: var(--ring, oklch(0.6231 0.1880 259.8145)); box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.6231 0.1880 259.8145)) 50%, transparent); } .ds-btn-outline:active { transform: translateY(1px); }"
+      "css": ".ds-btn-outline { display: inline-flex; align-items: center; justify-content: center; gap: 0.375rem; height: 2rem; padding: 0 0.625rem; border: 1px solid var(--border, oklch(0.9276 0.0058 264.5313)); border-radius: var(--radius, 0.75rem); background: var(--background, #fff); color: var(--foreground, oklch(0.3211 0 0)); font-size: 0.875rem; font-weight: 500; line-height: 1; white-space: nowrap; cursor: pointer; outline: none; transition: all 150ms cubic-bezier(0.4,0,0.2,1); } .ds-btn-outline:hover { background: var(--muted, oklch(0.9846 0.0017 247.8389)); } .ds-btn-outline:focus-visible { border-color: var(--ring, oklch(0.5744 0.1880 259.8145)); box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.5744 0.1880 259.8145)) 50%, transparent); } .ds-btn-outline:active { transform: translateY(1px); }"
     },
     {
       "name": "Destructive Button",
@@ -272,7 +272,7 @@
       "refersTo": "button-destructive",
       "description": "A 10% Alarm tint with Alarm text — never a solid red fill. Serious without shouting.",
       "html": "<button class=\"ds-btn-destructive\">Delete link</button>",
-      "css": ".ds-btn-destructive { display: inline-flex; align-items: center; justify-content: center; gap: 0.375rem; height: 2rem; padding: 0 0.625rem; border: 1px solid transparent; border-radius: var(--radius, 0.75rem); background: color-mix(in oklch, var(--destructive, oklch(0.6368 0.2078 25.3313)) 10%, transparent); color: var(--destructive, oklch(0.6368 0.2078 25.3313)); font-size: 0.875rem; font-weight: 500; line-height: 1; white-space: nowrap; cursor: pointer; outline: none; transition: all 150ms cubic-bezier(0.4,0,0.2,1); } .ds-btn-destructive:hover { background: color-mix(in oklch, var(--destructive, oklch(0.6368 0.2078 25.3313)) 20%, transparent); } .ds-btn-destructive:focus-visible { border-color: color-mix(in oklch, var(--destructive, oklch(0.6368 0.2078 25.3313)) 40%, transparent); box-shadow: 0 0 0 3px color-mix(in oklch, var(--destructive, oklch(0.6368 0.2078 25.3313)) 20%, transparent); } .ds-btn-destructive:active { transform: translateY(1px); }"
+      "css": ".ds-btn-destructive { display: inline-flex; align-items: center; justify-content: center; gap: 0.375rem; height: 2rem; padding: 0 0.625rem; border: 1px solid transparent; border-radius: var(--radius, 0.75rem); background: color-mix(in oklch, var(--destructive, oklch(0.5933 0.2078 25.3313)) 10%, transparent); color: var(--destructive, oklch(0.5933 0.2078 25.3313)); font-size: 0.875rem; font-weight: 500; line-height: 1; white-space: nowrap; cursor: pointer; outline: none; transition: all 150ms cubic-bezier(0.4,0,0.2,1); } .ds-btn-destructive:hover { background: color-mix(in oklch, var(--destructive, oklch(0.5933 0.2078 25.3313)) 20%, transparent); } .ds-btn-destructive:focus-visible { border-color: color-mix(in oklch, var(--destructive, oklch(0.5933 0.2078 25.3313)) 40%, transparent); box-shadow: 0 0 0 3px color-mix(in oklch, var(--destructive, oklch(0.5933 0.2078 25.3313)) 20%, transparent); } .ds-btn-destructive:active { transform: translateY(1px); }"
     },
     {
       "name": "Text Input",
@@ -280,7 +280,7 @@
       "refersTo": "input",
       "description": "32px, transparent fill, rule-colored stroke. Focus shifts the border to the accent and adds a 3px ring.",
       "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"Search projects\" />",
-      "css": ".ds-input { display: block; width: 100%; min-width: 0; height: 2rem; padding: 0.25rem 0.625rem; border: 1px solid var(--input, oklch(0.9276 0.0058 264.5313)); border-radius: var(--radius, 0.75rem); background: transparent; color: var(--foreground, oklch(0.3211 0 0)); font-size: 0.875rem; line-height: 1.5; outline: none; transition: color 150ms, background-color 150ms, border-color 150ms; } .ds-input::placeholder { color: var(--muted-foreground, oklch(0.5510 0.0234 264.3637)); } .ds-input:focus-visible { border-color: var(--ring, oklch(0.6231 0.1880 259.8145)); box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.6231 0.1880 259.8145)) 50%, transparent); } .ds-input[aria-invalid=\"true\"] { border-color: var(--destructive, oklch(0.6368 0.2078 25.3313)); box-shadow: 0 0 0 3px color-mix(in oklch, var(--destructive, oklch(0.6368 0.2078 25.3313)) 20%, transparent); }"
+      "css": ".ds-input { display: block; width: 100%; min-width: 0; height: 2rem; padding: 0.25rem 0.625rem; border: 1px solid var(--input, oklch(0.9276 0.0058 264.5313)); border-radius: var(--radius, 0.75rem); background: transparent; color: var(--foreground, oklch(0.3211 0 0)); font-size: 0.875rem; line-height: 1.5; outline: none; transition: color 150ms, background-color 150ms, border-color 150ms; } .ds-input::placeholder { color: var(--muted-foreground, oklch(0.5510 0.0234 264.3637)); } .ds-input:focus-visible { border-color: var(--ring, oklch(0.5744 0.1880 259.8145)); box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.5744 0.1880 259.8145)) 50%, transparent); } .ds-input[aria-invalid=\"true\"] { border-color: var(--destructive, oklch(0.5933 0.2078 25.3313)); box-shadow: 0 0 0 3px color-mix(in oklch, var(--destructive, oklch(0.5933 0.2078 25.3313)) 20%, transparent); }"
     },
     {
       "name": "Status Badge",
@@ -312,7 +312,7 @@
       "refersTo": "nav-item-active",
       "description": "A rail row. Active state is a Wash fill on desktop; on mobile the same item becomes icon-over-label with accent text and no fill.",
       "html": "<nav class=\"ds-nav\"><a class=\"ds-nav-item ds-nav-item--active\" href=\"#\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M8 2v4\"/><path d=\"M16 2v4\"/><rect width=\"18\" height=\"18\" x=\"3\" y=\"4\" rx=\"2\"/><path d=\"M3 10h18\"/><path d=\"m9 16 2 2 4-4\"/></svg><span>Today</span></a><a class=\"ds-nav-item\" href=\"#\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M9 17H7A5 5 0 0 1 7 7h2\"/><path d=\"M15 7h2a5 5 0 1 1 0 10h-2\"/><line x1=\"8\" x2=\"16\" y1=\"12\" y2=\"12\"/></svg><span>Links</span></a></nav>",
-      "css": ".ds-nav { display: flex; flex-direction: column; gap: 0.25rem; width: 15rem; padding: 1rem; } .ds-nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.625rem 0.75rem; border-radius: var(--radius, 0.75rem); color: var(--muted-foreground, oklch(0.5510 0.0234 264.3637)); font-size: 0.875rem; font-weight: 500; text-decoration: none; transition: color 150ms, background-color 150ms; } .ds-nav-item svg { width: 1.25rem; height: 1.25rem; flex-shrink: 0; } .ds-nav-item:hover { color: var(--foreground, oklch(0.3211 0 0)); } .ds-nav-item--active { background: var(--accent, oklch(0.9514 0.0250 236.8242)); color: var(--accent-foreground, oklch(0.3791 0.1378 265.5222)); } .ds-nav-item:focus-visible { outline: none; box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.6231 0.1880 259.8145)) 50%, transparent); }"
+      "css": ".ds-nav { display: flex; flex-direction: column; gap: 0.25rem; width: 15rem; padding: 1rem; } .ds-nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.625rem 0.75rem; border-radius: var(--radius, 0.75rem); color: var(--muted-foreground, oklch(0.5510 0.0234 264.3637)); font-size: 0.875rem; font-weight: 500; text-decoration: none; transition: color 150ms, background-color 150ms; } .ds-nav-item svg { width: 1.25rem; height: 1.25rem; flex-shrink: 0; } .ds-nav-item:hover { color: var(--foreground, oklch(0.3211 0 0)); } .ds-nav-item--active { background: var(--accent, oklch(0.9514 0.0250 236.8242)); color: var(--accent-foreground, oklch(0.3791 0.1378 265.5222)); } .ds-nav-item:focus-visible { outline: none; box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.5744 0.1880 259.8145)) 50%, transparent); }"
     },
     {
       "name": "Wizard Dot Rail",
@@ -320,7 +320,7 @@
       "refersTo": "nav-item-active",
       "description": "Fixed 24px dots with flexible connectors, so the rail fills its container with no trailing gap. Completed steps show a check; titles are deliberately absent.",
       "html": "<div class=\"ds-rail\"><span class=\"ds-rail-dot ds-rail-dot--done\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M20 6 9 17l-5-5\"/></svg></span><span class=\"ds-rail-line ds-rail-line--done\"></span><span class=\"ds-rail-dot ds-rail-dot--current\">2</span><span class=\"ds-rail-line\"></span><span class=\"ds-rail-dot\">3</span></div>",
-      "css": ".ds-rail { display: flex; align-items: center; } .ds-rail-dot { display: flex; flex-shrink: 0; align-items: center; justify-content: center; width: 1.5rem; height: 1.5rem; border-radius: 9999px; background: var(--muted, oklch(0.9846 0.0017 247.8389)); color: var(--muted-foreground, oklch(0.5510 0.0234 264.3637)); font-size: 0.75rem; font-weight: 600; } .ds-rail-dot svg { width: 0.875rem; height: 0.875rem; } .ds-rail-dot--done, .ds-rail-dot--current { background: var(--primary, oklch(0.6231 0.1880 259.8145)); color: var(--primary-foreground, #fff); } .ds-rail-line { flex: 1; height: 0.125rem; margin: 0 0.5rem; border-radius: 9999px; background: var(--muted, oklch(0.9846 0.0017 247.8389)); } .ds-rail-line--done { background: var(--primary, oklch(0.6231 0.1880 259.8145)); }"
+      "css": ".ds-rail { display: flex; align-items: center; } .ds-rail-dot { display: flex; flex-shrink: 0; align-items: center; justify-content: center; width: 1.5rem; height: 1.5rem; border-radius: 9999px; background: var(--muted, oklch(0.9846 0.0017 247.8389)); color: var(--muted-foreground, oklch(0.5510 0.0234 264.3637)); font-size: 0.75rem; font-weight: 600; } .ds-rail-dot svg { width: 0.875rem; height: 0.875rem; } .ds-rail-dot--done, .ds-rail-dot--current { background: var(--primary, oklch(0.5744 0.1880 259.8145)); color: var(--primary-foreground, #fff); } .ds-rail-line { flex: 1; height: 0.125rem; margin: 0 0.5rem; border-radius: 9999px; background: var(--muted, oklch(0.9846 0.0017 247.8389)); } .ds-rail-line--done { background: var(--primary, oklch(0.5744 0.1880 259.8145)); }"
     },
     {
       "name": "Empty State",
@@ -328,7 +328,7 @@
       "refersTo": "card",
       "description": "Absence is dashed. The only dashed edge in the system — error is tinted, loading is shaped, empty is dashed.",
       "html": "<div class=\"ds-empty\"><div class=\"ds-empty-icon\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M9 17H7A5 5 0 0 1 7 7h2\"/><path d=\"M15 7h2a5 5 0 1 1 0 10h-2\"/><line x1=\"8\" x2=\"16\" y1=\"12\" y2=\"12\"/></svg></div><p class=\"ds-empty-title\">No board links yet</p><p class=\"ds-empty-detail\">Link a Jira project to a timesheet task and Timekeeper will file the entry for you.</p><button class=\"ds-btn-primary\">Create a link</button></div>",
-      "css": ".ds-empty { padding: 2.5rem 1rem; border: 1px dashed var(--border, oklch(0.9276 0.0058 264.5313)); border-radius: var(--radius, 0.75rem); text-align: center; } .ds-empty-icon { display: flex; align-items: center; justify-content: center; width: 2.5rem; height: 2.5rem; margin: 0 auto; color: var(--muted-foreground, oklch(0.5510 0.0234 264.3637)); } .ds-empty-icon svg { width: 1.25rem; height: 1.25rem; } .ds-empty-title { margin: 0.25rem 0 0; font-size: 0.875rem; font-weight: 500; } .ds-empty-detail { max-width: 20rem; margin: 0.25rem auto 0; color: var(--muted-foreground, oklch(0.5510 0.0234 264.3637)); font-size: 0.875rem; } .ds-empty .ds-btn-primary { margin-top: 1.25rem; display: inline-flex; align-items: center; justify-content: center; height: 2rem; padding: 0 0.625rem; border: 1px solid transparent; border-radius: var(--radius, 0.75rem); background: var(--primary, oklch(0.6231 0.1880 259.8145)); color: var(--primary-foreground, #fff); font-size: 0.875rem; font-weight: 500; cursor: pointer; }"
+      "css": ".ds-empty { padding: 2.5rem 1rem; border: 1px dashed var(--border, oklch(0.9276 0.0058 264.5313)); border-radius: var(--radius, 0.75rem); text-align: center; } .ds-empty-icon { display: flex; align-items: center; justify-content: center; width: 2.5rem; height: 2.5rem; margin: 0 auto; color: var(--muted-foreground, oklch(0.5510 0.0234 264.3637)); } .ds-empty-icon svg { width: 1.25rem; height: 1.25rem; } .ds-empty-title { margin: 0.25rem 0 0; font-size: 0.875rem; font-weight: 500; } .ds-empty-detail { max-width: 20rem; margin: 0.25rem auto 0; color: var(--muted-foreground, oklch(0.5510 0.0234 264.3637)); font-size: 0.875rem; } .ds-empty .ds-btn-primary { margin-top: 1.25rem; display: inline-flex; align-items: center; justify-content: center; height: 2rem; padding: 0 0.625rem; border: 1px solid transparent; border-radius: var(--radius, 0.75rem); background: var(--primary, oklch(0.5744 0.1880 259.8145)); color: var(--primary-foreground, #fff); font-size: 0.875rem; font-weight: 500; cursor: pointer; }"
     }
   ],
   "narrative": {
@@ -357,6 +357,11 @@
       {
         "name": "The Named State Rule",
         "body": "No state is conveyed by color alone. Every status pill carries its word — \"Posted\", \"Skipped\", \"Failed\", \"Sending\", \"Scheduled\", \"Not connected\", \"Sign in again\" — and most carry an icon as well.",
+        "section": "colors"
+      },
+      {
+        "name": "The Measured Contrast Rule",
+        "body": "Accent and error colors are set by contrast measurement, not by eye. Normal text and control labels clear 4.5:1 against whatever they actually sit on, and focus indicators clear 3:1. Before changing --primary, --destructive, --primary-foreground or any hover fill, measure the composited result in both modes. Three marginal accent-on-tint exceptions are known and deliberate: destructive on destructive/10 (3.89:1), accent on primary/10 (3.96:1), and dark-mode destructive on destructive/20 (3.24:1).",
         "section": "colors"
       },
       {
@@ -427,7 +432,9 @@
       "Don't add a gradient, illustration, decorative shadow, or ornamental flourish. Nothing in this system is decorative.",
       "Don't revive --chart-1 through --chart-5, the eight --sidebar-* tokens, or --font-serif. All fourteen are unreferenced leftovers from a theme generator; treat them as debt to delete, not as system tokens. If the app ever needs charts or a serif, that is a new decision made deliberately.",
       "Don't hand-roll a page heading, and don't put an eyebrow or kicker above one — that information belongs in the description.",
-      "Don't add anything to the phone header without a desktop rail counterpart; the header is md:hidden and whatever sits there alone disappears."
+      "Don't add anything to the phone header without a desktop rail counterpart; the header is md:hidden and whatever sits there alone disappears.",
+      "Don't express a hover state as a lower opacity on a filled control — it lightens the fill and costs label contrast. Mix toward --foreground instead.",
+      "Don't give a light-mode accent fill a dark label, or a dark-mode accent fill a white one. The label inverts between modes by measurement."
     ]
   }
 }

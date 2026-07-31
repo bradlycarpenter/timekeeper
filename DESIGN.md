@@ -2,7 +2,7 @@
 name: Timekeeper
 description: A standing ledger for the working day — flat, ring-ruled surfaces and one blue signal.
 colors:
-  ledger-blue: "oklch(0.6231 0.1880 259.8145)"
+  ledger-blue: "oklch(0.5744 0.1880 259.8145)"
   ledger-blue-foreground: "oklch(1.0000 0 0)"
   page: "oklch(1.0000 0 0)"
   ink: "oklch(0.3211 0 0)"
@@ -14,7 +14,7 @@ colors:
   chip-foreground: "oklch(0.4461 0.0263 256.8018)"
   wash: "oklch(0.9514 0.0250 236.8242)"
   wash-foreground: "oklch(0.3791 0.1378 265.5222)"
-  alarm: "oklch(0.6368 0.2078 25.3313)"
+  alarm: "oklch(0.5933 0.2078 25.3313)"
   page-dark: "oklch(0.2046 0 0)"
   ink-dark: "oklch(0.9219 0 0)"
   surface-dark: "oklch(0.2686 0 0)"
@@ -23,6 +23,9 @@ colors:
   quiet-foreground-dark: "oklch(0.7155 0 0)"
   wash-dark: "oklch(0.3791 0.1378 265.5222)"
   wash-foreground-dark: "oklch(0.8823 0.0571 254.1284)"
+  ledger-blue-dark: "oklch(0.6231 0.1880 259.8145)"
+  ledger-blue-foreground-dark: "oklch(0.2046 0 0)"
+  alarm-dark: "oklch(0.6368 0.2078 25.3313)"
   settled: "#059669"
   attention: "#b45309"
   fabricated: "#6d28d9"
@@ -89,7 +92,7 @@ components:
     padding: "0 0.625rem"
     height: "2rem"
   button-primary-hover:
-    backgroundColor: "oklch(0.6231 0.1880 259.8145 / 0.8)"
+    backgroundColor: "color-mix(in oklch, var(--primary), var(--foreground) 15%)"
   button-outline:
     backgroundColor: "{colors.page}"
     textColor: "{colors.ink}"
@@ -98,7 +101,7 @@ components:
     padding: "0 0.625rem"
     height: "2rem"
   button-destructive:
-    backgroundColor: "oklch(0.6368 0.2078 25.3313 / 0.1)"
+    backgroundColor: "oklch(0.5933 0.2078 25.3313 / 0.1)"
     textColor: "{colors.alarm}"
     typography: "{typography.body}"
     rounded: "{rounded.single}"
@@ -185,13 +188,18 @@ Tailwind through `@theme inline`.
 
 ### Primary
 
-- **Ledger Blue** (`oklch(0.6231 0.1880 259.8145)`): The system's only brand
-  color and its only saturated element at rest. It fills the single primary
-  action on a screen, marks the active navigation row, forms the focus ring,
-  carries the "keeper" half of the wordmark, and fills completed and current
-  steps on the wizard rail. It is identical in light and dark mode — the one
-  token that does not shift — because it is the fixed reference the rest of the
-  palette is read against.
+- **Ledger Blue** (`oklch(0.5744 0.1880 259.8145)` light /
+  `oklch(0.6231 0.1880 259.8145)` dark): The system's only brand color and its
+  only saturated element at rest. It fills the single primary action on a
+  screen, marks the active navigation row, forms the focus ring, carries the
+  "keeper" half of the wordmark, and fills completed and current steps on the
+  wizard rail.
+  The two modes need different lightness and this is measured, not stylistic. A
+  single value cannot serve both: the dark-mode value on a white page gives a
+  white button label only 3.68:1, and the light-mode value on the dark page
+  drops the accent as text to ~3.2:1. The accent therefore darkens one step in
+  light mode, and accent fills carry a **white** label in light mode and a
+  **page-dark** label in dark mode. Do not "unify" them.
 
 ### Neutral
 
@@ -231,6 +239,20 @@ steps, not system tokens. They appear only as a tinted pill with `border-0` and
 always ship a light/dark pair (`bg-emerald-100 text-emerald-800` /
 `dark:bg-emerald-950 dark:text-emerald-300`). Never promote one into the brand
 palette, and never use one as a surface or text color outside a status pill.
+
+**The Measured Contrast Rule.** Accent and error colors are set by contrast
+measurement, not by eye. Normal text and control labels clear 4.5:1 against
+whatever they actually sit on, and focus indicators clear 3:1. Before changing
+`--primary`, `--destructive`, `--primary-foreground` or any hover fill, measure
+the composited result in both modes — a hover or an alpha tint changes the
+background the label is read against.
+
+Three measured exceptions are known and deliberate, all of them accent-on-its-own-tint
+at marginal ratios: destructive text on `destructive/10` (3.89:1, the destructive
+button), accent text on `primary/10` (3.96:1, the "Scheduled" pill), and dark-mode
+destructive text on `destructive/20` (3.24:1). Clearing these needs a separate
+darker on-tint value, which the system has deliberately not adopted. Do not add
+new accent-on-tint pairings without measuring.
 
 **The Named State Rule.** No state is conveyed by color alone. Every status pill
 carries its word — "Posted", "Skipped", "Failed", "Sending", "Scheduled", "Not
@@ -413,8 +435,11 @@ clamp. Never hardcode a radius; never name a tier expecting a different result.
   (default), 2.25rem (lg), and square 1.5/1.75/2/2.25rem icon variants.
   Horizontal padding is 0.625rem, tightening to 0.5rem on the icon-bearing edge
   so an icon doesn't push the label off-center.
-- **Primary:** Ledger Blue fill with white label; hover drops the fill to 80%
-  opacity.
+- **Primary:** Ledger Blue fill; white label in light mode, page-dark label in
+  dark mode. Hover mixes the fill 15% toward `--foreground`, which darkens it in
+  light mode and lightens it in dark — so hover always *raises* label contrast.
+  It must never fade to a lower opacity: `/80` lightened the light-mode fill and
+  dropped the white label to 3.24:1.
 - **Outline:** Page-colored fill with a rule-colored border; hover fills with
   Quiet. In dark mode it takes a 30% input-colored fill instead of transparent.
 - **Secondary:** Chip fill, hovering via `color-mix(in oklch, …)` toward the ink
@@ -585,6 +610,10 @@ phone there is no room, and the count is what the user wants.
   resolve correctly — the rule bans the names to keep intent honest.
 - **Don't** make a destructive control a solid red fill; it is a 10% tint with
   Alarm text.
+- **Don't** express a hover state as a lower opacity on a filled control — it
+  lightens the fill and costs label contrast. Mix toward `--foreground` instead.
+- **Don't** give a light-mode accent fill a dark label, or a dark-mode accent
+  fill a white one. The label inverts between modes by measurement.
 - **Don't** promote emerald, amber, or violet beyond a status pill, or use one as
   a surface, body text, or second brand color.
 - **Don't** convey state by color alone.
