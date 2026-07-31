@@ -41,8 +41,10 @@ export type TodayEntryProblemProps = {
   action?: ReactNode
 }
 
-export type TodayEntrySampleLabelProps = {
-  text: string
+export type TodayEntryPreviewProps = {
+  /** Says plainly that the tickets below are invented. */
+  label: string
+  message: string
 }
 
 export type TodayEntryActionsProps = {

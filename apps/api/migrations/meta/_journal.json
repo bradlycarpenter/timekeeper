@@ -36,6 +36,13 @@
       "when": 1785411030105,
       "tag": "0004_safe_juggernaut",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1785530436271,
+      "tag": "0005_loose_famine",
+      "breakpoints": true
     }
   ]
 }

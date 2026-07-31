@@ -107,9 +107,25 @@ describe('TodayEntry.Problem', () => {
   })
 })
 
-describe('TodayEntry.SampleLabel', () => {
-  it('renders the given explanatory text', () => {
-    render(<TodayEntry.SampleLabel text="Nothing matched yet." />)
-    expect(screen.getByText('Nothing matched yet.')).toBeTruthy()
+describe('TodayEntry.Preview', () => {
+  it('labels the fabricated message as invented', () => {
+    render(
+      <TodayEntry.Preview
+        label="Example — these ticket numbers are invented."
+        message="Today I began working on LUM-214 (Add CSV export to invoices)."
+      />,
+    )
+    expect(
+      screen.getByText('Example — these ticket numbers are invented.'),
+    ).toBeTruthy()
+  })
+
+  it('renders the sample message subordinate to a real one', () => {
+    const { container } = render(
+      <TodayEntry.Preview label="Example" message="Today I began working." />,
+    )
+    const message = screen.getByText('Today I began working.')
+    expect(message.className).toContain('text-muted-foreground')
+    expect(container.querySelector('.border-dashed')).toBeTruthy()
   })
 })

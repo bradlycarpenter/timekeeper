@@ -13,7 +13,7 @@ import type {
   TodayEntryHeadingProps,
   TodayEntryMessageProps,
   TodayEntryProblemProps,
-  TodayEntrySampleLabelProps,
+  TodayEntryPreviewProps,
   TodayEntryRootProps,
   TodayEntryStatusProps,
 } from './today-entry.types.ts'
@@ -168,14 +168,24 @@ const TodayEntryProblem = (props: TodayEntryProblemProps) => (
   </CardContent>
 )
 
-/** Marks a block of reused Message/Breakdown content as fabricated, so a
- * sample never reads as if it were already posted or matched. */
-const TodayEntrySampleLabel = (props: TodayEntrySampleLabelProps) => (
-  <CardContent className="px-4 pb-0">
-    <p className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium">
-      <Sparkles className="size-3.5" />
-      {props.text}
-    </p>
+/** Fabricated content renders here and never through Message/Breakdown. The
+ * sample is deliberately built from the link's real board key, so `LUM-214`
+ * looks exactly as real as a matched ticket and presentation is the only thing
+ * separating them: this is muted, inset, dashed and labelled, and it states the
+ * tickets are invented rather than leaving that to a caption above full-weight
+ * body text. The ticket chips are dropped too — one statement of the fiction is
+ * enough where the old layout printed it twice. */
+const TodayEntryPreview = (props: TodayEntryPreviewProps) => (
+  <CardContent className="px-4">
+    <div className="border-muted-foreground/25 bg-muted/40 rounded-lg border border-dashed p-3">
+      <p className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium">
+        <Sparkles className="size-3.5" />
+        {props.label}
+      </p>
+      <p className="text-muted-foreground mt-1.5 max-w-[70ch] text-sm leading-relaxed">
+        {props.message}
+      </p>
+    </div>
   </CardContent>
 )
 
@@ -208,7 +218,7 @@ export const TodayEntry = {
   Editor: TodayEntryEditor,
   Breakdown: TodayEntryBreakdown,
   Problem: TodayEntryProblem,
-  SampleLabel: TodayEntrySampleLabel,
+  Preview: TodayEntryPreview,
   Actions: TodayEntryActions,
   Action: TodayEntryAction,
 }

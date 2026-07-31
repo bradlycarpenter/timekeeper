@@ -108,22 +108,35 @@ export const verification = sqliteTable(
   (table) => [index('verification_identifier_idx').on(table.identifier)],
 )
 
-export const boardSheet = sqliteTable('board_sheet', {
-  id: text('id')
-    .primaryKey()
-    .$defaultFn(() => uuidv7()),
-  userId: text('user_id')
-    .notNull()
-    .references(() => user.id, { onDelete: 'cascade' }),
-  sheetTaskId: integer('sheet_task_id').notNull(),
-  sheetName: text('sheet_name').notNull(),
-  sheetClientName: text('sheet_client_name').notNull(),
-  boardId: text('board_id').notNull(),
-  boardName: text('board_name').notNull(),
-  boardKey: text('board_key').notNull(),
-  hours: real('hours').notNull().default(8),
-  costCodeId: integer('cost_code_id').notNull().default(2),
-})
+export const boardSheet = sqliteTable(
+  'board_sheet',
+  {
+    id: text('id')
+      .primaryKey()
+      .$defaultFn(() => uuidv7()),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    sheetTaskId: integer('sheet_task_id').notNull(),
+    sheetName: text('sheet_name').notNull(),
+    sheetClientName: text('sheet_client_name').notNull(),
+    boardId: text('board_id').notNull(),
+    boardName: text('board_name').notNull(),
+    boardKey: text('board_key').notNull(),
+    hours: real('hours').notNull().default(8),
+    costCodeId: integer('cost_code_id').notNull().default(2),
+  },
+  /** One board maps to one sheet, and every rule for that pair hangs off the
+   * single link. A second row for the same pair is not a second configuration,
+   * it is a second full day of hours posted to the same task. */
+  (table) => [
+    uniqueIndex('board_sheet_user_board_sheet_idx').on(
+      table.userId,
+      table.boardId,
+      table.sheetTaskId,
+    ),
+  ],
+)
 
 export const stub = sqliteTable('stub', {
   id: text('id')

@@ -8,6 +8,8 @@ const messages: Record<string, string> = {
   SheetAuthFailed: 'Warp did not accept that email and password.',
   AlreadyPosted: 'That day is already on your timesheet.',
   NoWorkToday: 'There is nothing to post yet today.',
+  LinkAlreadyExists:
+    'That board is already linked to this timesheet project. Add your rule to the existing link.',
   NotFound: 'That link no longer exists.',
   Unauthorized: 'Your session expired. Sign in again.',
 }
