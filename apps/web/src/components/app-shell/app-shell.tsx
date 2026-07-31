@@ -75,13 +75,15 @@ const AppShellAccount = (props: AppShellAccountProps) => (
   </DropdownMenu>
 )
 
-/** Bottom padding leaves room for the tab bar, which floats over the content on
+/** Gutters, vertical rhythm and tab-bar clearance only. The measure belongs to
+ * the page: a table and a settings form do not want the same width, and capping
+ * everything here is what left desktop with one narrow column. See PageLayout.
+ *
+ * Bottom padding leaves room for the tab bar, which floats over the content on
  * phones. */
 const AppShellContent = (props: AppShellContentProps) => (
-  <main className="flex-1 pb-24 md:pb-8">
-    <div className="mx-auto w-full max-w-3xl px-4 py-5 md:px-8 md:py-8">
-      {props.children}
-    </div>
+  <main className="flex-1 px-4 py-5 pb-24 md:px-8 md:py-8 md:pb-8">
+    {props.children}
   </main>
 )
 

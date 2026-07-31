@@ -314,12 +314,21 @@ identifier from a name.
 
 ## Layout
 
-A single centered column, not a dashboard grid. Content is capped at `max-w-3xl`
-(48rem) with a 1rem gutter that opens to 2rem from `md` up, and vertical padding
-of 1.25rem rising to 2rem. Prose is capped at a `70ch` measure wherever it is
-meant to be read — legal pages and the entry message alike — rather than being
-allowed to run the full 48rem. There is no multi-column layout anywhere in the
-app; screens are vertical stacks of full-width cards.
+The measure belongs to the page, not the shell. `AppShell.Content` owns only the
+gutter (1rem, opening to 2rem from `md`), the vertical padding (1.25rem rising to
+2rem) and the phone tab-bar clearance; each screen then declares its own width
+through `PageLayout`. Most take the `reading` measure of `max-w-3xl` (48rem); the
+Timesheet takes `wide` (64rem) because it is genuinely tabular and columns beat a
+short line. Prose is capped at a `70ch` measure wherever it is meant to be read —
+legal pages and the entry message alike — rather than being allowed to run the
+full width.
+
+Screens are vertical stacks of full-width cards, and the primary content column
+is never subdivided into a card grid. One screen adds a *supporting* second
+column: Today puts the recent-entries list in a `PageLayout.Aside` from `xl` up,
+where it is reference material consulted beside the work rather than a queue
+below it. The distinction is the rule — a second column may carry state or
+reference, never more of the primary task.
 
 Spacing is a three-step ladder, and the steps are meant to be felt as different:
 **0.75rem inside a record** (the gap between a card's own parts), **1.5rem
@@ -338,14 +347,20 @@ Spacing derives from a 0.25rem base. Card internals are governed by a single
 which drives gap, vertical padding, and horizontal padding together, so a card's
 rhythm can be retuned from one value.
 
-`md` (768px) is the only structural breakpoint, and it flips the navigation
-rather than the content: below it, a fixed bottom tab bar with icon-over-label
-items and `env(safe-area-inset-bottom)` padding, plus a sticky translucent
-header carrying the wordmark and account menu; at and above it, the tab bar
-becomes a full-height 15rem left rail with icon-beside-label rows, the header
-disappears entirely, and the wordmark moves into the rail. Content reserves
-6rem of bottom padding on mobile so the floating tab bar never covers the last
-card.
+There are two structural breakpoints and they do different jobs.
+
+`md` (768px) flips the **navigation**: below it, a fixed bottom tab bar with
+icon-over-label items and `env(safe-area-inset-bottom)` padding, plus a sticky
+translucent header carrying the wordmark and account menu; at and above it, the
+tab bar becomes a full-height 15rem left rail with icon-beside-label rows, the
+header disappears entirely, and the wordmark moves into the rail. Content
+reserves 6rem of bottom padding on mobile so the floating tab bar never covers
+the last card. `md` also returns touch-sized controls to the compact scale and
+stops full-width action rows from stretching under a cursor.
+
+`xl` (1280px) flips the **composition**, and only where a screen has supporting
+material to move: Today's recent list steps out into a sticky 19rem aside. It is
+deliberately not `lg` — see The One Column Rule.
 
 ### Named Rules
 
@@ -353,8 +368,12 @@ card.
 side-anchored on desktop — never a hamburger, never a top tab strip. Content
 must always reserve clearance for the floating bar.
 
-**The One Column Rule.** Screens are a single stack of full-width cards. Do not
-introduce side-by-side card grids; the ledger reads top to bottom.
+**The One Column Rule.** The primary content column is a single stack of
+full-width cards and the ledger reads top to bottom. Do not break the work
+itself into side-by-side cards. A second column is allowed only for material you
+consult rather than act on — state and history — and only from `xl`, where the
+15rem rail has already been subtracted and the main column can still hold its
+measure.
 
 **The Grouping Gap Rule.** The space between two records must visibly exceed the
 largest space inside one (0.75rem within, 1.5rem between). If a card needs its
@@ -621,7 +640,10 @@ phone there is no room, and the count is what the user wants.
   size prevents iOS zoom on focus.
 - **Don't** inflate the button scale past 36px to solve a touch target; override
   the single instance instead.
-- **Don't** introduce side-by-side card grids or a second content column.
+- **Don't** introduce side-by-side card grids, or put primary work in a second
+  column. An aside carrying state or history is the only exception.
+- **Don't** cap a page's width in `AppShell.Content`; reach for `PageLayout` so
+  the measure stays the page's own decision.
 - **Don't** hand-roll a page heading, and don't put an eyebrow or kicker above
   one — that information belongs in the description.
 - **Don't** add anything to the phone header without a desktop rail counterpart;

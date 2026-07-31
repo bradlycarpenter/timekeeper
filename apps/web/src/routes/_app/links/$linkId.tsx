@@ -6,6 +6,7 @@ import { Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { PageHeader } from '#/components/page-header/page-header'
+import { PageLayout } from '#/components/page-layout/page-layout'
 import { Rule } from '#/components/rule/rule'
 import { useRulePreview } from '#/components/rule/use-rule-preview'
 import { ScreenState } from '#/components/screen-state/screen-state'
@@ -77,7 +78,9 @@ function LinkScreen() {
     }
   }
 
-  return AsyncResult.builder(link)
+  return (
+    <PageLayout.Root>
+      {AsyncResult.builder(link)
     .onInitialOrWaiting(() => <ScreenState.Loading cards={2} />)
     .onError(() => (
       <ScreenState.Failed
@@ -263,5 +266,7 @@ function LinkScreen() {
         </ScreenState.Section>
       </>
     ))
-    .render()
+    .render()}
+    </PageLayout.Root>
+  )
 }

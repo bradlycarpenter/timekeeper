@@ -1,6 +1,7 @@
 import { AlertTriangle } from 'lucide-react'
 import { Button } from '#/components/ui/button'
 import { Skeleton } from '#/components/ui/skeleton'
+import { cn } from '#/lib/utils'
 import type {
   ScreenStateEmptyProps,
   ScreenStateFailedProps,
@@ -60,7 +61,7 @@ const ScreenStateEmpty = (props: ScreenStateEmptyProps) => (
  * 1rem, so it outranks the 1rem card titles beneath it instead of tying with
  * them. Scale reads 1.5rem page / 1.25rem section / 1rem card. */
 const ScreenStateSection = (props: ScreenStateSectionProps) => (
-  <section className="mt-10 space-y-3">
+  <section className={cn('space-y-3', props.flush ? 'mt-0' : 'mt-10')}>
     <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0">
         <h2 className="text-xl font-semibold tracking-tight">{props.title}</h2>

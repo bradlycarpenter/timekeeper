@@ -5,6 +5,7 @@ import { CalendarRange } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { EntryList } from '#/components/entry-list/entry-list'
 import { PageHeader } from '#/components/page-header/page-header'
+import { PageLayout } from '#/components/page-layout/page-layout'
 import { ScreenState } from '#/components/screen-state/screen-state'
 import { timesheetEntriesAtom } from '#/lib/atoms'
 import {
@@ -43,7 +44,7 @@ function TimesheetScreen() {
   const today = new Date().toISOString().slice(0, 10)
 
   return (
-    <>
+    <PageLayout.Root width="wide">
       <PageHeader.Root>
         <PageHeader.Title
           heading="Timesheet"
@@ -121,6 +122,6 @@ function TimesheetScreen() {
           )
         })
         .render()}
-    </>
+    </PageLayout.Root>
   )
 }

@@ -7,6 +7,7 @@ import { toast } from 'sonner'
 import { authClient } from '#/auth'
 import { Connection } from '#/components/connection/connection'
 import { PageHeader } from '#/components/page-header/page-header'
+import { PageLayout } from '#/components/page-layout/page-layout'
 import { ScreenState } from '#/components/screen-state/screen-state'
 import { Button } from '#/components/ui/button'
 import { Spinner } from '#/components/ui/spinner'
@@ -59,7 +60,7 @@ function SettingsScreen() {
   }
 
   return (
-    <>
+    <PageLayout.Root>
       <PageHeader.Root>
         <PageHeader.Title
           heading="Settings"
@@ -220,6 +221,6 @@ function SettingsScreen() {
           Terms of service
         </Link>
       </div>
-    </>
+    </PageLayout.Root>
   )
 }

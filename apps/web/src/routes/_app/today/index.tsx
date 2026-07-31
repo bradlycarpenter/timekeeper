@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import { DaySummary } from '#/components/day-summary/day-summary'
 import { HistoryList } from '#/components/history-list/history-list'
 import { PageHeader } from '#/components/page-header/page-header'
+import { PageLayout } from '#/components/page-layout/page-layout'
 import { ScreenState } from '#/components/screen-state/screen-state'
 import { TodayEntry } from '#/components/today-entry/today-entry'
 import { demoEntry, sampleEntryFor } from '#/components/today-entry/today-entry.sample.ts'
@@ -129,6 +130,8 @@ function TodayScreen() {
 
   return (
     <>
+      <PageLayout.Split>
+      <PageLayout.Main>
       {AsyncResult.builder(today)
         .onInitialOrWaiting(() => <ScreenState.Loading cards={2} />)
         .onError(() => (
@@ -319,28 +322,35 @@ function TodayScreen() {
           </>
         ))
         .render()}
+      </PageLayout.Main>
 
-      {AsyncResult.builder(history)
-        .onSuccess((entries) =>
-          entries.length === 0 ? null : (
-            <ScreenState.Section title="Recent">
-              <HistoryList.Root>
-                {entries.map((entry) => (
-                  <HistoryList.Row
-                    key={`${entry.boardSheetId}-${entry.entryDate}`}
-                    date={formatDayShort(entry.entryDate)}
-                    boardKey={entry.boardKey}
-                    sheetName={entry.sheetName}
-                    message={entry.message}
-                    hours={entry.hours}
-                    status={entry.status}
-                  />
-                ))}
-              </HistoryList.Root>
-            </ScreenState.Section>
-          ),
-        )
-        .orNull()}
+      {/* Reference, not work: what was filed on previous days sat below every
+          entry where it was never seen. Beside the ledger it is glanceable
+          without competing with today's decisions. */}
+      <PageLayout.Aside>
+        {AsyncResult.builder(history)
+          .onSuccess((entries) =>
+            entries.length === 0 ? null : (
+              <ScreenState.Section title="Recent" flush>
+                <HistoryList.Root>
+                  {entries.map((entry) => (
+                    <HistoryList.Row
+                      key={`${entry.boardSheetId}-${entry.entryDate}`}
+                      date={formatDayShort(entry.entryDate)}
+                      boardKey={entry.boardKey}
+                      sheetName={entry.sheetName}
+                      message={entry.message}
+                      hours={entry.hours}
+                      status={entry.status}
+                    />
+                  ))}
+                </HistoryList.Root>
+              </ScreenState.Section>
+            ),
+          )
+          .orNull()}
+      </PageLayout.Aside>
+      </PageLayout.Split>
 
       <Dialog
         open={marking !== undefined}

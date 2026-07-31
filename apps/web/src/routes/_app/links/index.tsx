@@ -4,6 +4,7 @@ import { AsyncResult } from 'effect/unstable/reactivity'
 import { Link2, Plus, Settings2 } from 'lucide-react'
 import { LinkCard } from '#/components/link-card/link-card'
 import { PageHeader } from '#/components/page-header/page-header'
+import { PageLayout } from '#/components/page-layout/page-layout'
 import { ScreenState } from '#/components/screen-state/screen-state'
 import { Button } from '#/components/ui/button'
 import { linksAtom } from '#/lib/atoms'
@@ -21,7 +22,7 @@ function LinksScreen() {
   const refresh = useAtomRefresh(linksAtom)
 
   return (
-    <>
+    <PageLayout.Root>
       <PageHeader.Root>
         <PageHeader.Title
           heading="Links"
@@ -90,6 +91,6 @@ function LinksScreen() {
           ),
         )
         .render()}
-    </>
+    </PageLayout.Root>
   )
 }

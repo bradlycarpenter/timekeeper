@@ -21,5 +21,8 @@ export type ScreenStateSectionProps = {
   title: string
   description?: string | undefined
   action?: ReactNode
+  /** Drops the leading section gap, for a section that already starts a column
+   * rather than following content down the page. */
+  flush?: boolean
   children: ReactNode
 }

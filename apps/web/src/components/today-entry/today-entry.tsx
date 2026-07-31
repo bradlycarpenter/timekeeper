@@ -325,13 +325,17 @@ const TodayEntryActions = (props: TodayEntryActionsProps) => (
  * target: 44px is the comfortable minimum, and the variant scale deliberately
  * tops out at 36px, so the height is overridden here rather than by stretching
  * the scale for everything. Back to the compact scale from `md` up, where the
- * pointer is a mouse. */
+ * pointer is a mouse.
+ *
+ * `flex-1` is a phone affordance too: three buttons splitting the width is
+ * right under a thumb and absurd under a cursor, where it stretches "Skip" to
+ * 200px. From `md` they take the width of their own labels. */
 const TodayEntryAction = (props: TodayEntryActionProps) => (
   <Button
     variant={props.variant ?? 'default'}
     onClick={props.onClick}
     disabled={props.disabled || props.busy}
-    className="h-11 flex-1 md:h-8"
+    className="h-11 flex-1 md:h-8 md:flex-none"
   >
     {props.busy ? <Spinner /> : props.icon}
     {props.label}

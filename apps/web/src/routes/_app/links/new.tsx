@@ -5,6 +5,7 @@ import { Cause, Option } from 'effect'
 import { AsyncResult } from 'effect/unstable/reactivity'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { PageLayout } from '#/components/page-layout/page-layout'
 import { ProjectPicker } from '#/components/project-picker/project-picker'
 import { Rule } from '#/components/rule/rule'
 import { useRulePreview } from '#/components/rule/use-rule-preview'
@@ -179,6 +180,7 @@ function NewLinkScreen() {
   }
 
   return (
+    <PageLayout.Root>
     <Wizard.Root>
       <Wizard.Steps titles={steps} current={step} />
 
@@ -340,5 +342,6 @@ function NewLinkScreen() {
         )}
       </Wizard.Actions>
     </Wizard.Root>
+    </PageLayout.Root>
   )
 }

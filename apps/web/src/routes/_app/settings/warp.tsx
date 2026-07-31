@@ -54,7 +54,7 @@ function ConnectWarpScreen() {
   }
 
   return (
-    <div className="max-w-sm">
+    <div className="mx-auto w-full max-w-sm">
       <PageHeader.Root>
         <PageHeader.Title
           heading="Connect Warp"
