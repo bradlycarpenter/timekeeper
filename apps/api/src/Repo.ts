@@ -1,5 +1,6 @@
 import {
   BoardSheet as BoardSheetDomain,
+  Errors,
   Jira,
   Stub as StubDomain,
   Today as TodayDomain,
@@ -95,7 +96,7 @@ type RepoShape = {
   readonly createLink: (
     userId: string,
     draft: BoardSheetDomain.BoardSheetDraft,
-  ) => Effect.Effect<BoardSheetDomain.BoardSheetId>
+  ) => Effect.Effect<BoardSheetDomain.BoardSheetId, Errors.LinkAlreadyExists>
   readonly updateLink: (
     userId: string,
     id: BoardSheetDomain.BoardSheetId,
@@ -298,6 +299,27 @@ export const RepoLive = Layer.effect(
 
       createLink: (userId, draft) =>
         Effect.gen(function* () {
+          /* The unique index is the real guarantee; this check exists so the
+           * user gets their existing link back instead of a 500 from the
+           * constraint. A concurrent double-submit still loses to the index. */
+          const existing = yield* orDie(
+            Schema.decodeUnknownEffect(Schema.Array(IdRow))(
+              yield* orDie(
+                sql`SELECT id FROM board_sheet
+                    WHERE user_id = ${userId}
+                      AND board_id = ${draft.board.id}
+                      AND sheet_task_id = ${draft.sheet.taskId}
+                    LIMIT 1`,
+              ),
+            ),
+          )
+
+          if (existing.length > 0) {
+            return yield* new Errors.LinkAlreadyExists({
+              linkId: existing[0]!.id as BoardSheetDomain.BoardSheetId,
+            })
+          }
+
           const rows = yield* orDie(
             Schema.decodeUnknownEffect(Schema.Array(IdRow))(
               yield* orDie(

@@ -1,6 +1,7 @@
 import { useAtomSet, useAtomValue } from '@effect/atom-react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { BoardSheet, type Jira, type Stub } from '@tk/domain'
+import { BoardSheet, Errors, type Jira, type Stub } from '@tk/domain'
+import { Cause, Option } from 'effect'
 import { AsyncResult } from 'effect/unstable/reactivity'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -66,6 +67,13 @@ function NewLinkScreen() {
     0,
   )
 
+  /* One board maps to one sheet. A second link for the same pair posts its own
+   * full day of hours against the same task rather than combining rules, so the
+   * wizard stops here and sends the user to the link they already have. */
+  const duplicate = AsyncResult.getOrElse(links, () => []).find(
+    (link) => link.boardId === boardId && String(link.sheetTaskId) === sheetTaskId,
+  )
+
   const statuses = useAtomValue(boardStatusesAtom(board?.key ?? ''))
   const draftPreview = useRulePreview(
     board?.key ?? '',
@@ -94,6 +102,22 @@ function NewLinkScreen() {
 
     if (created._tag === 'Failure') {
       setSaving(false)
+
+      /* Backstop for the case the wizard's own check cannot see: the list was
+       * stale, or the same pair was submitted twice at once. */
+      const failure = Cause.findErrorOption(created.cause)
+      if (
+        Option.isSome(failure) &&
+        failure.value instanceof Errors.LinkAlreadyExists
+      ) {
+        toast.error(describe(created.cause, 'That link already exists.'))
+        void navigate({
+          to: '/links/$linkId',
+          params: { linkId: failure.value.linkId },
+        })
+        return
+      }
+
       toast.error(describe(created.cause, 'That link could not be created.'))
       return
     }
@@ -217,6 +241,23 @@ function NewLinkScreen() {
               />
             ))
             .render()}
+
+          {duplicate ? (
+            <Alert className="mt-4">
+              <AlertTitle>You already have this link</AlertTitle>
+              <AlertDescription className="space-y-3">
+                <p>
+                  {duplicate.boardKey} is already linked to {duplicate.sheetName}
+                  {' '}for {duplicate.sheetClientName}. Adding a second one would
+                  post {duplicate.hours}h twice a day to the same project. Put
+                  the new rule on the link you have instead.
+                </p>
+                <Button asChild variant="outline" className="h-11 md:h-8">
+                  <a href={`/links/${duplicate.id}`}>Open that link</a>
+                </Button>
+              </AlertDescription>
+            </Alert>
+          ) : null}
         </Wizard.Step>
       ) : null}
 
@@ -283,13 +324,15 @@ function NewLinkScreen() {
             label="Continue"
             onClick={() => setStep(step + 1)}
             disabled={
-              (step === 0 && !sheet) || (step === 1 && !board)
+              (step === 0 && !sheet) ||
+              (step === 1 && (!board || duplicate !== undefined))
             }
           />
         ) : (
           <Wizard.Next
             label={status ? 'Create link' : 'Create without a rule'}
             busy={saving}
+            disabled={duplicate !== undefined}
             onClick={() => {
               void finish()
             }}

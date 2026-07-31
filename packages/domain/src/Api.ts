@@ -12,6 +12,7 @@ import { Connections, SheetCredentials, SheetConnection, Viewer } from './Connec
 import {
   AlreadyPosted,
   BoardNotConnected,
+  LinkAlreadyExists,
   NoWorkToday,
   SheetAuthFailed,
   SheetNotConnected,
@@ -104,6 +105,7 @@ const links = HttpApiGroup.make('links')
     HttpApiEndpoint.post('create', '/', {
       payload: BoardSheetDraft,
       success: BoardSheet,
+      error: LinkAlreadyExists,
     }),
   )
   .add(

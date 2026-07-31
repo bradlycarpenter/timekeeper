@@ -135,9 +135,10 @@ function TodayScreen() {
                     boardKey={demoEntry.boardKey}
                     hours={demoEntry.hours}
                   />
-                  <TodayEntry.Message message={demoEntry.message} />
-                  <TodayEntry.Breakdown parts={demoEntry.parts} />
-                  <TodayEntry.SampleLabel text="Example only — this is what a linked board looks like once it has rules and matching tickets." />
+                  <TodayEntry.Preview
+                    label="Example only — this board and these tickets are made up."
+                    message={demoEntry.message}
+                  />
                 </TodayEntry.Root>
               </div>
             ) : (
@@ -171,16 +172,10 @@ function TodayScreen() {
                         {entry.hasRules &&
                         entry.message.length === 0 &&
                         !entry.error ? (
-                          (() => {
-                            const sample = sampleEntryFor(entry)
-                            return (
-                              <>
-                                <TodayEntry.SampleLabel text="Nothing matched yet — here's what it will look like when it does." />
-                                <TodayEntry.Message message={sample.message} />
-                                <TodayEntry.Breakdown parts={sample.parts} />
-                              </>
-                            )
-                          })()
+                          <TodayEntry.Preview
+                            label="Example — nothing matched yet, so these ticket numbers are invented."
+                            message={sampleEntryFor(entry).message}
+                          />
                         ) : null}
 
                         {entry.error ? (

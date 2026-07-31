@@ -1,4 +1,5 @@
 import { Schema } from 'effect'
+import { BoardSheetId } from './BoardSheet.ts'
 
 /** Warp rejected the email and password, as opposed to Warp being unreachable. */
 export class SheetAuthFailed extends Schema.ErrorClass<SheetAuthFailed>(
@@ -48,6 +49,20 @@ export class AlreadyPosted extends Schema.ErrorClass<AlreadyPosted>(
   {
     _tag: Schema.tag('AlreadyPosted'),
     entryId: Schema.optional(Schema.Number),
+  },
+  { httpApiStatus: 409 },
+) {}
+
+/** This board is already linked to this timesheet project. A second link would
+ * post its own full entry for the same day against the same task, so the hours
+ * would double rather than the rules combining. Carries the existing link so the
+ * caller can send the user to its rules instead. */
+export class LinkAlreadyExists extends Schema.ErrorClass<LinkAlreadyExists>(
+  'LinkAlreadyExists',
+)(
+  {
+    _tag: Schema.tag('LinkAlreadyExists'),
+    linkId: BoardSheetId,
   },
   { httpApiStatus: 409 },
 ) {}
