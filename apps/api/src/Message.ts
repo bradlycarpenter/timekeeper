@@ -23,3 +23,4 @@ export const jqlForStub = (boardKey: string, stub: Stub.StubDraft): string => {
  * can reuse the exact same wording instead of a second copy drifting apart. */
 export const composeMessage = MessageDomain.composeMessage
 export const partFor = MessageDomain.partFor
+export const excludeIssues = MessageDomain.excludeIssues

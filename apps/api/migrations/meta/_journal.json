@@ -43,6 +43,13 @@
       "when": 1785530436271,
       "tag": "0005_loose_famine",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1785532032224,
+      "tag": "0006_superb_genesis",
+      "breakpoints": true
     }
   ]
 }

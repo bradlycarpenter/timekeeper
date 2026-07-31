@@ -11,7 +11,13 @@ import { ScreenState } from '#/components/screen-state/screen-state'
 import { Button } from '#/components/ui/button'
 import { Spinner } from '#/components/ui/spinner'
 import { keys } from '#/lib/api'
-import { connectionsAtom, disconnectSheetAtom } from '#/lib/atoms'
+import { TermsFields } from '#/components/terms-fields/terms-fields'
+import {
+  connectionsAtom,
+  disconnectSheetAtom,
+  settingsAtom,
+  updateSettingsAtom,
+} from '#/lib/atoms'
 import { describe } from '#/lib/errors'
 import { registry } from '#/lib/registry'
 
@@ -29,6 +35,28 @@ function SettingsScreen() {
 
   const [linking, setLinking] = useState(false)
   const [disconnecting, setDisconnecting] = useState(false)
+
+  const settings = useAtomValue(settingsAtom)
+  const refreshSettings = useAtomRefresh(settingsAtom)
+  const updateSettings = useAtomSet(updateSettingsAtom, {
+    mode: 'promiseExit',
+  })
+
+  /* Held locally so the buttons respond on tap rather than after the round
+   * trip; the saved value takes over again once it lands. */
+  const [standardHours, setStandardHours] = useState<number>()
+
+  const saveStandardHours = async (hours: number) => {
+    const exit = await updateSettings({
+      payload: { standardHours: hours },
+      reactivityKeys: [...keys.settings, ...keys.today],
+    })
+
+    if (exit._tag !== 'Success') {
+      setStandardHours(undefined)
+      toast.error(describe(exit.cause, 'That could not be saved.'))
+    }
+  }
 
   return (
     <>
@@ -151,6 +179,32 @@ function SettingsScreen() {
           </div>
         ))
         .render()}
+
+      <ScreenState.Section
+        title="Your working day"
+        description="The day Timekeeper expects you to fill. Anything you bill beyond it belongs on an overtime entry."
+      >
+        {AsyncResult.builder(settings)
+          .onInitialOrWaiting(() => <ScreenState.Loading cards={1} />)
+          .onError(() => (
+            <ScreenState.Failed
+              title="Settings could not be loaded"
+              detail="Something went wrong reading your working day."
+              onRetry={refreshSettings}
+            />
+          ))
+          .onSuccess((saved) => (
+            <TermsFields.Hours
+              value={standardHours ?? saved.standardHours}
+              onChange={(hours) => {
+                setStandardHours(hours)
+                void saveStandardHours(hours)
+              }}
+              hint="Used for the day total on Today."
+            />
+          ))
+          .render()}
+      </ScreenState.Section>
 
       <div className="mt-8 flex gap-4">
         <Link

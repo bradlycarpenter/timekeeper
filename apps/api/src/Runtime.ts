@@ -10,7 +10,10 @@ import { AuthenticationLive } from './handlers/Authentication.ts'
 import { ConnectionsLive, ViewerLive } from './handlers/Connections.ts'
 import { LinksLive } from './handlers/Links.ts'
 import { BoardLive, SheetLive } from './handlers/Projects.ts'
+import { SettingsLive } from './handlers/Settings.ts'
+import { TimesheetEntriesLive } from './handlers/Timesheet.ts'
 import { TodayLive } from './handlers/Today.ts'
+import { EntriesLive } from './Entries.ts'
 import { JiraLive } from './Jira.ts'
 import { RepoLive } from './Repo.ts'
 import { TimesheetLive } from './Timesheet.ts'
@@ -42,8 +45,19 @@ export const servicesLayer = (env: Env) => {
   const timesheet = TimesheetLive.pipe(
     Layer.provide(Layer.mergeAll(infrastructure, repo, warp, jira)),
   )
+  const entries = EntriesLive.pipe(
+    Layer.provide(Layer.merge(infrastructure, warp)),
+  )
 
-  return Layer.mergeAll(infrastructure, auth, repo, warp, jira, timesheet)
+  return Layer.mergeAll(
+    infrastructure,
+    auth,
+    repo,
+    warp,
+    jira,
+    timesheet,
+    entries,
+  )
 }
 
 const apiLayer = (env: Env) => {
@@ -56,6 +70,8 @@ const apiLayer = (env: Env) => {
     BoardLive,
     LinksLive,
     TodayLive,
+    TimesheetEntriesLive,
+    SettingsLive,
   ).pipe(Layer.provide(AuthenticationLive))
 
   /* Handler requirements travel as per-request markers that are only discharged

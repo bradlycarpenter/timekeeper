@@ -16,6 +16,7 @@ import { Route as SupportIndexRouteImport } from './routes/support/index'
 import { Route as PrivacyIndexRouteImport } from './routes/privacy/index'
 import { Route as LoginIndexRouteImport } from './routes/login/index'
 import { Route as AppTodayIndexRouteImport } from './routes/_app/today/index'
+import { Route as AppTimesheetIndexRouteImport } from './routes/_app/timesheet/index'
 import { Route as AppSettingsIndexRouteImport } from './routes/_app/settings/index'
 import { Route as AppLinksIndexRouteImport } from './routes/_app/links/index'
 import { Route as AppSettingsWarpRouteImport } from './routes/_app/settings/warp'
@@ -56,6 +57,11 @@ const AppTodayIndexRoute = AppTodayIndexRouteImport.update({
   path: '/today/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppTimesheetIndexRoute = AppTimesheetIndexRouteImport.update({
+  id: '/timesheet/',
+  path: '/timesheet/',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppSettingsIndexRoute = AppSettingsIndexRouteImport.update({
   id: '/settings/',
   path: '/settings/',
@@ -93,6 +99,7 @@ export interface FileRoutesByFullPath {
   '/settings/warp': typeof AppSettingsWarpRoute
   '/links/': typeof AppLinksIndexRoute
   '/settings/': typeof AppSettingsIndexRoute
+  '/timesheet/': typeof AppTimesheetIndexRoute
   '/today/': typeof AppTodayIndexRoute
 }
 export interface FileRoutesByTo {
@@ -106,6 +113,7 @@ export interface FileRoutesByTo {
   '/settings/warp': typeof AppSettingsWarpRoute
   '/links': typeof AppLinksIndexRoute
   '/settings': typeof AppSettingsIndexRoute
+  '/timesheet': typeof AppTimesheetIndexRoute
   '/today': typeof AppTodayIndexRoute
 }
 export interface FileRoutesById {
@@ -121,6 +129,7 @@ export interface FileRoutesById {
   '/_app/settings/warp': typeof AppSettingsWarpRoute
   '/_app/links/': typeof AppLinksIndexRoute
   '/_app/settings/': typeof AppSettingsIndexRoute
+  '/_app/timesheet/': typeof AppTimesheetIndexRoute
   '/_app/today/': typeof AppTodayIndexRoute
 }
 export interface FileRouteTypes {
@@ -136,6 +145,7 @@ export interface FileRouteTypes {
     | '/settings/warp'
     | '/links/'
     | '/settings/'
+    | '/timesheet/'
     | '/today/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -149,6 +159,7 @@ export interface FileRouteTypes {
     | '/settings/warp'
     | '/links'
     | '/settings'
+    | '/timesheet'
     | '/today'
   id:
     | '__root__'
@@ -163,6 +174,7 @@ export interface FileRouteTypes {
     | '/_app/settings/warp'
     | '/_app/links/'
     | '/_app/settings/'
+    | '/_app/timesheet/'
     | '/_app/today/'
   fileRoutesById: FileRoutesById
 }
@@ -226,6 +238,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppTodayIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/timesheet/': {
+      id: '/_app/timesheet/'
+      path: '/timesheet'
+      fullPath: '/timesheet/'
+      preLoaderRoute: typeof AppTimesheetIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/settings/': {
       id: '/_app/settings/'
       path: '/settings'
@@ -270,6 +289,7 @@ interface AppRouteChildren {
   AppSettingsWarpRoute: typeof AppSettingsWarpRoute
   AppLinksIndexRoute: typeof AppLinksIndexRoute
   AppSettingsIndexRoute: typeof AppSettingsIndexRoute
+  AppTimesheetIndexRoute: typeof AppTimesheetIndexRoute
   AppTodayIndexRoute: typeof AppTodayIndexRoute
 }
 
@@ -279,6 +299,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppSettingsWarpRoute: AppSettingsWarpRoute,
   AppLinksIndexRoute: AppLinksIndexRoute,
   AppSettingsIndexRoute: AppSettingsIndexRoute,
+  AppTimesheetIndexRoute: AppTimesheetIndexRoute,
   AppTodayIndexRoute: AppTodayIndexRoute,
 }
 

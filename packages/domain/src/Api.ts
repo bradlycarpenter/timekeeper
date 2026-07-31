@@ -19,9 +19,16 @@ import {
   UpstreamFailed,
 } from './Errors.ts'
 import { JiraProject, JiraStatusCategory } from './Jira.ts'
+import { UserSettings, UserSettingsPatch } from './Settings.ts'
 import { StubDraft, StubId, StubPreview } from './Stub.ts'
-import { HistoryEntry, PostNow, Today, TodayEntry } from './Today.ts'
-import { SheetProject } from './Warp.ts'
+import {
+  HistoryEntry,
+  OvertimeDraft,
+  PostNow,
+  Today,
+  TodayEntry,
+} from './Today.ts'
+import { SheetEntryRange, SheetProject } from './Warp.ts'
 
 /** The signed-in user, provided by the authentication middleware so handlers
  * never read session cookies themselves. */
@@ -180,8 +187,50 @@ const today = HttpApiGroup.make('today')
       error: [HttpApiError.NotFound, AlreadyPosted],
     }),
   )
+  .add(
+    HttpApiEndpoint.post('markOvertime', '/:id/overtime', {
+      params: { id: BoardSheetId },
+      payload: OvertimeDraft,
+      success: TodayEntry,
+      error: [HttpApiError.NotFound, AlreadyPosted],
+    }),
+  )
+  /* The ticket key is the identifier here rather than a row id: the client
+   * knows the ticket it is unmarking, not the row we happened to write. */
+  .add(
+    HttpApiEndpoint.delete('clearOvertime', '/:id/overtime/:issueKey', {
+      params: { id: BoardSheetId, issueKey: Schema.String },
+      success: TodayEntry,
+      error: [HttpApiError.NotFound],
+    }),
+  )
   .middleware(Authentication)
   .prefix('/api/today')
+
+const timesheet = HttpApiGroup.make('timesheet')
+  .add(
+    HttpApiEndpoint.get('entries', '/entries', {
+      query: {
+        from: Schema.optional(Schema.String),
+        to: Schema.optional(Schema.String),
+      },
+      success: SheetEntryRange,
+      error: [SheetNotConnected, UpstreamFailed],
+    }),
+  )
+  .middleware(Authentication)
+  .prefix('/api/timesheet')
+
+const settings = HttpApiGroup.make('settings')
+  .add(HttpApiEndpoint.get('get', '/', { success: UserSettings }))
+  .add(
+    HttpApiEndpoint.patch('update', '/', {
+      payload: UserSettingsPatch,
+      success: UserSettings,
+    }),
+  )
+  .middleware(Authentication)
+  .prefix('/api/settings')
 
 export const api = HttpApi.make('timekeeper')
   .add(viewer)
@@ -190,3 +239,5 @@ export const api = HttpApi.make('timekeeper')
   .add(board)
   .add(links)
   .add(today)
+  .add(timesheet)
+  .add(settings)

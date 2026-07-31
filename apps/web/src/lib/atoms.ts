@@ -124,3 +124,22 @@ export const addStubAtom = ApiClient.mutation('links', 'addStub')
 export const removeStubAtom = ApiClient.mutation('links', 'removeStub')
 export const postEntryAtom = ApiClient.mutation('today', 'post')
 export const skipEntryAtom = ApiClient.mutation('today', 'skip')
+export const markOvertimeAtom = ApiClient.mutation('today', 'markOvertime')
+export const clearOvertimeAtom = ApiClient.mutation('today', 'clearOvertime')
+export const updateSettingsAtom = ApiClient.mutation('settings', 'update')
+
+export const settingsAtom = ApiClient.query('settings', 'get', {
+  reactivityKeys: keys.settings,
+  serializationKey: 'settings',
+  timeToLive: '30 minutes',
+})
+
+/** The window is part of the cache identity: paging to another month must be a
+ * separate request, not a silent overwrite of the one on screen. */
+export const timesheetEntriesAtom = (from: string, to: string) =>
+  ApiClient.query('timesheet', 'entries', {
+    query: { from, to },
+    reactivityKeys: keys.entries,
+    serializationKey: `entries:${from}:${to}`,
+    timeToLive: '5 minutes',
+  })

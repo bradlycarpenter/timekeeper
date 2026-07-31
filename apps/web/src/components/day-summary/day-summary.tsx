@@ -1,4 +1,4 @@
-import { CheckCircle2, Circle, Clock } from 'lucide-react'
+import { CheckCircle2, Circle, Clock, Moon } from 'lucide-react'
 import { Badge } from '#/components/ui/badge'
 import { cn } from '#/lib/utils'
 import type { DaySummaryTallyProps } from './day-summary.types.ts'
@@ -43,17 +43,27 @@ const DaySummaryTally = (props: DaySummaryTallyProps) => {
         )}
       </div>
 
-      <Badge
-        variant={balanced ? 'secondary' : 'outline'}
-        className={cn(
-          'gap-1 tabular-nums',
-          !balanced &&
-            'border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-300',
-        )}
-      >
-        <Clock className="size-3.5" />
-        {props.hours}h of {props.expected}h
-      </Badge>
+      <div className="flex shrink-0 items-center gap-1.5">
+        <Badge
+          variant={balanced ? 'secondary' : 'outline'}
+          className={cn(
+            'gap-1 tabular-nums',
+            !balanced &&
+              'border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-300',
+          )}
+        >
+          <Clock className="size-3.5" />
+          {props.hours}h of {props.expected}h
+        </Badge>
+        {/* Kept as its own badge rather than added to the total: overtime is
+            billed on top of the day, so folding it in would make a correctly
+            filled day read as overfull. */}
+        {props.overtimeHours > 0 ? (
+          <Badge className="gap-1 border-0 bg-indigo-100 text-indigo-900 tabular-nums dark:bg-indigo-950 dark:text-indigo-300">
+            <Moon className="size-3.5" />+{props.overtimeHours}h OT
+          </Badge>
+        ) : null}
+      </div>
     </div>
   )
 }

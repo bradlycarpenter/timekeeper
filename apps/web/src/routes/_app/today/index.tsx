@@ -12,10 +12,13 @@ import { ScreenState } from '#/components/screen-state/screen-state'
 import { TodayEntry } from '#/components/today-entry/today-entry'
 import { demoEntry, sampleEntryFor } from '#/components/today-entry/today-entry.sample.ts'
 import { Button } from '#/components/ui/button'
+import { Dialog, DialogContent, DialogTitle } from '#/components/ui/dialog'
 import { keys } from '#/lib/api'
 import { describe } from '#/lib/errors'
 import {
+  clearOvertimeAtom,
   historyAtom,
+  markOvertimeAtom,
   postEntryAtom,
   skipEntryAtom,
   todayAtom,
@@ -31,8 +34,6 @@ export const Route = createFileRoute('/_app/today/')({
   component: TodayScreen,
 })
 
-const EXPECTED_HOURS = 8
-
 function TodayScreen() {
   const today = useAtomValue(todayAtom)
   const history = useAtomValue(historyAtom)
@@ -43,6 +44,52 @@ function TodayScreen() {
   const [editing, setEditing] = useState<BoardSheet.BoardSheetId>()
   const [draft, setDraft] = useState('')
   const [busy, setBusy] = useState<BoardSheet.BoardSheetId>()
+  const [marking, setMarking] = useState<{
+    boardSheetId: BoardSheet.BoardSheetId
+    key: string
+    summary: string
+  }>()
+  const [overtimeHours, setOvertimeHours] = useState(1)
+  const [clearing, setClearing] = useState<string>()
+
+  const markOvertime = useAtomSet(markOvertimeAtom, { mode: 'promiseExit' })
+  const clearOvertime = useAtomSet(clearOvertimeAtom, { mode: 'promiseExit' })
+
+  const confirmOvertime = async () => {
+    if (!marking) return
+    const exit = await markOvertime({
+      params: { id: marking.boardSheetId },
+      payload: {
+        issueKey: marking.key,
+        issueSummary: marking.summary,
+        hours: overtimeHours,
+      },
+      reactivityKeys: [...keys.today, ...keys.history],
+    })
+    setMarking(undefined)
+
+    if (exit._tag === 'Success') {
+      toast.success(`${marking.key} will post as overtime`)
+      return
+    }
+    toast.error(describe(exit.cause, 'That ticket could not be marked.'))
+  }
+
+  const removeOvertime = async (
+    id: BoardSheet.BoardSheetId,
+    issueKey: string,
+  ) => {
+    setClearing(issueKey)
+    const exit = await clearOvertime({
+      params: { id, issueKey },
+      reactivityKeys: [...keys.today, ...keys.history],
+    })
+    setClearing(undefined)
+
+    if (exit._tag !== 'Success') {
+      toast.error(describe(exit.cause, 'That ticket could not be unmarked.'))
+    }
+  }
 
   const postEntry = async (
     id: BoardSheet.BoardSheetId,
@@ -107,7 +154,8 @@ function TodayScreen() {
                 }
                 total={day.entries.length}
                 hours={day.totalHours}
-                expected={EXPECTED_HOURS}
+                expected={day.standardHours}
+                overtimeHours={day.overtimeHours}
                 postsAt={day.postsAt}
               />
             ) : null}
@@ -167,7 +215,36 @@ function TodayScreen() {
                     ) : (
                       <>
                         <TodayEntry.Message message={entry.message} />
-                        <TodayEntry.Breakdown parts={entry.parts} />
+                        <TodayEntry.Breakdown
+                          parts={entry.parts}
+                          {...(entry.status === 'pending' ||
+                          entry.status === 'failed'
+                            ? {
+                                onMarkOvertime: (issue) => {
+                                  setOvertimeHours(1)
+                                  setMarking({
+                                    boardSheetId: entry.boardSheetId,
+                                    ...issue,
+                                  })
+                                },
+                              }
+                            : {})}
+                        />
+                        <TodayEntry.Overtime
+                          entries={entry.overtime}
+                          busyKey={clearing}
+                          {...(entry.status === 'pending' ||
+                          entry.status === 'failed'
+                            ? {
+                                onClear: (issueKey) => {
+                                  void removeOvertime(
+                                    entry.boardSheetId,
+                                    issueKey,
+                                  )
+                                },
+                              }
+                            : {})}
+                        />
 
                         {entry.hasRules &&
                         entry.message.length === 0 &&
@@ -264,6 +341,28 @@ function TodayScreen() {
           ),
         )
         .orNull()}
+
+      <Dialog
+        open={marking !== undefined}
+        onOpenChange={(open) => {
+          if (!open) setMarking(undefined)
+        }}
+      >
+        <DialogContent className="sm:max-w-sm">
+          <DialogTitle className="sr-only">Bill as overtime</DialogTitle>
+          {marking ? (
+            <TodayEntry.OvertimeForm
+              issue={marking}
+              hours={overtimeHours}
+              onHoursChange={setOvertimeHours}
+              onConfirm={() => {
+                void confirmOvertime()
+              }}
+              onCancel={() => setMarking(undefined)}
+            />
+          ) : null}
+        </DialogContent>
+      </Dialog>
     </>
   )
 }
