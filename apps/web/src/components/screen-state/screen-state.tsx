@@ -9,23 +9,46 @@ import type {
   ScreenStateSectionProps,
 } from './screen-state.types.ts'
 
-/** Skeletons match the real card's shape so the page does not jump when the data
- * lands. */
+/** Pass the real composition as `children`, filled with representative
+ * placeholder text; its text is redacted to bars by `[data-skeleton]`. Because
+ * it is the actual component, its padding, type scale, control heights and
+ * responsive behaviour cannot drift from what replaces it.
+ *
+ * The old version was a hand-built copy that claimed to match the entry card
+ * and did not: `border` where the card uses `ring-1`, uniform `p-4` against the
+ * card's `py-4` plus `gap-3`, 16px bars for 24px line boxes, `space-y-3`
+ * between cards where the list uses `space-y-6`, and no action row at all
+ * against three 44px buttons. The page jumped by more than 60px per card.
+ *
+ * `cards` still renders a generic stand-in for screens whose real composition
+ * is not worth reproducing, but prefer `children`. */
 const ScreenStateLoading = (props: ScreenStateLoadingProps) => (
-  <div className="space-y-3">
-    {Array.from({ length: props.cards ?? 2 }, (_, index) => (
-      <div key={index} className="rounded-lg border p-4">
-        <div className="flex items-start justify-between gap-3">
-          <div className="w-full space-y-2">
-            <Skeleton className="h-4 w-32" />
-            <Skeleton className="h-4 w-24" />
+  <div
+    data-skeleton=""
+    aria-hidden="true"
+    className="motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200"
+  >
+    {props.children ?? (
+      <div className="space-y-6">
+        {Array.from({ length: props.cards ?? 2 }, (_, index) => (
+          <div key={index} className="ring-foreground/10 rounded-lg py-4 ring-1">
+            <div className="flex items-start justify-between gap-3 px-4">
+              <div className="min-w-0">
+                <p className="text-sm font-semibold">Client name</p>
+                <p className="text-sm">Project name</p>
+              </div>
+              <Skeleton className="h-5 w-10 rounded-full" />
+            </div>
+            <div className="mt-3 px-4">
+              <p className="text-[0.9375rem] leading-relaxed">
+                Loading the entry for this board, which usually runs to about
+                this much text.
+              </p>
+            </div>
           </div>
-          <Skeleton className="h-5 w-12 rounded-full" />
-        </div>
-        <Skeleton className="mt-4 h-4 w-full" />
-        <Skeleton className="mt-2 h-4 w-3/4" />
+        ))}
       </div>
-    ))}
+    )}
   </div>
 )
 

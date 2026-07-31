@@ -137,7 +137,39 @@ function TodayScreen() {
       <PageLayout.Split>
       <PageLayout.Main>
       {AsyncResult.builder(today)
-        .onInitialOrWaiting(() => <ScreenState.Loading cards={2} />)
+        .onInitialOrWaiting(() => (
+          /* The real card, with placeholder text. It carries the action row and
+           * the true internal rhythm, so the page does not jump when the day
+           * lands — and it stays correct on its own as the card changes. */
+          <ScreenState.Loading>
+            <div className="space-y-6">
+              {[0, 1].map((index) => (
+                <TodayEntry.Root key={index} status="pending">
+                  <TodayEntry.Heading
+                    clientName="Client name"
+                    projectName="Project name"
+                    boardKey="KEY"
+                    hours={8}
+                  />
+                  <TodayEntry.Message message="Loading today's entry for this board, which usually runs to about this much text." />
+                  <TodayEntry.Actions>
+                    <TodayEntry.Action label="Post now" onClick={() => {}} />
+                    <TodayEntry.Action
+                      label="Edit"
+                      variant="outline"
+                      onClick={() => {}}
+                    />
+                    <TodayEntry.Action
+                      label="Skip"
+                      variant="ghost"
+                      onClick={() => {}}
+                    />
+                  </TodayEntry.Actions>
+                </TodayEntry.Root>
+              ))}
+            </div>
+          </ScreenState.Loading>
+        ))
         .onError(() => (
           <ScreenState.Failed
             title="Today could not be loaded"

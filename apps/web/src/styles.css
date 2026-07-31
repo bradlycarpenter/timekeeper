@@ -189,3 +189,56 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* A skeleton is the real component with its text redacted, never a second
+ * hand-built copy of the layout. A copy only renders on slow networks and cold
+ * caches, so nobody looks at it; it breaks no test and fails no type check, so
+ * it drifts silently until the page visibly jumps when data lands. Rendering
+ * the real tree means padding, type scale, breakpoints and new fields are
+ * always already correct.
+ *
+ * Everything here is scoped to `[data-skeleton]`, applied by ScreenState.Loading. */
+@layer components {
+  [data-skeleton] {
+    /* Nothing inside is real, so nothing inside is reachable. */
+    pointer-events: none;
+    user-select: none;
+  }
+
+  [data-skeleton] :is(p, h1, h2, h3, h4, span, time, label, strong) {
+    color: transparent;
+    background-color: var(--muted);
+    border-radius: calc(var(--radius) / 2);
+    animation: skeleton-pulse 1.6s ease-in-out infinite;
+  }
+
+  /* Controls keep their footprint — that footprint is most of the height the
+   * real card will occupy — but lose their fill so they do not read as
+   * pressable. */
+  [data-skeleton] :is(button, [role='button']) {
+    background-color: var(--muted) !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+    animation: skeleton-pulse 1.6s ease-in-out infinite;
+  }
+
+  [data-skeleton] :is(svg, img) {
+    visibility: hidden;
+  }
+
+  @keyframes skeleton-pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.55;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-skeleton] :is(p, h1, h2, h3, h4, span, time, label, strong, button) {
+      animation: none;
+    }
+  }
+}

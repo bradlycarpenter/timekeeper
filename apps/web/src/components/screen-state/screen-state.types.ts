@@ -1,6 +1,9 @@
 import type { ReactNode } from 'react'
 
 export type ScreenStateLoadingProps = {
+  /** The real composition, filled with placeholder text. Preferred over
+   * `cards`: it cannot drift from the layout it stands in for. */
+  children?: ReactNode
   cards?: number
 }
 

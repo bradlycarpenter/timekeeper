@@ -71,7 +71,33 @@ function TimesheetScreen() {
       />
 
       {AsyncResult.builder(entries)
-        .onInitialOrWaiting(() => <ScreenState.Loading cards={3} />)
+        .onInitialOrWaiting(() => (
+          <ScreenState.Loading>
+            <EntryList.Root>
+              {[0, 1, 2, 3, 4].map((index) => (
+                <EntryList.Day
+                  key={index}
+                  label="00 Xxx"
+                  weekday="Xxx"
+                  entries={[
+                    {
+                      entryId: index,
+                      date: '',
+                      hours: 8,
+                      overtime: false,
+                      description:
+                        'Loading the entry logged on this day, which usually runs to about this much text.',
+                      taskId: 0,
+                      projectName: 'Project name',
+                      clientName: 'Client',
+                      activity: '',
+                    },
+                  ]}
+                />
+              ))}
+            </EntryList.Root>
+          </ScreenState.Loading>
+        ))
         .onError(() => (
           <ScreenState.Failed
             title="Your timesheet could not be read"
