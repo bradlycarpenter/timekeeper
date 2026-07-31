@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-07-31T22:05:00Z",
+  "generatedAt": "2026-08-01T00:10:00Z",
   "title": "Design System: Timekeeper",
   "extensions": {
     "colorMeta": {
@@ -380,6 +380,14 @@
       "description": "Fabricated content, labelled in words and rendered subordinate to real content.",
       "html": "<div class=\"ds-preview\"><p class=\"ds-preview-label\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"14\" height=\"14\"><path d=\"m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z\"/></svg>Example — nothing matched yet, so these ticket numbers are invented.</p><p class=\"ds-preview-msg\">Today I began working on LUM-214 (Add CSV export to invoices).</p></div>",
       "css": ".ds-preview{border:1px dashed color-mix(in oklch,currentColor,transparent 75%);background:color-mix(in oklch,currentColor,transparent 96%);border-radius:var(--radius,.75rem);padding:.75rem}.ds-preview-label{display:flex;align-items:center;gap:.375rem;margin:0;font-size:.75rem;font-weight:500;opacity:.65}.ds-preview-msg{margin:.375rem 0 0;font-size:.875rem;line-height:1.625;max-width:70ch;opacity:.65}"
+    },
+    {
+      "name": "Derived Skeleton",
+      "kind": "custom",
+      "refersTo": "quiet",
+      "description": "The real component with its text redacted — never a second copy of the layout.",
+      "html": "<div class=\"ds-skel\"><div class=\"ds-skel-card\"><div class=\"ds-skel-head\"><div><p>Client name</p><p>Project name</p></div><span class=\"ds-skel-badge\">8h</span></div><p class=\"ds-skel-msg\">Loading the entry for this board, which usually runs to about this much text.</p><div class=\"ds-skel-actions\"><button>Post now</button><button>Edit</button><button>Skip</button></div></div></div>",
+      "css": ".ds-skel{pointer-events:none;user-select:none}.ds-skel-card{border-radius:var(--radius,.75rem);padding:1rem 0;box-shadow:0 0 0 1px color-mix(in oklch,currentColor,transparent 90%)}.ds-skel-head{display:flex;justify-content:space-between;gap:.75rem;padding:0 1rem}.ds-skel-msg{margin:.75rem 0 0;padding:0 1rem;font-size:.9375rem;line-height:1.625}.ds-skel-actions{display:flex;gap:.5rem;padding:.75rem 1rem 0}.ds-skel-actions button{height:2rem;flex:0 0 auto;padding:0 .625rem;border:none;border-radius:var(--radius,.75rem);font-size:.875rem}.ds-skel :is(p,span,button){color:transparent;background-color:var(--muted,#f1f3f5);border-radius:calc(var(--radius,.75rem)/2);animation:ds-skel-pulse 1.6s ease-in-out infinite}.ds-skel p{margin:0}@keyframes ds-skel-pulse{0%,100%{opacity:1}50%{opacity:.55}}@media (prefers-reduced-motion:reduce){.ds-skel :is(p,span,button){animation:none}}"
     }
   ],
   "narrative": {
@@ -412,7 +420,7 @@
       },
       {
         "name": "The Measured Contrast Rule",
-        "body": "Accent and error colors are set by contrast measurement, not by eye. Normal text and control labels clear 4.5:1 against whatever they actually sit on, and focus indicators clear 3:1. Before changing --primary, --destructive, --primary-foreground or any hover fill, measure the composited result in both modes. Three marginal accent-on-tint exceptions are known and deliberate: destructive on destructive/10 (3.89:1), accent on primary/10 (3.96:1), and dark-mode destructive on destructive/20 (3.24:1).",
+        "body": "Accent and error colors are set by contrast measurement, not by eye. Normal text and control labels clear 4.5:1 against whatever they actually sit on, and focus indicators clear 3:1. Before changing `--primary`, `--destructive`, `--primary-foreground` or any hover fill, measure the composited result in both modes — a hover or an alpha tint changes the background the label is read against. Three measured exceptions are known and deliberate, all of them accent-on-its-own-tint at marginal ratios: destructive text on `destructive/10` (3.89:1, the destructive button), accent text on `primary/10` (3.96:1, the \"Scheduled\" pill), and dark-mode destructive text on `destructive/20` (3.24:1). Clearing these needs a separate darker on-tint value, which the system has deliberately not adopted. Do not add new accent-on-tint pairings without measuring.",
         "section": "colors"
       },
       {
@@ -422,8 +430,13 @@
       },
       {
         "name": "The Tabular Rule",
-        "body": "Every hour figure carries tabular-nums so columns of hours align. Every Jira ticket key and board key carries font-mono. These are not stylistic choices; they are how a number is distinguished from a word and an identifier from a name.",
+        "body": "Every hour figure carries `tabular-nums` so columns of hours align. Every Jira ticket key and board key carries `font-mono`. These are not stylistic choices; they are how a number is distinguished from a word and an identifier from a name.",
         "section": "typography"
+      },
+      {
+        "name": "The Shared Edge Rule",
+        "body": "Every route's content starts at the same x. One container lives in the shell; a page may narrow its own measure but must never re-centre it, because a left edge that moves between screens reads as breakage even when each screen is individually well-proportioned.",
+        "section": "layout"
       },
       {
         "name": "The Thumb Rail Rule",
@@ -447,17 +460,22 @@
       },
       {
         "name": "The Ring Not Border Rule",
-        "body": "Card edges are rings, not borders, so adding one never shifts layout by a pixel. Reach for border only on structural chrome edges and single-sided dividers.",
+        "body": "Card edges are rings, not borders, so adding one never shifts layout by a pixel. Reach for `border` only on structural chrome edges and single-sided dividers.",
         "section": "elevation"
       },
       {
         "name": "The One Radius Rule",
-        "body": "0.75rem, everywhere, no exceptions beyond rounded-full, rounded-none, var(--radius-chrome), and the small-control clamp. Never hardcode a radius; never name a tier expecting a different result.",
+        "body": "0.75rem, everywhere, no exceptions beyond `rounded-full`, `rounded-none`, `var(--radius-chrome)`, and the small-control clamp. Never hardcode a radius; never name a tier expecting a different result.",
         "section": "shapes"
       },
       {
         "name": "The Quiet Fiction Rule",
         "body": "Invented content is always subordinate to real content and always labelled in words, never by styling alone. If a sample can be mistaken for a record at a glance, the sample is wrong — not the reader.",
+        "section": "components"
+      },
+      {
+        "name": "The Derived Skeleton Rule",
+        "body": "A skeleton is the real component with its text redacted, never a second copy of the layout. Pass the actual composition to `ScreenState.Loading` with placeholder content; `[data-skeleton]` turns text transparent over a muted bar, keeps controls' footprint while removing their fill, and hides icons. A hand-built copy renders only on slow networks and cold caches, breaks no test and fails no type check, so it drifts silently until the page visibly jumps — ours had reached 60px of jump per card while carrying a comment claiming it matched. Skeletons are also `aria-hidden` and `pointer-events: none`: nothing in them is real. The pulse is dropped under `prefers-reduced-motion`.",
         "section": "components"
       }
     ],
@@ -472,7 +490,9 @@
       "**Do** override to a 44px target where a control is a real mobile tap target, using `h-11 md:h-8`, and leave a comment saying why.",
       "**Do** build new composites as compound components (`Thing.Root`, `Thing.Heading`) assembled at the route, never as a props-configured wrapper.",
       "**Do** open every screen with `PageHeader`, and keep records 1.5rem apart against 0.75rem within, per The Grouping Gap Rule.",
-      "**Do** shape loading skeletons like the card they replace.",
+      "**Do** build a loading state by passing the real composition to `ScreenState.Loading`, per The Derived Skeleton Rule.",
+      "**Do** give a dialog's grid children `min-w-0`; grid items default to `min-width: auto` and one unwrappable child will otherwise widen the track past the panel and push the footer out through the rounded edge.",
+      "**Do** let a select trigger state the choice; explanatory hints belong in the open menu, where the choosing happens.",
       "**Do** let the page own its measure through `PageLayout`, choosing `wide` only when the content is genuinely tabular.",
       "**Do** keep overtime hours visibly separate from the day's total — a second badge, never a larger first number.",
       "**Do** label fabricated content in words and render it subordinate to real content, per The Quiet Fiction Rule.",
@@ -493,7 +513,8 @@
       "**Don't** \"fix\" the `text-base md:text-sm` input sizing — the larger mobile size prevents iOS zoom on focus.",
       "**Don't** inflate the button scale past 36px to solve a touch target; override the single instance instead.",
       "**Don't** introduce side-by-side card grids, or put primary work in a second column. An aside carrying state or history is the only exception.",
-      "**Don't** cap a page's width in `AppShell.Content`; reach for `PageLayout` so the measure stays the page's own decision.",
+      "**Don't** re-centre a page inside the shell's container. Narrow the measure and leave it left-aligned, per The Shared Edge Rule.",
+      "**Don't** hand-build a skeleton, and don't leave a comment asserting one matches — the assertion outlives the truth.",
       "**Don't** hand-roll a page heading, and don't put an eyebrow or kicker above one — that information belongs in the description.",
       "**Don't** add anything to the phone header without a desktop rail counterpart; the header is `md:hidden` and whatever sits there alone disappears.",
       "**Don't** add a gradient, illustration, decorative shadow, or ornamental flourish. Nothing in this system is decorative.",

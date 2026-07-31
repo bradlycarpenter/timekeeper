@@ -228,12 +228,12 @@ const RulePreview = (props: RulePreviewProps) => {
     props.statusName ?? 'that status',
     props.messageId,
   )
+  /* No "This rule says" label above the sentence: the sentence restates the
+   * three fields directly above it, and the tinted panel already separates it
+   * from them. */
   return (
     <div className="bg-muted/60 rounded-lg px-4 py-3">
-      <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-        This rule says
-      </p>
-      <p className="mt-1 text-sm font-medium">{text.when}</p>
+      <p className="text-sm font-medium">{text.when}</p>
       <p className="text-muted-foreground mt-0.5 text-sm">{text.then}</p>
       <PreviewTickets preview={props.preview} />
     </div>

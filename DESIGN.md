@@ -331,14 +331,20 @@ identifier from a name.
 
 ## Layout
 
-The measure belongs to the page, not the shell. `AppShell.Content` owns only the
-gutter (1rem, opening to 2rem from `md`), the vertical padding (1.25rem rising to
-2rem) and the phone tab-bar clearance; each screen then declares its own width
-through `PageLayout`. Most take the `reading` measure of `max-w-3xl` (48rem); the
-Timesheet takes `wide` (64rem) because it is genuinely tabular and columns beat a
-short line. Prose is capped at a `70ch` measure wherever it is meant to be read —
-legal pages and the entry message alike — rather than being allowed to run the
-full width.
+One container, one edge. `AppShell.Content` owns the gutter (1rem, opening to
+2rem from `md`), the vertical padding (1.25rem rising to 2rem), the phone
+tab-bar clearance, and a single centred `max-w-6xl` (72rem) container shared by
+every route. Inside it each screen sets its own **measure** through `PageLayout`
+— `reading` (`max-w-3xl`, 48rem) for almost everything, `wide` (`max-w-5xl`,
+64rem) for the genuinely tabular Timesheet — and that measure is **left-aligned,
+never re-centred**. Only the right edge moves between screens.
+
+That last point is the whole rule and it was learned the hard way: when each
+page centred itself at its own width, the content's left edge jumped hundreds of
+pixels on every navigation, which reads as broken far more loudly than a column
+that is merely too narrow. Prose is capped at a `70ch` measure wherever it is
+meant to be read — legal pages and the entry message alike — rather than being
+allowed to run the full measure.
 
 Screens are vertical stacks of full-width cards, and the primary content column
 is never subdivided into a card grid. One screen adds a *supporting* second
@@ -369,17 +375,25 @@ There are two structural breakpoints and they do different jobs.
 `md` (768px) flips the **navigation**: below it, a fixed bottom tab bar with
 icon-over-label items and `env(safe-area-inset-bottom)` padding, plus a sticky
 translucent header carrying the wordmark and account menu; at and above it, the
-tab bar becomes a full-height 15rem left rail with icon-beside-label rows, the
-header disappears entirely, and the wordmark moves into the rail. Content
-reserves 6rem of bottom padding on mobile so the floating tab bar never covers
-the last card. `md` also returns touch-sized controls to the compact scale and
-stops full-width action rows from stretching under a cursor.
+tab bar becomes a **sticky** full-height 15rem left rail with icon-beside-label
+rows, the header disappears entirely, and the wordmark moves into the rail.
+Sticky and not static: at `h-dvh` the rail is exactly one viewport tall, so on a
+page longer than the screen a static rail scrolls away and strands the
+navigation above the fold. Content reserves 6rem of bottom padding on mobile so
+the floating tab bar never covers the last card. `md` also returns touch-sized
+controls to the compact scale and stops full-width action rows from stretching
+under a cursor.
 
 `xl` (1280px) flips the **composition**, and only where a screen has supporting
 material to move: Today's recent list steps out into a sticky 19rem aside. It is
 deliberately not `lg` — see The One Column Rule.
 
 ### Named Rules
+
+**The Shared Edge Rule.** Every route's content starts at the same x. One
+container lives in the shell; a page may narrow its own measure but must never
+re-centre it, because a left edge that moves between screens reads as breakage
+even when each screen is individually well-proportioned.
 
 **The Thumb Rail Rule.** Primary navigation is bottom-anchored on phones and
 side-anchored on desktop — never a hamburger, never a top tab strip. Content
@@ -611,11 +625,22 @@ mistaken for a record at a glance, the sample is wrong — not the reader.
 ### Signature Component: The State Trio
 
 Loading, failed, and empty are first-class and visually distinct. **Loading**
-draws skeletons shaped like the real card — same ring, same padding, same badge
-positions — so nothing jumps when data lands. **Failed** is a 30% Alarm border
-over a 5% Alarm wash, centered, with an icon and a retry. **Empty** is a
-*dashed* rule-colored border, centered, with a muted icon and a single call to
-action. Absence is dashed; error is tinted; loading is shaped.
+renders the *real* composition with placeholder text and redacts it — see The
+Derived Skeleton Rule. **Failed** is a 30% Alarm border over a 5% Alarm wash,
+centered, with an icon and a retry. **Empty** is a *dashed* rule-colored border,
+centered, with a muted icon and a single call to action. Absence is dashed;
+error is tinted; loading is the thing itself, greyed.
+
+**The Derived Skeleton Rule.** A skeleton is the real component with its text
+redacted, never a second copy of the layout. Pass the actual composition to
+`ScreenState.Loading` with placeholder content; `[data-skeleton]` turns text
+transparent over a muted bar, keeps controls' footprint while removing their
+fill, and hides icons. A hand-built copy renders only on slow networks and cold
+caches, breaks no test and fails no type check, so it drifts silently until the
+page visibly jumps — ours had reached 60px of jump per card while carrying a
+comment claiming it matched. Skeletons are also `aria-hidden` and
+`pointer-events: none`: nothing in them is real. The pulse is dropped under
+`prefers-reduced-motion`.
 
 ### Signature Component: The Day Tally
 
@@ -682,7 +707,13 @@ Reach for it in every route; the shell deliberately no longer caps width.
   `Thing.Heading`) assembled at the route, never as a props-configured wrapper.
 - **Do** open every screen with `PageHeader`, and keep records 1.5rem apart
   against 0.75rem within, per The Grouping Gap Rule.
-- **Do** shape loading skeletons like the card they replace.
+- **Do** build a loading state by passing the real composition to
+  `ScreenState.Loading`, per The Derived Skeleton Rule.
+- **Do** give a dialog's grid children `min-w-0`; grid items default to
+  `min-width: auto` and one unwrappable child will otherwise widen the track
+  past the panel and push the footer out through the rounded edge.
+- **Do** let a select trigger state the choice; explanatory hints belong in the
+  open menu, where the choosing happens.
 - **Do** let the page own its measure through `PageLayout`, choosing `wide` only
   when the content is genuinely tabular.
 - **Do** keep overtime hours visibly separate from the day's total — a second
@@ -722,8 +753,10 @@ Reach for it in every route; the shell deliberately no longer caps width.
   the single instance instead.
 - **Don't** introduce side-by-side card grids, or put primary work in a second
   column. An aside carrying state or history is the only exception.
-- **Don't** cap a page's width in `AppShell.Content`; reach for `PageLayout` so
-  the measure stays the page's own decision.
+- **Don't** re-centre a page inside the shell's container. Narrow the measure
+  and leave it left-aligned, per The Shared Edge Rule.
+- **Don't** hand-build a skeleton, and don't leave a comment asserting one
+  matches — the assertion outlives the truth.
 - **Don't** hand-roll a page heading, and don't put an eyebrow or kicker above
   one — that information belongs in the description.
 - **Don't** add anything to the phone header without a desktop rail counterpart;
