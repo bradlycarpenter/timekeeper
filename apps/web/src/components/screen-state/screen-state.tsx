@@ -31,12 +31,12 @@ const ScreenStateLoading = (props: ScreenStateLoadingProps) => (
 const ScreenStateFailed = (props: ScreenStateFailedProps) => (
   <div className="border-destructive/30 bg-destructive/5 rounded-lg border px-4 py-6 text-center">
     <AlertTriangle className="text-destructive mx-auto size-5" />
-    <p className="mt-2 text-sm font-medium">{props.title}</p>
+    <p className="mt-2 font-medium">{props.title}</p>
     <p className="text-muted-foreground mx-auto mt-1 max-w-sm text-sm">
       {props.detail}
     </p>
     {props.onRetry ? (
-      <Button variant="outline" size="sm" className="mt-4" onClick={props.onRetry}>
+      <Button variant="outline" className="mt-4 h-11 md:h-8" onClick={props.onRetry}>
         Try again
       </Button>
     ) : null}
@@ -61,8 +61,8 @@ const ScreenStateEmpty = (props: ScreenStateEmptyProps) => (
  * them. Scale reads 1.5rem page / 1.25rem section / 1rem card. */
 const ScreenStateSection = (props: ScreenStateSectionProps) => (
   <section className="mt-10 space-y-3">
-    <div className="flex items-end justify-between gap-3">
-      <div>
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div className="min-w-0">
         <h2 className="text-xl font-semibold tracking-tight">{props.title}</h2>
         {props.description ? (
           <p className="text-muted-foreground text-sm">{props.description}</p>

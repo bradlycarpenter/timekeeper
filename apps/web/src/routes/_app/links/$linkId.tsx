@@ -119,7 +119,7 @@ function LinkScreen() {
           action={
             <Dialog open={ruleOpen} onOpenChange={setRuleOpen}>
               <DialogTrigger asChild>
-                <Button size="sm" variant="outline">
+                <Button variant="outline" className="h-11 md:h-8">
                   <Plus className="size-4" />
                   Add
                 </Button>

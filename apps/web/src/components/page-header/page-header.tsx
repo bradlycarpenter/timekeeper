@@ -4,8 +4,11 @@ import type {
   PageHeaderTitleProps,
 } from './page-header.types.ts'
 
+/** Stacks below `sm`: a 44px action beside a wrapping description squeezes the
+ * description into three lines on a phone, so the action drops beneath the title
+ * instead of competing with it for the same row. */
 const PageHeaderRoot = (props: PageHeaderRootProps) => (
-  <div className="mb-6 flex items-end justify-between gap-3">
+  <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
     {props.children}
   </div>
 )
