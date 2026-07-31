@@ -123,8 +123,12 @@ const RuleConditionField = (props: RuleConditionFieldProps) => (
       value={props.value}
       onValueChange={(value) => props.onChange(value as Stub.StatusCondition)}
     >
+      {/* The trigger states the choice, not the explanation. Left to render the
+        * selected item's own children it repeats the hint, which is a long
+        * unwrappable line — it clipped inside the trigger and forced the whole
+        * dialog wider than its panel. */}
       <SelectTrigger id="rule-condition" className="w-full">
-        <SelectValue />
+        <SelectValue>{Stub.statusConditionLabels[props.value].label}</SelectValue>
       </SelectTrigger>
       <SelectContent>
         {(['entered', 'stationary', 'left'] as const).map((condition) => (

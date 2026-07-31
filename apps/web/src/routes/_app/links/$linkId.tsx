@@ -130,7 +130,7 @@ function LinkScreen() {
                   Add
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                   <DialogTitle>Add a rule</DialogTitle>
                   <DialogDescription>
