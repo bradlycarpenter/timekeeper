@@ -1,6 +1,7 @@
 import { useAtomRefresh, useAtomSet, useAtomValue } from '@effect/atom-react'
 import { Link, createFileRoute } from '@tanstack/react-router'
 import type { BoardSheet } from '@tk/domain'
+import { Time } from '@tk/domain'
 import { AsyncResult } from 'effect/unstable/reactivity'
 import { CalendarCheck, Check, Pencil, Plus, SkipForward } from 'lucide-react'
 import { useState } from 'react'
@@ -53,6 +54,9 @@ function TodayScreen() {
   }>()
   const [overtimeHours, setOvertimeHours] = useState(1)
   const [clearing, setClearing] = useState<string>()
+
+  const headingDate =
+    AsyncResult.getOrElse(today, () => undefined)?.date ?? Time.entryDateIn()
 
   const markOvertime = useAtomSet(markOvertimeAtom, { mode: 'promiseExit' })
   const clearOvertime = useAtomSet(clearOvertimeAtom, { mode: 'promiseExit' })
@@ -136,12 +140,32 @@ function TodayScreen() {
     <>
       <PageLayout.Split>
       <PageLayout.Main>
+      {/* Outside the async branch on purpose. Today's date is not something the
+        * server knows and we don't: it is the calendar day in the working zone,
+        * which the browser can compute. Waiting on the network to render the
+        * heading only bought a blank space above the cards. The payload's own
+        * date takes over once it lands, so a disagreement still self-corrects. */}
+      <PageHeader.Root>
+        <PageHeader.Title heading={formatDayLong(headingDate)} />
+      </PageHeader.Root>
+
       {AsyncResult.builder(today)
         .onInitialOrWaiting(() => (
           /* The real card, with placeholder text. It carries the action row and
            * the true internal rhythm, so the page does not jump when the day
            * lands — and it stays correct on its own as the card changes. */
           <ScreenState.Loading>
+            {/* The tally is part of the reserved space, not decoration: without
+              * it the cards sat 40px higher than where they land. */}
+            <DaySummary.Tally
+              filed={0}
+              skipped={0}
+              total={1}
+              hours={8}
+              expected={8}
+              overtimeHours={0}
+              postsAt="17:00"
+            />
             <div className="space-y-6">
               {[0, 1].map((index) => (
                 <TodayEntry.Root key={index} status="pending">
@@ -179,10 +203,6 @@ function TodayScreen() {
         ))
         .onSuccess((day) => (
           <>
-            <PageHeader.Root>
-              <PageHeader.Title heading={formatDayLong(day.date)} />
-            </PageHeader.Root>
-
             {day.entries.length > 0 ? (
               <DaySummary.Tally
                 filed={

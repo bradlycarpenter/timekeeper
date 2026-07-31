@@ -1,3 +1,4 @@
+import { Time } from '@tk/domain'
 import { Context, DateTime, Effect } from 'effect'
 
 export type DailyPostJob = {
@@ -24,7 +25,9 @@ export type Env = {
 
 export class Bindings extends Context.Service<Bindings, Env>()('tk/Bindings') {}
 
-export const DEFAULT_TIMEZONE = 'Africa/Johannesburg'
+/** Re-exported from the domain so the worker and the web app cannot drift
+ * onto different working days. */
+export const DEFAULT_TIMEZONE = Time.DEFAULT_TIME_ZONE
 
 export const warpDomain = Effect.map(Bindings, (env) => env.WARP_DOMAIN)
 

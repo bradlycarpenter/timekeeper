@@ -205,10 +205,18 @@
     user-select: none;
   }
 
+  /* `!important` is load-bearing, not laziness: these rules live in
+   * `@layer components` and every colour they need to beat — `text-muted-
+   * foreground`, `text-primary`, a badge's own fill — is a `@layer utilities`
+   * rule, which wins on layer order regardless of specificity. Without it the
+   * redaction silently half-applies and the skeleton shows real words. */
   [data-skeleton] :is(p, h1, h2, h3, h4, span, time, label, strong) {
-    color: transparent;
-    background-color: var(--muted);
-    border-radius: calc(var(--radius) / 2);
+    color: transparent !important;
+    background-color: var(--muted) !important;
+    border-color: transparent !important;
+    /* A text bar is 16–24px tall: --radius would read as a pill, so this is the
+     * documented small-chrome exception rather than a derived radius. */
+    border-radius: var(--radius-chrome);
     animation: skeleton-pulse 1.6s ease-in-out infinite;
   }
 
