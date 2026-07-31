@@ -75,22 +75,26 @@ const AppShellAccount = (props: AppShellAccountProps) => (
   </DropdownMenu>
 )
 
-/** Gutters, vertical rhythm and tab-bar clearance only. The measure belongs to
- * the page: a table and a settings form do not want the same width, and capping
- * everything here is what left desktop with one narrow column. See PageLayout.
+/** One container for every route, so the content's left edge is in the same
+ * place on all of them. Pages differ in how much of it they fill — see
+ * PageLayout — but they must not each centre themselves at their own width, or
+ * navigating shifts the whole page sideways.
  *
  * Bottom padding leaves room for the tab bar, which floats over the content on
  * phones. */
 const AppShellContent = (props: AppShellContentProps) => (
   <main className="flex-1 px-4 py-5 pb-24 md:px-8 md:py-8 md:pb-8">
-    {props.children}
+    <div className="mx-auto w-full max-w-6xl">{props.children}</div>
   </main>
 )
 
 const AppShellNav = (props: AppShellNavProps) => (
   <nav
     aria-label="Main"
-    className="bg-background/95 fixed inset-x-0 bottom-0 z-20 flex shrink-0 justify-around border-t px-2 pt-1.5 pb-[max(0.375rem,env(safe-area-inset-bottom))] backdrop-blur md:static md:h-dvh md:w-60 md:flex-col md:justify-start md:gap-1 md:border-t-0 md:border-r md:p-4 md:pt-6"
+    /* `sticky`, not `static`: at `h-dvh` the rail is exactly one viewport tall,
+     * so on any page taller than the screen it scrolled away and left the
+     * navigation stranded above the fold. */
+    className="bg-background/95 fixed inset-x-0 bottom-0 z-20 flex shrink-0 justify-around border-t px-2 pt-1.5 pb-[max(0.375rem,env(safe-area-inset-bottom))] backdrop-blur md:sticky md:top-0 md:bottom-auto md:h-dvh md:w-60 md:flex-col md:justify-start md:gap-1 md:overflow-y-auto md:border-t-0 md:border-r md:p-4 md:pt-6"
   >
     <Link
       to="/today"

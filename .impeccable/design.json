@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-07-31T19:05:00Z",
+  "generatedAt": "2026-07-31T22:05:00Z",
   "title": "Design System: Timekeeper",
   "extensions": {
     "colorMeta": {
@@ -168,6 +168,21 @@
           "#c4b5fd",
           "#ede9fe"
         ]
+      },
+      "after-hours": {
+        "role": "tertiary",
+        "displayName": "After-Hours Indigo (borrowed)",
+        "canonical": "#4338ca",
+        "tonalRamp": [
+          "#1e1b4b",
+          "#312e81",
+          "#3730a3",
+          "#4338ca",
+          "#4f46e5",
+          "#6366f1",
+          "#a5b4fc",
+          "#e0e7ff"
+        ]
       }
     },
     "typographyMeta": {
@@ -246,6 +261,10 @@
       {
         "name": "md",
         "value": "768px"
+      },
+      {
+        "name": "xl",
+        "value": "1280px"
       }
     ]
   },
@@ -329,6 +348,38 @@
       "description": "Absence is dashed. The only dashed edge in the system — error is tinted, loading is shaped, empty is dashed.",
       "html": "<div class=\"ds-empty\"><div class=\"ds-empty-icon\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M9 17H7A5 5 0 0 1 7 7h2\"/><path d=\"M15 7h2a5 5 0 1 1 0 10h-2\"/><line x1=\"8\" x2=\"16\" y1=\"12\" y2=\"12\"/></svg></div><p class=\"ds-empty-title\">No board links yet</p><p class=\"ds-empty-detail\">Link a Jira project to a timesheet task and Timekeeper will file the entry for you.</p><button class=\"ds-btn-primary\">Create a link</button></div>",
       "css": ".ds-empty { padding: 2.5rem 1rem; border: 1px dashed var(--border, oklch(0.9276 0.0058 264.5313)); border-radius: var(--radius, 0.75rem); text-align: center; } .ds-empty-icon { display: flex; align-items: center; justify-content: center; width: 2.5rem; height: 2.5rem; margin: 0 auto; color: var(--muted-foreground, oklch(0.5510 0.0234 264.3637)); } .ds-empty-icon svg { width: 1.25rem; height: 1.25rem; } .ds-empty-title { margin: 0.25rem 0 0; font-size: 0.875rem; font-weight: 500; } .ds-empty-detail { max-width: 20rem; margin: 0.25rem auto 0; color: var(--muted-foreground, oklch(0.5510 0.0234 264.3637)); font-size: 0.875rem; } .ds-empty .ds-btn-primary { margin-top: 1.25rem; display: inline-flex; align-items: center; justify-content: center; height: 2rem; padding: 0 0.625rem; border: 1px solid transparent; border-radius: var(--radius, 0.75rem); background: var(--primary, oklch(0.5744 0.1880 259.8145)); color: var(--primary-foreground, #fff); font-size: 0.875rem; font-weight: 500; cursor: pointer; }"
+    },
+    {
+      "name": "Overtime Block",
+      "kind": "custom",
+      "refersTo": "after-hours",
+      "description": "Tickets pulled out of the normal day and billed as their own Warp entries.",
+      "html": "<div class=\"ds-ot\"><p class=\"ds-ot-head\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"14\" height=\"14\"><path d=\"M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z\"/></svg>Overtime — posted separately</p><ul class=\"ds-ot-list\"><li class=\"ds-ot-row\"><span class=\"ds-ot-key\">LUM-187</span><span class=\"ds-ot-sum\">Fix duplicate entries on retry</span><span class=\"ds-ot-hrs\">2h</span></li></ul></div>",
+      "css": ".ds-ot{border:1px solid #c7d2fe;background:rgba(238,242,255,.6);border-radius:var(--radius,.75rem);padding:.75rem}.ds-ot-head{display:flex;align-items:center;gap:.375rem;margin:0;font-size:.75rem;font-weight:500;color:#312e81}.ds-ot-list{list-style:none;margin:.5rem 0 0;padding:0;display:flex;flex-direction:column;gap:.375rem}.ds-ot-row{display:flex;align-items:center;gap:.375rem;font-size:.75rem}.ds-ot-key{font-family:var(--font-mono,ui-monospace,monospace)}.ds-ot-sum{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:.65}.ds-ot-hrs{font-variant-numeric:tabular-nums}@media (prefers-color-scheme:dark){.ds-ot{border-color:#312e81;background:rgba(30,27,75,.4)}.ds-ot-head{color:#a5b4fc}}"
+    },
+    {
+      "name": "Overtime Ticket Chip",
+      "kind": "chip",
+      "refersTo": "after-hours",
+      "description": "A breakdown ticket chip; pressing it moves that ticket to overtime.",
+      "html": "<button class=\"ds-chip-ot\"><span class=\"ds-chip-ot-key\">LUM-214</span><span class=\"ds-chip-ot-sum\">Add CSV export to invoices</span><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"14\" height=\"14\"><path d=\"M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z\"/></svg></button>",
+      "css": ".ds-chip-ot{display:inline-flex;align-items:center;gap:.25rem;padding:.125rem .5rem;border:1px solid var(--border,#e5e7eb);border-radius:var(--radius,.75rem);background:transparent;font-size:.75rem;font-weight:400;cursor:pointer;transition:background .15s}.ds-chip-ot-key{font-family:var(--font-mono,ui-monospace,monospace)}.ds-chip-ot-sum{opacity:.65}.ds-chip-ot:hover{background:var(--muted,#f3f4f6)}.ds-chip-ot:focus-visible{outline:none;border-color:var(--ring,#4a7de0);box-shadow:0 0 0 3px color-mix(in oklch,var(--ring,#4a7de0),transparent 50%)}"
+    },
+    {
+      "name": "Timesheet Day Row",
+      "kind": "custom",
+      "refersTo": "body",
+      "description": "One weekday on the Timesheet. A day with nothing logged still gets a row.",
+      "html": "<div class=\"ds-day\"><div class=\"ds-day-date\"><p class=\"ds-day-num\">29 Jul</p><p class=\"ds-day-wd\">Wed</p></div><div class=\"ds-day-body\"><div class=\"ds-day-top\"><p class=\"ds-day-proj\">Lumix · Development</p><span class=\"ds-day-hrs\">8h</span></div><p class=\"ds-day-desc\">Today I completed LUM-187 (Fix duplicate entries on retry).</p></div></div><div class=\"ds-day ds-day-empty\"><div class=\"ds-day-date\"><p class=\"ds-day-num\">23 Jul</p><p class=\"ds-day-wd\">Thu</p></div><div class=\"ds-day-body\"><p class=\"ds-day-none\">Nothing logged.</p></div></div>",
+      "css": ".ds-day{display:flex;gap:1rem;padding:.75rem 0;border-top:1px solid var(--border,#e5e7eb)}.ds-day-date{width:5rem;flex-shrink:0}.ds-day-num{margin:0;font-size:.875rem;font-variant-numeric:tabular-nums}.ds-day-wd{margin:0;font-size:.75rem;opacity:.6}.ds-day-body{flex:1;min-width:0}.ds-day-top{display:flex;justify-content:space-between;gap:.75rem}.ds-day-proj{margin:0;font-size:.875rem;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ds-day-hrs{font-size:.875rem;font-variant-numeric:tabular-nums}.ds-day-desc{margin:.125rem 0 0;font-size:.75rem;opacity:.65}.ds-day-empty{opacity:.6}.ds-day-none{margin:0;font-size:.875rem;font-style:italic}"
+    },
+    {
+      "name": "Sample Preview",
+      "kind": "custom",
+      "refersTo": "body",
+      "description": "Fabricated content, labelled in words and rendered subordinate to real content.",
+      "html": "<div class=\"ds-preview\"><p class=\"ds-preview-label\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" width=\"14\" height=\"14\"><path d=\"m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z\"/></svg>Example — nothing matched yet, so these ticket numbers are invented.</p><p class=\"ds-preview-msg\">Today I began working on LUM-214 (Add CSV export to invoices).</p></div>",
+      "css": ".ds-preview{border:1px dashed color-mix(in oklch,currentColor,transparent 75%);background:color-mix(in oklch,currentColor,transparent 96%);border-radius:var(--radius,.75rem);padding:.75rem}.ds-preview-label{display:flex;align-items:center;gap:.375rem;margin:0;font-size:.75rem;font-weight:500;opacity:.65}.ds-preview-msg{margin:.375rem 0 0;font-size:.875rem;line-height:1.625;max-width:70ch;opacity:.65}"
     }
   ],
   "narrative": {
@@ -351,7 +402,7 @@
       },
       {
         "name": "The Borrowed Status Rule",
-        "body": "The three status hues — Settled emerald (posted, connected), Attention amber (queued, stale, an unbalanced day), and Fabricated violet (sample content that is not real) — are borrowed Tailwind steps, not system tokens. They appear only as a tinted pill with border-0 and always ship a light/dark pair. Never promote one into the brand palette, and never use one as a surface or text color outside a status pill.",
+        "body": "The four status hues — **Settled** emerald (posted, connected), **Attention** amber (queued, stale, an unbalanced day), **Fabricated** violet (sample content that is not real), and **After-Hours** indigo (work billed outside the standard day) — are borrowed Tailwind steps, not system tokens. They appear as a tinted pill with `border-0` and always ship a light/dark pair (`bg-emerald-100 text-emerald-800` / `dark:bg-emerald-950 dark:text-emerald-300`). Never promote one into the brand palette, and never use one as body text. After-Hours is the single exception to \"pill only\", and the exception is deliberate: overtime is not a state a row is *in*, it is a **group of entries that will be billed separately**, so it also carries a tinted block (`border-indigo-200 bg-indigo-50/60` / `dark:border-indigo-900 dark:bg-indigo-950/40`) enclosing the tickets it covers. A hue earns a surface only when it encloses content; a hue describing one row stays a pill.",
         "section": "colors"
       },
       {
@@ -381,7 +432,7 @@
       },
       {
         "name": "The One Column Rule",
-        "body": "Screens are a single stack of full-width cards. Do not introduce side-by-side card grids; the ledger reads top to bottom.",
+        "body": "The primary content column is a single stack of full-width cards and the ledger reads top to bottom. Do not break the work itself into side-by-side cards. A second column is allowed only for material you consult rather than act on — state and history — and only from `xl`, where the 15rem rail has already been subtracted and the main column can still hold its measure.",
         "section": "layout"
       },
       {
@@ -403,38 +454,50 @@
         "name": "The One Radius Rule",
         "body": "0.75rem, everywhere, no exceptions beyond rounded-full, rounded-none, var(--radius-chrome), and the small-control clamp. Never hardcode a radius; never name a tier expecting a different result.",
         "section": "shapes"
+      },
+      {
+        "name": "The Quiet Fiction Rule",
+        "body": "Invented content is always subordinate to real content and always labelled in words, never by styling alone. If a sample can be mistaken for a record at a glance, the sample is wrong — not the reader.",
+        "section": "components"
       }
     ],
     "dos": [
-      "Do use the single radius (0.75rem) by any tier name — they are identical — and reach for rounded-full only for genuine pills, dots, and avatars.",
-      "Do delineate cards with ring-1 ring-foreground/10 and keep them flat.",
-      "Do spend Ledger Blue on exactly one element per surface, per The One Signal Rule.",
-      "Do put tabular-nums on every hour figure and font-mono on every ticket or board key.",
-      "Do render posted or postable message text at prose size (0.9375rem / 1.625), per The Verbatim Rule.",
-      "Do spell out every status in words inside its pill, and ship a light/dark pair for any borrowed status hue.",
-      "Do drive validity styling from aria-invalid, and focus styling from :focus-visible with the 3px accent ring.",
-      "Do override to a 44px target where a control is a real mobile tap target, using h-11 md:h-8, and leave a comment saying why.",
-      "Do build new composites as compound components (Thing.Root, Thing.Heading) assembled at the route, never as a props-configured wrapper.",
-      "Do open every screen with PageHeader, and keep records 1.5rem apart against 0.75rem within, per The Grouping Gap Rule.",
-      "Do shape loading skeletons like the card they replace."
+      "**Do** use the single radius (0.75rem) by any tier name — they are identical — and reach for `rounded-full` only for genuine pills, dots, and avatars.",
+      "**Do** delineate cards with `ring-1 ring-foreground/10` and keep them flat.",
+      "**Do** spend Ledger Blue on exactly one element per surface, per The One Signal Rule.",
+      "**Do** put `tabular-nums` on every hour figure and `font-mono` on every ticket or board key.",
+      "**Do** render posted or postable message text at prose size (0.9375rem / 1.625), per The Verbatim Rule.",
+      "**Do** spell out every status in words inside its pill, and ship a light/dark pair for any borrowed status hue.",
+      "**Do** drive validity styling from `aria-invalid`, and focus styling from `:focus-visible` with the 3px accent ring.",
+      "**Do** override to a 44px target where a control is a real mobile tap target, using `h-11 md:h-8`, and leave a comment saying why.",
+      "**Do** build new composites as compound components (`Thing.Root`, `Thing.Heading`) assembled at the route, never as a props-configured wrapper.",
+      "**Do** open every screen with `PageHeader`, and keep records 1.5rem apart against 0.75rem within, per The Grouping Gap Rule.",
+      "**Do** shape loading skeletons like the card they replace.",
+      "**Do** let the page own its measure through `PageLayout`, choosing `wide` only when the content is genuinely tabular.",
+      "**Do** keep overtime hours visibly separate from the day's total — a second badge, never a larger first number.",
+      "**Do** label fabricated content in words and render it subordinate to real content, per The Quiet Fiction Rule.",
+      "**Do** show a weekday with nothing logged as an explicit empty row on the Timesheet; the gap is the information."
     ],
     "donts": [
-      "Don't put a shadow on a resting surface. Shadow belongs only to dismissible overlays.",
-      "Don't use border where a ring belongs — a card border shifts layout.",
-      "Don't hardcode a radius or write an arbitrary rounded-[…] unless it is built from var(--radius) or var(--radius-chrome). Lint will fail the build.",
-      "Don't name rounded-2xl, rounded-3xl, or rounded-4xl even though they resolve correctly — the rule bans the names to keep intent honest.",
-      "Don't make a destructive control a solid red fill; it is a 10% tint with Alarm text.",
-      "Don't promote emerald, amber, or violet beyond a status pill, or use one as a surface, body text, or second brand color.",
-      "Don't convey state by color alone.",
-      "Don't \"fix\" the text-base md:text-sm input sizing — the larger mobile size prevents iOS zoom on focus.",
-      "Don't inflate the button scale past 36px to solve a touch target; override the single instance instead.",
-      "Don't introduce side-by-side card grids or a second content column.",
-      "Don't add a gradient, illustration, decorative shadow, or ornamental flourish. Nothing in this system is decorative.",
-      "Don't revive --chart-1 through --chart-5, the eight --sidebar-* tokens, or --font-serif. All fourteen are unreferenced leftovers from a theme generator; treat them as debt to delete, not as system tokens. If the app ever needs charts or a serif, that is a new decision made deliberately.",
-      "Don't hand-roll a page heading, and don't put an eyebrow or kicker above one — that information belongs in the description.",
-      "Don't add anything to the phone header without a desktop rail counterpart; the header is md:hidden and whatever sits there alone disappears.",
-      "Don't express a hover state as a lower opacity on a filled control — it lightens the fill and costs label contrast. Mix toward --foreground instead.",
-      "Don't give a light-mode accent fill a dark label, or a dark-mode accent fill a white one. The label inverts between modes by measurement."
+      "**Don't** put a shadow on a resting surface. Shadow belongs only to dismissible overlays.",
+      "**Don't** use `border` where a `ring` belongs — a card border shifts layout.",
+      "**Don't** hardcode a radius or write an arbitrary `rounded-[…]` unless it is built from `var(--radius)` or `var(--radius-chrome)`. Lint will fail the build.",
+      "**Don't** name `rounded-2xl`, `rounded-3xl`, or `rounded-4xl` even though they resolve correctly — the rule bans the names to keep intent honest.",
+      "**Don't** make a destructive control a solid red fill; it is a 10% tint with Alarm text.",
+      "**Don't** express a hover state as a lower opacity on a filled control — it lightens the fill and costs label contrast. Mix toward `--foreground` instead.",
+      "**Don't** give a light-mode accent fill a dark label, or a dark-mode accent fill a white one. The label inverts between modes by measurement.",
+      "**Don't** promote emerald, amber, violet, or indigo into the brand palette, or use one as body text. Only After-Hours indigo carries a surface, and only because it encloses entries rather than describing one.",
+      "**Don't** add overtime into the day's total, and don't let a marked ticket stay in the normal entry's sentence — it is billed on its own Warp entry and would otherwise be described twice.",
+      "**Don't** offer a remove control on an overtime ticket that has already posted; its entry exists and hiding the row would only lie about that.",
+      "**Don't** convey state by color alone.",
+      "**Don't** \"fix\" the `text-base md:text-sm` input sizing — the larger mobile size prevents iOS zoom on focus.",
+      "**Don't** inflate the button scale past 36px to solve a touch target; override the single instance instead.",
+      "**Don't** introduce side-by-side card grids, or put primary work in a second column. An aside carrying state or history is the only exception.",
+      "**Don't** cap a page's width in `AppShell.Content`; reach for `PageLayout` so the measure stays the page's own decision.",
+      "**Don't** hand-roll a page heading, and don't put an eyebrow or kicker above one — that information belongs in the description.",
+      "**Don't** add anything to the phone header without a desktop rail counterpart; the header is `md:hidden` and whatever sits there alone disappears.",
+      "**Don't** add a gradient, illustration, decorative shadow, or ornamental flourish. Nothing in this system is decorative.",
+      "**Don't** revive `--chart-1` through `--chart-5`, the eight `--sidebar-*` tokens, or `--font-serif`. All fourteen are unreferenced leftovers from a theme generator; treat them as debt to delete, not as system tokens. If the app ever needs charts or a serif, that is a new decision made deliberately."
     ]
   }
 }

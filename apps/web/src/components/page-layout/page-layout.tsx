@@ -10,10 +10,7 @@ import type {
  * made every screen the same width whether it held a paragraph or a table. */
 const PageLayoutRoot = (props: PageLayoutRootProps) => (
   <div
-    className={cn(
-      'mx-auto w-full',
-      props.width === 'wide' ? 'max-w-5xl' : 'max-w-3xl',
-    )}
+    className={cn('w-full', props.width === 'wide' ? 'max-w-5xl' : 'max-w-3xl')}
   >
     {props.children}
   </div>
@@ -29,7 +26,7 @@ const PageLayoutRoot = (props: PageLayoutRootProps) => (
  * first, so at 1024px a second column would leave the entries around 25rem —
  * narrower than the single column it replaced. */
 const PageLayoutSplit = (props: PageLayoutSplitProps) => (
-  <div className="mx-auto grid w-full max-w-3xl grid-cols-1 items-start gap-x-10 gap-y-8 xl:max-w-6xl xl:grid-cols-[minmax(0,1fr)_19rem]">
+  <div className="grid w-full max-w-3xl grid-cols-1 items-start gap-x-10 gap-y-8 xl:max-w-none xl:grid-cols-[minmax(0,1fr)_19rem]">
     {props.children}
   </div>
 )

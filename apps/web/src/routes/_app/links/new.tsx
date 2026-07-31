@@ -15,6 +15,7 @@ import { Wizard } from '#/components/wizard/wizard'
 import { Alert, AlertDescription, AlertTitle } from '#/components/ui/alert'
 import { Button } from '#/components/ui/button'
 import { keys } from '#/lib/api'
+import { invalidate } from '#/lib/invalidate'
 import {
   addStubAtom,
   boardProjectsAtom,
@@ -149,6 +150,7 @@ function NewLinkScreen() {
     }
 
     setSaving(false)
+    invalidate(keys.links)
     toast.success('Link ready')
     void navigate({ to: '/today' })
   }

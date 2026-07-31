@@ -15,6 +15,7 @@ import { demoEntry, sampleEntryFor } from '#/components/today-entry/today-entry.
 import { Button } from '#/components/ui/button'
 import { Dialog, DialogContent, DialogTitle } from '#/components/ui/dialog'
 import { keys } from '#/lib/api'
+import { invalidate } from '#/lib/invalidate'
 import { describe } from '#/lib/errors'
 import {
   clearOvertimeAtom,
@@ -70,6 +71,7 @@ function TodayScreen() {
     setMarking(undefined)
 
     if (exit._tag === 'Success') {
+      invalidate(keys.today)
       toast.success(`${marking.key} will post as overtime`)
       return
     }
@@ -106,6 +108,7 @@ function TodayScreen() {
     setEditing(undefined)
 
     if (exit._tag === 'Success') {
+      invalidate(keys.today)
       toast.success('Filed on your timesheet')
       return
     }
@@ -122,6 +125,7 @@ function TodayScreen() {
     setBusy(undefined)
 
     if (exit._tag === 'Success') {
+      invalidate(keys.today)
       toast.success('Skipped for today')
       return
     }

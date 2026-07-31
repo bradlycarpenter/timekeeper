@@ -12,6 +12,7 @@ import { ScreenState } from '#/components/screen-state/screen-state'
 import { Button } from '#/components/ui/button'
 import { Spinner } from '#/components/ui/spinner'
 import { keys } from '#/lib/api'
+import { invalidate } from '#/lib/invalidate'
 import { TermsFields } from '#/components/terms-fields/terms-fields'
 import {
   connectionsAtom,
@@ -52,6 +53,8 @@ function SettingsScreen() {
       payload: { standardHours: hours },
       reactivityKeys: [...keys.settings, ...keys.today],
     })
+
+    invalidate(keys.settings)
 
     if (exit._tag !== 'Success') {
       setStandardHours(undefined)
@@ -114,6 +117,7 @@ function SettingsScreen() {
                           )
                           return
                         }
+                        invalidate(keys.connections)
                         toast.success('Warp disconnected')
                       })
                     }}
@@ -150,7 +154,7 @@ function SettingsScreen() {
                       void authClient
                         .unlinkAccount({ providerId: 'atlassian' })
                         .then(() => {
-                          refresh()
+                          invalidate(keys.connections)
                           toast.success('Jira disconnected')
                         })
                     }}

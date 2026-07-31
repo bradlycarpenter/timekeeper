@@ -10,6 +10,7 @@ import { Field, FieldError, FieldGroup, FieldLabel } from '#/components/ui/field
 import { Input } from '#/components/ui/input'
 import { Spinner } from '#/components/ui/spinner'
 import { keys } from '#/lib/api'
+import { invalidate } from '#/lib/invalidate'
 import { connectSheetAtom, connectionsAtom } from '#/lib/atoms'
 import { describe } from '#/lib/errors'
 import { registry } from '#/lib/registry'
@@ -49,12 +50,13 @@ function ConnectWarpScreen() {
       return
     }
 
+    invalidate(keys.connections)
     toast.success('Warp connected')
     void navigate({ to: '/settings' })
   }
 
   return (
-    <div className="mx-auto w-full max-w-sm">
+    <div className="w-full max-w-sm">
       <PageHeader.Root>
         <PageHeader.Title
           heading="Connect Warp"

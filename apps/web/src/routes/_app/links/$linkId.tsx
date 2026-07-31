@@ -24,6 +24,7 @@ import {
 } from '#/components/ui/dialog'
 import { Spinner } from '#/components/ui/spinner'
 import { keys } from '#/lib/api'
+import { invalidate } from '#/lib/invalidate'
 import {
   addStubAtom,
   boardStatusesAtom,
@@ -73,6 +74,8 @@ function LinkScreen() {
       payload: patch,
       reactivityKeys: [...keys.links, ...keys.today],
     })
+    invalidate(keys.links)
+
     if (exit._tag === 'Failure') {
       toast.error(describe(exit.cause, 'That change could not be saved.'))
     }
@@ -189,7 +192,8 @@ function LinkScreen() {
                         }
                         setStatus(undefined)
                         setRuleOpen(false)
-                        toast.success('Rule added')
+                        invalidate(keys.links)
+        toast.success('Rule added')
                       })
                     }}
                   >
@@ -221,6 +225,8 @@ function LinkScreen() {
                       reactivityKeys: [...keys.links, ...keys.today],
                     }).then((exit) => {
                       setRemovingStub(undefined)
+                      invalidate(keys.links)
+
                       if (exit._tag === 'Failure') {
                         toast.error(
                           describe(exit.cause, 'That rule could not be removed.'),
@@ -255,7 +261,8 @@ function LinkScreen() {
                   )
                   return
                 }
-                toast.success('Link removed')
+                invalidate(keys.links)
+      toast.success('Link removed')
                 void navigate({ to: '/links' })
               })
             }}

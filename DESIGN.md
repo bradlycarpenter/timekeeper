@@ -29,6 +29,7 @@ colors:
   settled: "#059669"
   attention: "#b45309"
   fabricated: "#6d28d9"
+  after-hours: "#4338ca"
 typography:
   display:
     fontFamily: "Inter, sans-serif"
@@ -225,6 +226,14 @@ Tailwind through `@theme inline`.
 - **Alarm** (`oklch(0.6368 0.2078 25.3313)`): Failure. Never used as a solid
   fill on a control — it appears as text on a 10% tint of itself, so a
   destructive action reads as serious without shouting.
+- **After-Hours Indigo** (`#4338ca`, shipped as `indigo-100/900` light and
+  `indigo-950/300` dark): Hours worked outside the standard day. It is the one
+  hue that is neither brand nor neutral nor a settled/unsettled state — it marks
+  a second class of billing, and it appears in exactly three places: the `+Nh
+  OT` badge in the day tally, the overtime block on an entry card, and the `OT`
+  marker in the Timesheet list. Chosen to sit beside Ledger Blue without
+  competing with it: close enough in hue to belong to the same family, far
+  enough that a glance never mistakes overtime for the primary action.
 
 ### Named Rules
 
@@ -232,13 +241,21 @@ Tailwind through `@theme inline`.
 primary action, or the active nav row, never both competing. If a second element
 wants the accent, one of them is not actually primary.
 
-**The Borrowed Status Rule.** The three status hues — **Settled** emerald
-(posted, connected), **Attention** amber (queued, stale, an unbalanced day), and
-**Fabricated** violet (sample content that is not real) — are borrowed Tailwind
-steps, not system tokens. They appear only as a tinted pill with `border-0` and
-always ship a light/dark pair (`bg-emerald-100 text-emerald-800` /
+**The Borrowed Status Rule.** The four status hues — **Settled** emerald
+(posted, connected), **Attention** amber (queued, stale, an unbalanced day),
+**Fabricated** violet (sample content that is not real), and **After-Hours**
+indigo (work billed outside the standard day) — are borrowed Tailwind steps, not
+system tokens. They appear as a tinted pill with `border-0` and always ship a
+light/dark pair (`bg-emerald-100 text-emerald-800` /
 `dark:bg-emerald-950 dark:text-emerald-300`). Never promote one into the brand
-palette, and never use one as a surface or text color outside a status pill.
+palette, and never use one as body text.
+
+After-Hours is the single exception to "pill only", and the exception is
+deliberate: overtime is not a state a row is *in*, it is a **group of entries
+that will be billed separately**, so it also carries a tinted block
+(`border-indigo-200 bg-indigo-50/60` / `dark:border-indigo-900
+dark:bg-indigo-950/40`) enclosing the tickets it covers. A hue earns a surface
+only when it encloses content; a hue describing one row stays a pill.
 
 **The Measured Contrast Rule.** Accent and error colors are set by contrast
 measurement, not by eye. Normal text and control labels clear 4.5:1 against
@@ -564,6 +581,33 @@ Its defining property is traceability: the message is shown verbatim, and the
 breakdown lets a surprising sentence be traced back to the rule and ticket that
 produced it. Anything added here must preserve that chain.
 
+### Signature Component: The Overtime Block
+
+Where a ticket leaves the normal day. Every ticket chip in a pending entry's
+breakdown is a button carrying a small moon; pressing it asks for hours and
+moves that ticket out of the day's sentence into an After-Hours block beneath
+it. The block is tinted indigo, lists each ticket with its hours in tabular
+figures, and marks posted ones with a Settled pill instead of a remove control —
+once an entry exists on the timesheet it cannot be unmade from here.
+
+The visual job is to make two billings legible as two things. Overtime hours are
+never added into the day's total; the tally shows `8h of 8h` and a separate
+`+2h OT`, because folding them together would make a correctly filled day read
+as overfull.
+
+### Signature Component: The Sample Preview
+
+Fabricated content is built from the link's own board key, so `LUM-214` looks
+exactly as real as a matched ticket and presentation is the *only* thing
+separating them. The preview is therefore muted, inset, dashed, and states in
+words that the tickets are invented. It never reuses the real message or
+breakdown styling, and it states the fiction once rather than repeating it as
+chips.
+
+**The Quiet Fiction Rule.** Invented content is always subordinate to real
+content and always labelled in words, never by styling alone. If a sample can be
+mistaken for a record at a glance, the sample is wrong — not the reader.
+
 ### Signature Component: The State Trio
 
 Loading, failed, and empty are first-class and visually distinct. **Loading**
@@ -593,6 +637,28 @@ trailing gap. Completed steps show a check, the current step its number, both in
 accent; future steps sit in Quiet. Step titles are deliberately absent — on a
 phone there is no room, and the count is what the user wants.
 
+### Signature Component: The Timesheet Day Row
+
+The Timesheet reads Warp directly rather than Timekeeper's own posting log, so
+it is the one screen where a *missing* row is the information. Each weekday gets
+a row whether or not anything was logged; a day with nothing shows a muted
+italic "Nothing logged." Weekends are omitted unless they carry an entry, and
+future days are not shown at all — a day that has not happened is not a gap.
+
+The date sits in a fixed 5rem gutter in tabular figures so the dates form a
+straight edge to scan down, with the day name beneath at label size. Entries
+occupy the flexible column: client and project on one line, hours right-aligned
+in tabular figures, an OT pill where relevant, and the description clamped to
+two lines. A window that could not be fully read says so in an Alarm-tinted
+note rather than presenting a short list as if it were complete.
+
+### Page Layout
+
+Not a visual component but the structural one. `PageLayout.Root` carries the
+page's measure — `reading` (48rem) by default, `wide` (64rem) for the tabular
+Timesheet — and `PageLayout.Split` adds the `xl` aside described in Layout.
+Reach for it in every route; the shell deliberately no longer caps width.
+
 ## Do's and Don'ts
 
 ### Do:
@@ -617,6 +683,14 @@ phone there is no room, and the count is what the user wants.
 - **Do** open every screen with `PageHeader`, and keep records 1.5rem apart
   against 0.75rem within, per The Grouping Gap Rule.
 - **Do** shape loading skeletons like the card they replace.
+- **Do** let the page own its measure through `PageLayout`, choosing `wide` only
+  when the content is genuinely tabular.
+- **Do** keep overtime hours visibly separate from the day's total — a second
+  badge, never a larger first number.
+- **Do** label fabricated content in words and render it subordinate to real
+  content, per The Quiet Fiction Rule.
+- **Do** show a weekday with nothing logged as an explicit empty row on the
+  Timesheet; the gap is the information.
 
 ### Don't:
 
@@ -633,8 +707,14 @@ phone there is no room, and the count is what the user wants.
   lightens the fill and costs label contrast. Mix toward `--foreground` instead.
 - **Don't** give a light-mode accent fill a dark label, or a dark-mode accent
   fill a white one. The label inverts between modes by measurement.
-- **Don't** promote emerald, amber, or violet beyond a status pill, or use one as
-  a surface, body text, or second brand color.
+- **Don't** promote emerald, amber, violet, or indigo into the brand palette, or
+  use one as body text. Only After-Hours indigo carries a surface, and only
+  because it encloses entries rather than describing one.
+- **Don't** add overtime into the day's total, and don't let a marked ticket
+  stay in the normal entry's sentence — it is billed on its own Warp entry and
+  would otherwise be described twice.
+- **Don't** offer a remove control on an overtime ticket that has already
+  posted; its entry exists and hiding the row would only lie about that.
 - **Don't** convey state by color alone.
 - **Don't** "fix" the `text-base md:text-sm` input sizing — the larger mobile
   size prevents iOS zoom on focus.
