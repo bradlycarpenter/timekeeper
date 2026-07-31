@@ -121,6 +121,27 @@ const runJob = (job: DailyPostJob) =>
     )
   })
 
+/** Every API response is private to one signed-in person and changes the moment
+ * they act. Sent without cache directives, a bare GET is heuristically
+ * cacheable, which is why connecting Jira or adding a link could still show the
+ * old answer until a hard refresh: the request never reached the worker. */
+const uncached = async (response: Promise<Response>) => {
+  const result = await response
+  /* 101/204/304 bodies must not be touched, and cloning the headers of a
+   * redirect would drop its status. Only real payloads are rewritten. */
+  if (result.status === 204 || result.status === 304) return result
+
+  const headers = new Headers(result.headers)
+  headers.set('cache-control', 'no-store, must-revalidate')
+  headers.set('vary', 'cookie')
+
+  return new Response(result.body, {
+    status: result.status,
+    statusText: result.statusText,
+    headers,
+  })
+}
+
 export default {
   fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url)
@@ -128,10 +149,12 @@ export default {
     /* better-auth owns its own routes and speaks plain fetch, so it is mounted
      * ahead of the Effect API rather than wrapped by it. */
     if (url.pathname.startsWith('/api/auth/')) {
-      return Effect.runPromise(
-        Effect.provide(
-          Effect.flatMap(Auth, (auth) => auth.handler(request)),
-          servicesLayer(env),
+      return uncached(
+        Effect.runPromise(
+          Effect.provide(
+            Effect.flatMap(Auth, (auth) => auth.handler(request)),
+            servicesLayer(env),
+          ),
         ),
       )
     }
@@ -140,7 +163,7 @@ export default {
       return Promise.resolve(Response.json({ status: 'healthy' }))
     }
 
-    return webHandler(env)(request)
+    return uncached(webHandler(env)(request))
   },
 
   scheduled(
