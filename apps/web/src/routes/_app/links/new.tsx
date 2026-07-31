@@ -146,7 +146,7 @@ function NewLinkScreen() {
             {missing.board.status !== 'connected' ? ' and Jira' : ''} before it
             can create a link.
           </p>
-          <Button asChild size="sm">
+          <Button asChild className="h-11 md:h-8">
             <a href="/settings">Go to Settings</a>
           </Button>
         </AlertDescription>

@@ -188,7 +188,7 @@ function TodayScreen() {
                             message={entry.error}
                             action={
                               !entry.hasRules ? (
-                                <Button asChild variant="outline" size="sm">
+                                <Button asChild variant="outline" className="h-11 md:h-8">
                                   <Link
                                     to="/links/$linkId"
                                     params={{ linkId: entry.boardSheetId }}
