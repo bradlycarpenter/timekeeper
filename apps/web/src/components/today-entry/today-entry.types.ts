@@ -34,6 +34,24 @@ export type TodayEntryEditorProps = {
 
 export type TodayEntryBreakdownProps = {
   parts: Today.Today['entries'][number]['parts']
+  /** Omitted for samples and settled days, where marking would be meaningless. */
+  onMarkOvertime?: (issue: { key: string; summary: string }) => void
+}
+
+export type TodayEntryOvertimeProps = {
+  entries: ReadonlyArray<Today.OvertimeEntry>
+  /** Omitted once the day is settled, when nothing can be unmarked. */
+  onClear?: (issueKey: string) => void
+  busyKey?: string
+}
+
+export type TodayEntryOvertimeFormProps = {
+  issue: { key: string; summary: string }
+  hours: number
+  onHoursChange: (hours: number) => void
+  onConfirm: () => void
+  onCancel: () => void
+  saving?: boolean
 }
 
 export type TodayEntryProblemProps = {

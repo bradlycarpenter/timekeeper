@@ -8,7 +8,12 @@ const PROJECTS_CACHE_KEY = 'warp-projects'
 const PROJECTS_CACHE_TTL = 60 * 60 * 24 * 7
 const PER_PAGE = 500
 
+/** Warp lists every person's entries, roughly 150 a day across the company, so
+ * a page of this size covers about a week. */
+export const ENTRY_PAGE_SIZE = 1000
+
 const AuthorisedToken = Schema.Struct({ token: Schema.String })
+const WarpEntries = Schema.Array(WarpDomain.WarpEntry)
 const SheetProjects = Schema.Array(WarpDomain.SheetProject)
 const WarpProjects = Schema.Array(WarpDomain.WarpProject)
 
@@ -19,6 +24,7 @@ export type EntryDraft = {
   readonly hours: number
   readonly entryDate: string
   readonly comments: string
+  readonly overtime: boolean
 }
 
 export class Warp extends Context.Service<
@@ -42,6 +48,15 @@ export class Warp extends Context.Service<
       token: string,
       draft: EntryDraft,
     ) => Effect.Effect<number, Errors.UpstreamFailed>
+    /** One page of the company-wide entry list from `from` onwards. Callers
+     * filter to their own person and page until they pass the date they want. */
+    readonly entries: (
+      token: string,
+      options: { readonly from: string; readonly page: number },
+    ) => Effect.Effect<
+      ReadonlyArray<WarpDomain.WarpEntry>,
+      Errors.UpstreamFailed
+    >
   }
 >()('tk/Warp') {}
 
@@ -181,7 +196,7 @@ export const WarpLive = Layer.effect(
                   PersonId: String(draft.personId),
                   CostCodeId: String(draft.costCodeId),
                   DepartmentId: '1',
-                  Overtime: '0',
+                  Overtime: draft.overtime ? '1' : '0',
                   Time: String(draft.hours),
                   /* Warp stamps entries at end of day in its own local time. */
                   EntryDate: `${draft.entryDate}T17:00:00`,
@@ -215,6 +230,28 @@ export const WarpLive = Layer.effect(
           )(response)
 
           return created.EntryId
+        }),
+
+      /* `to` is deliberately not sent: passing it alongside `from` collapses
+       * Warp's result to the `from` day alone. Its person filters are ignored
+       * too, so the caller pages forward and filters itself. */
+      entries: (token, options) =>
+        Effect.gen(function* () {
+          const response = yield* send(
+            authed(
+              token,
+              HttpClientRequest.get(
+                `${base}/api/entry/?from=${options.from}&page=${options.page}&per_page=${ENTRY_PAGE_SIZE}`,
+              ),
+            ),
+            'warp',
+            'entry list',
+          )
+          return yield* decodeJson(
+            WarpEntries,
+            'warp',
+            'your timesheet entries',
+          )(response)
         }),
     }
   }),

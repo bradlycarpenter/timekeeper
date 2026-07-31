@@ -27,6 +27,34 @@ export const MessagePart = Schema.Struct({
 })
 export type MessagePart = typeof MessagePart.Type
 
+/** Hours a single ticket was billed outside the normal day. Warp's overtime is
+ * a per-entry flag, so each of these posts as its own entry alongside — never
+ * inside — the link's normal one. */
+export const OvertimeEntry = Schema.Struct({
+  issueKey: Schema.String,
+  issueSummary: Schema.String,
+  hours: Schema.Number,
+  status: PostStatus,
+  entryId: Schema.optional(Schema.Number),
+  error: Schema.optional(Schema.String),
+})
+export type OvertimeEntry = typeof OvertimeEntry.Type
+
+/** Hours must land on Warp's quarter-hour grid, and no single ticket is a day's
+ * worth of overtime on its own. */
+export const OvertimeHours = Schema.Number.check(
+  Schema.isGreaterThan(0),
+  Schema.isLessThanOrEqualTo(12),
+  Schema.isMultipleOf(0.25),
+)
+
+export const OvertimeDraft = Schema.Struct({
+  issueKey: Schema.String,
+  issueSummary: Schema.String,
+  hours: OvertimeHours,
+})
+export type OvertimeDraft = typeof OvertimeDraft.Type
+
 export const TodayEntry = Schema.Struct({
   boardSheetId: BoardSheetId,
   sheetName: Schema.String,
@@ -43,6 +71,9 @@ export const TodayEntry = Schema.Struct({
   /** The sentence opener each configured rule would use, so the UI can preview
    * what this link's own rules would produce even when none matched today. */
   ruleMessageIds: Schema.Array(StubMessageId),
+  /** Tickets pulled out of this entry and billed as overtime. Their hours are
+   * additional to `hours`, and their keys are excluded from `message`. */
+  overtime: Schema.Array(OvertimeEntry),
   entryId: Schema.optional(Schema.Number),
   error: Schema.optional(Schema.String),
 })
@@ -52,7 +83,10 @@ export const Today = Schema.Struct({
   date: EntryDate,
   postsAt: Schema.String,
   entries: Schema.Array(TodayEntry),
+  /** Normal hours only, so it can be read against `standardHours` directly. */
   totalHours: Schema.Number,
+  overtimeHours: Schema.Number,
+  standardHours: Schema.Number,
 })
 export type Today = typeof Today.Type
 

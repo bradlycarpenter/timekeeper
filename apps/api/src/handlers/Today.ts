@@ -49,5 +49,29 @@ export const TodayLive = HttpApiBuilder.group(Api.api, 'today', (handlers) =>
 
         return yield* timesheet.skip(user.id, link, date)
       }),
+    )
+    .handle('markOvertime', ({ params, payload }) =>
+      Effect.gen(function* () {
+        const user = yield* Api.CurrentUser
+        const timesheet = yield* Timesheet
+        const repo = yield* Repo
+        const link = yield* requireLink(user.id, params.id)
+        const date = yield* timesheet.entryDate
+
+        yield* repo.markOvertime(user.id, link.id, date, payload)
+        return yield* timesheet.entryFor(user.id, link, date)
+      }),
+    )
+    .handle('clearOvertime', ({ params }) =>
+      Effect.gen(function* () {
+        const user = yield* Api.CurrentUser
+        const timesheet = yield* Timesheet
+        const repo = yield* Repo
+        const link = yield* requireLink(user.id, params.id)
+        const date = yield* timesheet.entryDate
+
+        yield* repo.clearOvertime(link.id, date, params.issueKey)
+        return yield* timesheet.entryFor(user.id, link, date)
+      }),
     ),
 )

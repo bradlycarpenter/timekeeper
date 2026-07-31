@@ -1,7 +1,9 @@
-import { AlertTriangle, Check, Sparkles } from 'lucide-react'
+import { AlertTriangle, Check, Moon, Sparkles, X } from 'lucide-react'
 import { Badge } from '#/components/ui/badge'
 import { Button } from '#/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader } from '#/components/ui/card'
+import { Input } from '#/components/ui/input'
+import { Label } from '#/components/ui/label'
 import { Spinner } from '#/components/ui/spinner'
 import { Textarea } from '#/components/ui/textarea'
 import { cn } from '#/lib/utils'
@@ -13,6 +15,8 @@ import type {
   TodayEntryHeadingProps,
   TodayEntryMessageProps,
   TodayEntryProblemProps,
+  TodayEntryOvertimeFormProps,
+  TodayEntryOvertimeProps,
   TodayEntryPreviewProps,
   TodayEntryRootProps,
   TodayEntryStatusProps,
@@ -143,12 +147,37 @@ const TodayEntryBreakdown = (props: TodayEntryBreakdownProps) =>
             <ul className="mt-1 flex flex-wrap gap-1">
               {part.issues.map((issue) => (
                 <li key={issue.id}>
-                  <Badge variant="outline" className="font-normal">
-                    <span className="font-mono">{issue.key}</span>
-                    <span className="text-muted-foreground truncate">
-                      {issue.summary}
-                    </span>
-                  </Badge>
+                  {props.onMarkOvertime ? (
+                    <Badge
+                      asChild
+                      variant="outline"
+                      className="hover:bg-muted font-normal has-focus-visible:border-ring has-focus-visible:ring-ring/50 has-focus-visible:ring-3"
+                    >
+                      <button
+                        type="button"
+                        onClick={() =>
+                          props.onMarkOvertime?.({
+                            key: issue.key,
+                            summary: issue.summary,
+                          })
+                        }
+                        title={`Bill ${issue.key} as overtime`}
+                      >
+                        <span className="font-mono">{issue.key}</span>
+                        <span className="text-muted-foreground truncate">
+                          {issue.summary}
+                        </span>
+                        <Moon className="text-muted-foreground size-3" />
+                      </button>
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="font-normal">
+                      <span className="font-mono">{issue.key}</span>
+                      <span className="text-muted-foreground truncate">
+                        {issue.summary}
+                      </span>
+                    </Badge>
+                  )}
                 </li>
               ))}
             </ul>
@@ -157,6 +186,105 @@ const TodayEntryBreakdown = (props: TodayEntryBreakdownProps) =>
       </ul>
     </CardContent>
   )
+
+/** Overtime is billed on its own Warp entry, so it is shown as its own block
+ * rather than folded into the day's sentence — the hours here are additional to
+ * the link's, not carved out of them. */
+const TodayEntryOvertime = (props: TodayEntryOvertimeProps) =>
+  props.entries.length === 0 ? null : (
+    <CardContent className="px-4">
+      <div className="rounded-lg border border-indigo-200 bg-indigo-50/60 p-3 dark:border-indigo-900 dark:bg-indigo-950/40">
+        <p className="flex items-center gap-1.5 text-xs font-medium text-indigo-900 dark:text-indigo-300">
+          <Moon className="size-3.5" />
+          Overtime — posted separately
+        </p>
+        <ul className="mt-2 space-y-1.5">
+          {props.entries.map((entry) => (
+            <li
+              key={entry.issueKey}
+              className="flex items-center justify-between gap-2 text-xs"
+            >
+              <span className="flex min-w-0 flex-1 items-center gap-1.5">
+                <span className="font-mono">{entry.issueKey}</span>
+                <span className="text-muted-foreground truncate">
+                  {entry.issueSummary}
+                </span>
+              </span>
+              <span className="flex shrink-0 items-center gap-1.5">
+                <span className="tabular-nums">{entry.hours}h</span>
+                {entry.status === 'posted' ? (
+                  <Badge className="rounded-full border-0 bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                    Posted
+                  </Badge>
+                ) : props.onClear ? (
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label={`Remove overtime on ${entry.issueKey}`}
+                    disabled={props.busyKey === entry.issueKey}
+                    onClick={() => props.onClear?.(entry.issueKey)}
+                  >
+                    {props.busyKey === entry.issueKey ? (
+                      <Spinner />
+                    ) : (
+                      <X className="size-3.5" />
+                    )}
+                  </Button>
+                ) : null}
+              </span>
+            </li>
+          ))}
+        </ul>
+        {props.entries.some((entry) => entry.error) ? (
+          <p className="text-destructive mt-2 text-xs">
+            {props.entries.find((entry) => entry.error)?.error}
+          </p>
+        ) : null}
+      </div>
+    </CardContent>
+  )
+
+/** Hours are asked for rather than assumed: only the person who worked them
+ * knows how long the ticket actually took outside the normal day. */
+const TodayEntryOvertimeForm = (props: TodayEntryOvertimeFormProps) => (
+  <div className="space-y-3">
+    <div>
+      <p className="text-sm font-medium">Bill as overtime</p>
+      <p className="text-muted-foreground mt-0.5 text-xs">
+        <span className="font-mono">{props.issue.key}</span> posts as its own
+        Warp entry, on top of the day.
+      </p>
+    </div>
+    <div className="space-y-1.5">
+      <Label htmlFor="overtime-hours" className="text-xs">
+        Hours
+      </Label>
+      <Input
+        id="overtime-hours"
+        type="number"
+        min={0.25}
+        max={12}
+        step={0.25}
+        value={props.hours}
+        onChange={(event) => props.onHoursChange(Number(event.target.value))}
+        className="h-9"
+      />
+    </div>
+    <div className="flex justify-end gap-2">
+      <Button variant="ghost" className="h-9" onClick={props.onCancel}>
+        Cancel
+      </Button>
+      <Button
+        className="h-9"
+        onClick={props.onConfirm}
+        disabled={props.saving || props.hours <= 0}
+      >
+        {props.saving ? <Spinner /> : <Moon className="size-4" />}
+        Mark overtime
+      </Button>
+    </div>
+  </div>
+)
 
 const TodayEntryProblem = (props: TodayEntryProblemProps) => (
   <CardContent className="space-y-2 px-4">
@@ -217,6 +345,8 @@ export const TodayEntry = {
   Message: TodayEntryMessage,
   Editor: TodayEntryEditor,
   Breakdown: TodayEntryBreakdown,
+  Overtime: TodayEntryOvertime,
+  OvertimeForm: TodayEntryOvertimeForm,
   Problem: TodayEntryProblem,
   Preview: TodayEntryPreview,
   Actions: TodayEntryActions,

@@ -25,6 +25,23 @@ export const composeMessage = (
     })
     .join(' ')
 
+/** Drops the named tickets and any sentence left empty by their removal. Used
+ * to hold overtime tickets out of the normal entry, since they are billed on
+ * their own Warp entries and would otherwise be described twice. */
+export const excludeIssues = (
+  parts: ReadonlyArray<MessagePart>,
+  issueKeys: ReadonlyArray<string>,
+): ReadonlyArray<MessagePart> => {
+  if (issueKeys.length === 0) return parts
+  const excluded = new Set(issueKeys)
+  return parts
+    .map((part) => ({
+      ...part,
+      issues: part.issues.filter((issue) => !excluded.has(issue.key)),
+    }))
+    .filter((part) => part.issues.length > 0)
+}
+
 /** Takes a `StubDraft`, not a `Stub`: a rule being previewed before save has no
  * id yet, and only `messageId` is ever read. A saved `Stub` satisfies this too. */
 export const partFor = (

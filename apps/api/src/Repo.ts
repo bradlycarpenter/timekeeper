@@ -47,6 +47,32 @@ const TokenRow = Schema.Struct({ auth_token: Schema.NullOr(Schema.String) })
 const AccountRow = Schema.Struct({ account_id: Schema.String })
 const UserIdRow = Schema.Struct({ user_id: Schema.String })
 
+const OvertimeRow = Schema.Struct({
+  id: Schema.String,
+  board_sheet_id: BoardSheetDomain.BoardSheetId,
+  entry_date: TodayDomain.EntryDate,
+  issue_key: Schema.String,
+  issue_summary: Schema.String,
+  hours: Schema.Number,
+  status: Schema.String,
+  entry_id: Schema.NullOr(Schema.Number),
+  error: Schema.NullOr(Schema.String),
+})
+
+const HoursRow = Schema.Struct({ standard_hours: Schema.Number })
+
+export type StoredOvertime = {
+  readonly id: string
+  readonly boardSheetId: BoardSheetDomain.BoardSheetId
+  readonly entryDate: TodayDomain.EntryDate
+  readonly issueKey: string
+  readonly issueSummary: string
+  readonly hours: number
+  readonly status: TodayDomain.PostStatus
+  readonly entryId?: number
+  readonly error?: string
+}
+
 export type StoredPost = {
   readonly boardSheetId: BoardSheetDomain.BoardSheetId
   readonly entryDate: TodayDomain.EntryDate
@@ -173,6 +199,41 @@ type RepoShape = {
     boardSheetId: BoardSheetDomain.BoardSheetId,
     entryDate: TodayDomain.EntryDate,
   ) => Effect.Effect<void>
+  readonly standardHours: (userId: string) => Effect.Effect<number>
+  readonly saveStandardHours: (
+    userId: string,
+    hours: number,
+  ) => Effect.Effect<void>
+  readonly overtimeOn: (
+    userId: string,
+    entryDate: TodayDomain.EntryDate,
+  ) => Effect.Effect<ReadonlyArray<StoredOvertime>>
+  readonly overtimeFor: (
+    boardSheetId: BoardSheetDomain.BoardSheetId,
+    entryDate: TodayDomain.EntryDate,
+  ) => Effect.Effect<ReadonlyArray<StoredOvertime>>
+  /** Marking is idempotent: re-marking the same ticket restates its hours
+   * rather than adding a second entry for it. A ticket already posted keeps its
+   * hours, since the entry is on the timesheet and cannot be edited from here. */
+  readonly markOvertime: (
+    userId: string,
+    boardSheetId: BoardSheetDomain.BoardSheetId,
+    entryDate: TodayDomain.EntryDate,
+    draft: TodayDomain.OvertimeDraft,
+  ) => Effect.Effect<void>
+  readonly clearOvertime: (
+    boardSheetId: BoardSheetDomain.BoardSheetId,
+    entryDate: TodayDomain.EntryDate,
+    issueKey: string,
+  ) => Effect.Effect<void>
+  readonly markOvertimePosted: (
+    id: string,
+    result: { readonly entryId: number; readonly message: string },
+  ) => Effect.Effect<void>
+  readonly markOvertimeFailed: (
+    id: string,
+    error: string,
+  ) => Effect.Effect<void>
 }
 
 export const RepoLive = Layer.effect(
@@ -233,6 +294,30 @@ export const RepoLive = Layer.effect(
           ),
         )
         return assemble(rows, stubRows)
+      })
+
+    const loadOvertime = (
+      where: Effect.Effect<ReadonlyArray<unknown>, SqlError>,
+    ) =>
+      Effect.gen(function* () {
+        const rows = yield* orDie(
+          Schema.decodeUnknownEffect(Schema.Array(OvertimeRow))(
+            yield* orDie(where),
+          ),
+        )
+        return rows.map(
+          (row): StoredOvertime => ({
+            id: row.id,
+            boardSheetId: row.board_sheet_id,
+            entryDate: row.entry_date,
+            issueKey: row.issue_key,
+            issueSummary: row.issue_summary,
+            hours: row.hours,
+            status: toPostStatus(row.status),
+            ...(row.entry_id !== null ? { entryId: row.entry_id } : {}),
+            ...(row.error !== null ? { error: row.error } : {}),
+          }),
+        )
       })
 
     const selectLinks = (userId: string) =>
@@ -536,6 +621,82 @@ export const RepoLive = Layer.effect(
           sql`DELETE FROM daily_board_sheet_post
               WHERE board_sheet_id = ${boardSheetId} AND entry_date = ${entryDate}
                 AND status IN ('queued', 'processing', 'failed')`,
+        ),
+
+      standardHours: (userId) =>
+        Effect.gen(function* () {
+          const rows = yield* orDie(
+            Schema.decodeUnknownEffect(Schema.Array(HoursRow))(
+              yield* orDie(
+                sql`SELECT standard_hours FROM user_settings WHERE user_id = ${userId}`,
+              ),
+            ),
+          )
+          return rows[0]?.standard_hours ?? BoardSheetDomain.DEFAULT_HOURS
+        }),
+
+      saveStandardHours: (userId, hours) =>
+        orDie(
+          sql`INSERT INTO user_settings (user_id, standard_hours)
+              VALUES (${userId}, ${hours})
+              ON CONFLICT (user_id) DO UPDATE SET standard_hours = ${hours}`,
+        ),
+
+      overtimeOn: (userId, entryDate) =>
+        Effect.map(
+          loadOvertime(
+            sql`SELECT id, board_sheet_id, entry_date, issue_key, issue_summary, hours, status, entry_id, error
+                FROM overtime_entry
+                WHERE user_id = ${userId} AND entry_date = ${entryDate}
+                ORDER BY issue_key`,
+          ),
+          (rows) => rows,
+        ),
+
+      overtimeFor: (boardSheetId, entryDate) =>
+        loadOvertime(
+          sql`SELECT id, board_sheet_id, entry_date, issue_key, issue_summary, hours, status, entry_id, error
+              FROM overtime_entry
+              WHERE board_sheet_id = ${boardSheetId} AND entry_date = ${entryDate}
+              ORDER BY issue_key`,
+        ),
+
+      markOvertime: (userId, boardSheetId, entryDate, draft) =>
+        orDie(
+          sql`INSERT INTO overtime_entry
+                (id, user_id, board_sheet_id, entry_date, issue_key, issue_summary, hours, status, updated_at)
+              VALUES (${crypto.randomUUID()}, ${userId}, ${boardSheetId}, ${entryDate},
+                      ${draft.issueKey}, ${draft.issueSummary}, ${draft.hours}, 'pending', ${Date.now()})
+              ON CONFLICT (board_sheet_id, entry_date, issue_key) DO UPDATE
+                SET hours = ${draft.hours},
+                    issue_summary = ${draft.issueSummary},
+                    error = NULL,
+                    updated_at = ${Date.now()}
+                WHERE overtime_entry.status != 'posted'`,
+        ),
+
+      /* A posted ticket is left alone: its entry is already on the timesheet,
+       * and deleting the row here would only hide it from the user. */
+      clearOvertime: (boardSheetId, entryDate, issueKey) =>
+        orDie(
+          sql`DELETE FROM overtime_entry
+              WHERE board_sheet_id = ${boardSheetId} AND entry_date = ${entryDate}
+                AND issue_key = ${issueKey} AND status != 'posted'`,
+        ),
+
+      markOvertimePosted: (id, result) =>
+        orDie(
+          sql`UPDATE overtime_entry
+              SET status = 'posted', entry_id = ${result.entryId}, message = ${result.message},
+                  error = NULL, updated_at = ${Date.now()}
+              WHERE id = ${id}`,
+        ),
+
+      markOvertimeFailed: (id, error) =>
+        orDie(
+          sql`UPDATE overtime_entry
+              SET status = 'failed', error = ${error}, updated_at = ${Date.now()}
+              WHERE id = ${id}`,
         ),
     }
   }),

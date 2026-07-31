@@ -138,6 +138,65 @@ export const boardSheet = sqliteTable(
   ],
 )
 
+export const userSettings = sqliteTable('user_settings', {
+  userId: text('user_id')
+    .primaryKey()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  /** The day the user is expected to fill. Drives the Today total and the point
+   * past which extra hours read as overtime rather than a miscount. */
+  standardHours: real('standard_hours').notNull().default(8),
+})
+
+/** A ticket the user pulled out of the normal day and billed as overtime. Warp
+ * models overtime as a per-entry flag, so each of these becomes its own Warp
+ * entry rather than inflating the link's normal one.
+ *
+ * This is both the intent and the record: marking a ticket writes a `pending`
+ * row in the morning, and the scheduled run turns that same row into `posted`.
+ * Keeping them in one place is what lets a mark survive until 17:00. */
+export const overtimeEntry = sqliteTable(
+  'overtime_entry',
+  {
+    id: text('id')
+      .primaryKey()
+      .$defaultFn(() => uuidv7()),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    boardSheetId: text('board_sheet_id')
+      .notNull()
+      .references(() => boardSheet.id, { onDelete: 'cascade' }),
+    entryDate: text('entry_date').notNull(),
+    issueKey: text('issue_key').notNull(),
+    /** Denormalised so a posted overtime entry still reads correctly after the
+     * ticket is renamed or stops matching the link's rules. */
+    issueSummary: text('issue_summary').notNull().default(''),
+    hours: real('hours').notNull(),
+    status: text('status', {
+      enum: ['pending', 'queued', 'posted', 'failed'],
+    })
+      .notNull()
+      .default('pending'),
+    entryId: integer('entry_id'),
+    message: text('message'),
+    error: text('error'),
+    createdAt: integer('created_at', { mode: 'timestamp_ms' })
+      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+      .notNull(),
+    updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex('overtime_entry_link_date_issue_idx').on(
+      table.boardSheetId,
+      table.entryDate,
+      table.issueKey,
+    ),
+    index('overtime_entry_user_date_idx').on(table.userId, table.entryDate),
+  ],
+)
+
 export const stub = sqliteTable('stub', {
   id: text('id')
     .primaryKey()

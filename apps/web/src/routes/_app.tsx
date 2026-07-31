@@ -1,7 +1,7 @@
 import { useAtomValue } from '@effect/atom-react'
 import { Outlet, createFileRoute, redirect } from '@tanstack/react-router'
 import { AsyncResult } from 'effect/unstable/reactivity'
-import { CalendarCheck, Link2, Settings } from 'lucide-react'
+import { CalendarCheck, CalendarRange, Link2, Settings } from 'lucide-react'
 import { AppShell } from '#/components/app-shell/app-shell'
 import { authClient, readSession } from '#/auth'
 import { viewerAtom } from '#/lib/atoms'
@@ -48,6 +48,11 @@ function AppLayout() {
           to="/today"
           label="Today"
           icon={<CalendarCheck className="size-5" />}
+        />
+        <AppShell.NavItem
+          to="/timesheet"
+          label="Timesheet"
+          icon={<CalendarRange className="size-5" />}
         />
         <AppShell.NavItem
           to="/links"

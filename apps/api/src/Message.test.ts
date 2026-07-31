@@ -1,6 +1,11 @@
 import type { Jira, Stub } from '@tk/domain'
 import { describe, expect, it } from 'vitest'
-import { composeMessage, jqlForStub, partFor } from './Message.ts'
+import {
+  composeMessage,
+  excludeIssues,
+  jqlForStub,
+  partFor,
+} from './Message.ts'
 
 const issue = (key: string, summary: string): Jira.JiraIssue =>
   ({ id: key, key, summary }) as Jira.JiraIssue
@@ -142,5 +147,59 @@ describe('previewing a draft rule', () => {
     expect(composeMessage([part])).toBe(
       'Today I began working on AB-1 (Fix login).',
     )
+  })
+})
+
+describe('excludeIssues', () => {
+  it('returns the parts untouched when nothing is excluded', () => {
+    const parts = [
+      { prefix: 'Today I completed', issues: [issue('AB-1', 'One')] },
+    ]
+
+    expect(excludeIssues(parts, [])).toBe(parts)
+  })
+
+  it('drops only the named ticket, keeping its siblings', () => {
+    const parts = excludeIssues(
+      [
+        {
+          prefix: 'Today I completed',
+          issues: [issue('AB-1', 'One'), issue('AB-2', 'Two')],
+        },
+      ],
+      ['AB-1'],
+    )
+
+    expect(composeMessage(parts)).toBe('Today I completed AB-2 (Two).')
+  })
+
+  /* An overtime ticket that was the only match for its rule must take the whole
+   * sentence with it, not leave "Today I completed ." behind. */
+  it('drops a sentence left empty by the exclusion', () => {
+    const parts = excludeIssues(
+      [
+        { prefix: 'Today I began working on', issues: [issue('AB-1', 'One')] },
+        { prefix: 'Today I completed', issues: [issue('AB-2', 'Two')] },
+      ],
+      ['AB-1'],
+    )
+
+    expect(parts).toHaveLength(1)
+    expect(composeMessage(parts)).toBe('Today I completed AB-2 (Two).')
+  })
+
+  it('leaves nothing when every ticket goes to overtime', () => {
+    const parts = excludeIssues(
+      [
+        {
+          prefix: 'Today I completed',
+          issues: [issue('AB-1', 'One'), issue('AB-2', 'Two')],
+        },
+      ],
+      ['AB-1', 'AB-2'],
+    )
+
+    expect(parts).toHaveLength(0)
+    expect(composeMessage(parts)).toBe('')
   })
 })

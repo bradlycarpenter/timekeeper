@@ -4,5 +4,7 @@ export type DaySummaryTallyProps = {
   total: number
   hours: number
   expected: number
+  /** Additional to `hours`, never part of it. */
+  overtimeHours: number
   postsAt: string
 }

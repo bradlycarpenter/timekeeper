@@ -17,4 +17,7 @@ export const keys = {
   links: ['links'],
   today: ['today'],
   history: ['history'],
+  /** Posting writes to Warp, so the entry list is stale the moment we file. */
+  entries: ['entries'],
+  settings: ['settings'],
 } as const

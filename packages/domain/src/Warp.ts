@@ -39,6 +39,73 @@ export const WarpEntryCreated = Schema.Struct({
   EntryId: Schema.Number,
 })
 
+const WarpEntryPerson = Schema.Struct({ PersonId: WarpPersonId })
+
+const WarpEntryTask = Schema.Struct({
+  TaskId: Schema.optional(Schema.NullOr(WarpTaskId)),
+  TaskName: Schema.optional(Schema.NullOr(Schema.String)),
+  Activity: Schema.optional(Schema.NullOr(Schema.String)),
+})
+
+const WarpEntryGroup = Schema.Struct({
+  GroupName: Schema.optional(Schema.NullOr(Schema.String)),
+})
+
+/** Warp's entry listing, mirrored verbatim including its inconsistent casing.
+ * Nearly everything is nullable because the list spans the whole company and
+ * old rows predate fields that are mandatory today. */
+export const WarpEntry = Schema.Struct({
+  EntryId: Schema.Number,
+  Spent_date: Schema.String,
+  hours: Schema.Number,
+  Notes: Schema.optional(Schema.NullOr(Schema.String)),
+  overtime: Schema.optional(Schema.NullOr(Schema.Boolean)),
+  Person: Schema.optional(Schema.NullOr(WarpEntryPerson)),
+  Task: Schema.optional(Schema.NullOr(WarpEntryTask)),
+  Group: Schema.optional(Schema.NullOr(WarpEntryGroup)),
+})
+export type WarpEntry = typeof WarpEntry.Type
+
+/** One of the user's own timesheet entries as the Timesheet screen shows it,
+ * whoever wrote it: Timekeeper, the Warp UI, or anything else. */
+export const SheetEntry = Schema.Struct({
+  entryId: Schema.Number,
+  date: Schema.String,
+  hours: Schema.Number,
+  overtime: Schema.Boolean,
+  description: Schema.String,
+  taskId: Schema.Number,
+  projectName: Schema.String,
+  clientName: Schema.String,
+  activity: Schema.String,
+})
+export type SheetEntry = typeof SheetEntry.Type
+
+export const toSheetEntry = (entry: WarpEntry): SheetEntry => ({
+  entryId: entry.EntryId,
+  date: entry.Spent_date.slice(0, 10),
+  hours: entry.hours,
+  overtime: entry.overtime === true,
+  description: entry.Notes ?? '',
+  taskId: entry.Task?.TaskId ?? 0,
+  projectName: entry.Task?.TaskName ?? 'Unknown',
+  clientName: entry.Group?.GroupName ?? 'Unknown',
+  activity: entry.Task?.Activity ?? 'Unknown',
+})
+
+export const SheetEntryRange = Schema.Struct({
+  from: Schema.String,
+  to: Schema.String,
+  entries: Schema.Array(SheetEntry),
+  totalHours: Schema.Number,
+  overtimeHours: Schema.Number,
+  /** The last date actually scanned. Warp pages over every person's entries, so
+   * a wide window can run out of budget before reaching `to`. */
+  coveredThrough: Schema.String,
+  complete: Schema.Boolean,
+})
+export type SheetEntryRange = typeof SheetEntryRange.Type
+
 /** What the setup flow shows when picking a project to bill against. */
 export const SheetProject = Schema.Struct({
   taskId: WarpTaskId,
